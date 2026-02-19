@@ -1,0 +1,35 @@
+{
+  "name": "oxlint-config-awesomeness",
+  "version": "1.0.0",
+  "description": "Oxlint config with sensible defaults.",
+  "keywords": [
+    "autofix",
+    "config",
+    "defaults",
+    "oxlint",
+    "strict"
+  ],
+  "license": "MIT",
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "lint": "oxlint ."
+  },
+  "dependencies": {
+    "eslint-plugin-no-only-tests": "^3.3.0",
+    "eslint-plugin-perfectionist": "^5.5.0",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-unused-imports": "~4.4.1"
+  },
+  "devDependencies": {
+    "oxlint": "^1.46.0"
+  },
+  "peerDependencies": {
+    "oxlint": ">=1.46.0"
+  },
+  "packageManager": "pnpm@10.24.0"
+}
