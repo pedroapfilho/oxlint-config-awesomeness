@@ -26,10 +26,10 @@
     "eslint-plugin-unused-imports": "~4.4.1"
   },
   "devDependencies": {
-    "oxlint": "^1.57.0"
+    "oxlint": "^1.58.0"
   },
   "peerDependencies": {
-    "oxlint": ">=1.46.0"
+    "oxlint": ">=1.58.0 <2.0.0"
   },
   "packageManager": "pnpm@10.24.0"
 }
