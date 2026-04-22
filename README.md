@@ -116,10 +116,17 @@ The five categories are enabled at `error`, but a small set of category-included
 | Category of fight | Rules off |
 |-------------------|-----------|
 | **React 17+ JSX transform / composition** | `react/react-in-jsx-scope`, `react/jsx-props-no-spreading`, `react/jsx-max-depth`, `react/no-array-index-key`, `react/jsx-no-useless-fragment`, `react/jsx-no-constructed-context-values` |
-| **Modern ESM (named exports, side-effect imports, `node:` protocol)** | `import/no-named-export`, `import/prefer-default-export`, `import/group-exports`, `import/exports-last`, `import/no-anonymous-default-export`, `import/no-nodejs-modules`, `import/no-unassigned-import`, `import/max-dependencies`, `import/first`, `import/consistent-type-specifier-style` |
-| **Pedantic style preferences** | `no-magic-numbers`, `no-ternary`, `no-inline-comments`, `capitalized-comments`, `arrow-body-style`, `func-style`, `func-names`, `init-declarations`, `no-inferrable-types`, `prefer-destructuring`, `no-negated-condition`, `max-statements`, `max-lines-per-function`, `id-length` |
-| **Unicorn overreach** | `unicorn/prefer-global-this`, `unicorn/no-useless-undefined`, `unicorn/no-nested-ternary`, `unicorn/explicit-length-check`, `unicorn/custom-error-definition` |
-| **Forced async/await preference** | `promise/prefer-await-to-callbacks` |
+| **Modern ESM (named exports, side-effect imports, namespace imports, `node:` protocol)** | `import/no-named-export`, `import/prefer-default-export`, `import/group-exports`, `import/exports-last`, `import/no-anonymous-default-export`, `import/no-nodejs-modules`, `import/no-unassigned-import`, `import/no-namespace`, `import/max-dependencies`, `import/first`, `import/consistent-type-specifier-style` |
+| **Pedantic style preferences** | `no-magic-numbers`, `no-ternary`, `no-inline-comments`, `capitalized-comments`, `arrow-body-style`, `func-style`, `func-names`, `init-declarations`, `no-inferrable-types`, `prefer-destructuring`, `no-negated-condition`, `no-continue`, `parameter-properties`, `max-statements`, `max-lines-per-function`, `id-length` |
+| **Unicorn overreach** | `unicorn/prefer-global-this`, `unicorn/no-useless-undefined`, `unicorn/no-nested-ternary`, `unicorn/explicit-length-check`, `unicorn/custom-error-definition`, `unicorn/no-zero-fractions`, `unicorn/escape-case`, `unicorn/no-array-callback-reference`, `unicorn/no-array-for-each`, `unicorn/no-array-reduce` |
+| **Promise rules with broken assumptions** | `promise/prefer-await-to-callbacks`, `promise/avoid-new`, `promise/param-names` |
+
+A few of these are particularly worth calling out because they form **contradictory pairs** when both fire on the same code:
+
+- `unicorn/explicit-length-check` ↔ `no-magic-numbers` — the first asks you to write `arr.length === 0`, the second then flags the `0`. No way to satisfy both.
+- `import/no-named-export` ↔ `import/prefer-default-export` — exact opposites; one of them is always going to complain.
+- `import/no-namespace` ↔ canonical patterns from Sentry, Prisma, lodash that recommend namespace imports — the rule doesn't know about library conventions.
+- `unicorn/no-zero-fractions` ↔ float-math code that uses `1.0` for type-clarity intent — the rule has no signal about why the `.0` is there.
 
 If you want any of these back on for your project, add them to your `oxlint.config.ts` overrides.
 
