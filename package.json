@@ -13,7 +13,8 @@
   "files": [
     "index.js",
     "index.d.ts",
-    "bin/init.js"
+    "bin/init.js",
+    "bin/template.ts"
   ],
   "type": "module",
   "main": "index.js",

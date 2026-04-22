@@ -1,51 +1,43 @@
 #!/usr/bin/env node
-import { existsSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { copyFileSync, existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { parseArgs } from "node:util";
 
-const TEMPLATE = `import awesomeness from "oxlint-config-awesomeness";
-import { defineConfig } from "oxlint";
+const HELP = `Usage: npx oxlint-config-awesomeness init [--force]
 
-export default defineConfig({
-  extends: [awesomeness],
+Scaffold oxlint.config.ts in the current directory.
+  -f, --force  Overwrite an existing oxlint.config.ts
+  -h, --help   Show this help
+`;
+
+const { positionals, values } = parseArgs({
+  allowPositionals: true,
+  options: {
+    force: { short: "f", type: "boolean" },
+    help: { short: "h", type: "boolean" },
+  },
 });
-`;
 
-const NEXT_STEPS = `
-Next steps:
-  1. Install peer plugins (skip any you already have):
-       npm install -D eslint-plugin-no-only-tests eslint-plugin-perfectionist eslint-plugin-react-hooks eslint-plugin-unused-imports
-  2. Run oxlint:
-       npx oxlint
-`;
+const command = positionals[0];
 
-const USAGE = `Usage: npx oxlint-config-awesomeness <command> [options]
-
-Commands:
-  init             Scaffold oxlint.config.ts in the current directory.
-
-Options:
-  --force          Overwrite an existing oxlint.config.{ts,js}.
-`;
-
-const command = process.argv[2];
-const force = process.argv.includes("--force");
-
-if (command !== "init") {
-  process.stdout.write(USAGE);
-  process.exit(command ? 1 : 0);
+if (values.help || !command) {
+  process.stdout.write(HELP);
+  process.exit(0);
 }
 
-const cwd = process.cwd();
-const target = resolve(cwd, "oxlint.config.ts");
-const conflict = existsSync(target) || existsSync(resolve(cwd, "oxlint.config.js"));
-
-if (conflict && !force) {
-  process.stderr.write(
-    "Refusing to overwrite existing oxlint.config.{ts,js}. Re-run with --force to replace.\n",
-  );
+if (command !== "init") {
+  process.stderr.write(`Unknown command: ${command}\n\n${HELP}`);
   process.exit(1);
 }
 
-writeFileSync(target, TEMPLATE);
-process.stdout.write(`Created ${target}\n`);
-process.stdout.write(NEXT_STEPS);
+const target = resolve("oxlint.config.ts");
+
+if (existsSync(target) && !values.force) {
+  process.stderr.write("oxlint.config.ts already exists. Re-run with --force.\n");
+  process.exit(1);
+}
+
+const here = dirname(fileURLToPath(import.meta.url));
+copyFileSync(resolve(here, "template.ts"), target);
+process.stdout.write(`Created ${target}\nNext: npx oxlint\n`);
