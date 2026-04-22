@@ -134,17 +134,18 @@ export default defineConfig({
     '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
 
     // Core eslint — custom options
+    'eslint/no-duplicate-imports': ['error',
+      {
+      allowSeparateTypeImports: true,
+      }
+    ],
     'no-warning-comments': [
       'error',
       {
         terms: ['@nocommit'],
       },
     ],
-    'eslint/no-duplicate-imports': ['error',
-      {
-      allowSeparateTypeImports: true,
-      }
-    ],
+
     
 
     // Restriction — cherry-picked (not bulk-enabled)
