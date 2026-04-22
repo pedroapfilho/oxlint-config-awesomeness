@@ -184,7 +184,7 @@ export default defineConfig({
     'react/no-array-index-key': 'off',
     'react/react-in-jsx-scope': 'off',
 
-    // Disabled — modern ESM uses named exports; side-effect imports (CSS, polyfills, node: protocol) are legitimate
+    // Disabled — modern ESM uses named exports; side-effect imports (CSS, polyfills, node: protocol) are legitimate; namespace imports are canonical for Sentry, Prisma, etc.
     'import/consistent-type-specifier-style': 'off',
     'import/exports-last': 'off',
     'import/first': 'off',
@@ -192,6 +192,7 @@ export default defineConfig({
     'import/max-dependencies': 'off',
     'import/no-anonymous-default-export': 'off',
     'import/no-named-export': 'off',
+    'import/no-namespace': 'off',
     'import/no-nodejs-modules': 'off',
     'import/no-unassigned-import': 'off',
     'import/prefer-default-export': 'off',
@@ -205,21 +206,30 @@ export default defineConfig({
     'init-declarations': 'off',
     'max-lines-per-function': 'off',
     'max-statements': 'off',
+    'no-continue': 'off',
     'no-inferrable-types': 'off',
     'no-inline-comments': 'off',
     'no-magic-numbers': 'off',
     'no-negated-condition': 'off',
     'no-ternary': 'off',
+    'parameter-properties': 'off',
     'prefer-destructuring': 'off',
 
     // Disabled — unicorn rules that overreach into legitimate patterns
     'unicorn/custom-error-definition': 'off',
+    'unicorn/escape-case': 'off',
     'unicorn/explicit-length-check': 'off',
+    'unicorn/no-array-callback-reference': 'off',
+    'unicorn/no-array-for-each': 'off',
+    'unicorn/no-array-reduce': 'off',
     'unicorn/no-nested-ternary': 'off',
     'unicorn/no-useless-undefined': 'off',
+    'unicorn/no-zero-fractions': 'off',
     'unicorn/prefer-global-this': 'off',
 
-    // Disabled — async/await is preferred but callbacks remain idiomatic in many APIs (event emitters, streams)
+    // Disabled — async/await is preferred but raw Promise constructors and callbacks remain idiomatic in many APIs (event emitters, streams, callback adapters)
+    'promise/avoid-new': 'off',
+    'promise/param-names': 'off',
     'promise/prefer-await-to-callbacks': 'off',
 
     // Style overrides — handled by perfectionist/oxfmt
