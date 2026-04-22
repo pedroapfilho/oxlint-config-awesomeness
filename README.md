@@ -2,7 +2,7 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-**493 rules** across **10 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+**430 rules** across **10 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
@@ -15,7 +15,17 @@ npm install -D oxlint-config-awesomeness eslint-plugin-no-only-tests eslint-plug
 
 ## Usage
 
-In your `oxlint.config.ts`:
+This package ships an oxlint config object — installing it does **not** generate a config file. You opt in by importing it from your own `oxlint.config.ts`.
+
+The fastest way is the included scaffolder:
+
+```
+npx oxlint-config-awesomeness init
+```
+
+This creates `oxlint.config.ts` in the current directory with the extends boilerplate already wired up. Pass `--force` to overwrite an existing config.
+
+If you'd rather write the file yourself, here's all it needs to be:
 
 ```ts
 import awesomeness from 'oxlint-config-awesomeness';
@@ -27,6 +37,32 @@ export default defineConfig({
 ```
 
 Then run `pnpm oxlint` or `npx oxlint`.
+
+## FAQ
+
+### I installed the package but no `.oxlintrc.json` was created. What did I miss?
+
+Nothing — that's by design. This package is an oxlint config you `import` from a JS/TS config file, not a scaffolder that runs on install (postinstall scaffolders are widely considered hostile to consumers). Run `npx oxlint-config-awesomeness init` to create `oxlint.config.ts`, or write the four-line file yourself per the Usage section above. Once that file exists, oxlint will discover it automatically.
+
+### Can I keep using `.oxlintrc.json` and still consume this package?
+
+No. Oxlint's JSON config format only supports file-path `extends`, not package imports — so you can't extend a JS-shipped config from JSON. Migrating to `oxlint.config.ts` is the supported path; the file is small enough to author by hand if you don't want the scaffolder.
+
+### How do I add per-project overrides?
+
+`defineConfig` merges the `awesomeness` config with anything else you pass. Add overrides alongside `extends`:
+
+```ts
+import awesomeness from 'oxlint-config-awesomeness';
+import { defineConfig } from 'oxlint';
+
+export default defineConfig({
+  extends: [awesomeness],
+  overrides: [
+    { files: ['scripts/**/*.ts'], rules: { 'no-console': 'off' } },
+  ],
+});
+```
 
 ## Philosophy
 
@@ -71,7 +107,28 @@ The config includes smart overrides so strict rules don't create noise in files 
 
 Instead of enabling the entire `restriction` category (which includes rules like `no-bitwise`, `no-plusplus`, `capitalized-comments` that cause daily friction), this config cherry-picks the most valuable restriction rules:
 
-`curly`, `default-case`, `eqeqeq`, `grouped-accessor-pairs`, `id-length`, `max-classes-per-file`, `max-depth`, `max-lines`, `max-nested-callbacks`, `max-params`, `no-alert`, `no-caller`, `no-console`, `no-eval`, `no-extend-native`, `no-implicit-coercion`, `no-new-func`, `no-new-wrappers`, `no-object-constructor`, `no-param-reassign`, `no-proto`, `no-return-assign`, `no-script-url`, `no-shadow`, `no-throw-literal`, `no-void`, `prefer-promise-reject-errors`, `prefer-template`
+`curly`, `default-case`, `eqeqeq`, `grouped-accessor-pairs`, `max-classes-per-file`, `max-depth`, `max-lines`, `max-nested-callbacks`, `max-params`, `no-alert`, `no-caller`, `no-console`, `no-eval`, `no-extend-native`, `no-implicit-coercion`, `no-new-func`, `no-new-wrappers`, `no-object-constructor`, `no-param-reassign`, `no-proto`, `no-return-assign`, `no-script-url`, `no-shadow`, `no-throw-literal`, `no-void`, `prefer-promise-reject-errors`, `prefer-template`
+
+## Disabled by Intent
+
+The five categories are enabled at `error`, but a small set of category-included rules are explicitly disabled because they fight modern React, Next.js, and ESM conventions:
+
+| Category of fight | Rules off |
+|-------------------|-----------|
+| **React 17+ JSX transform / composition** | `react/react-in-jsx-scope`, `react/jsx-props-no-spreading`, `react/jsx-max-depth`, `react/no-array-index-key`, `react/jsx-no-useless-fragment`, `react/jsx-no-constructed-context-values` |
+| **Modern ESM (named exports, side-effect imports, namespace imports, `node:` protocol)** | `import/no-named-export`, `import/prefer-default-export`, `import/group-exports`, `import/exports-last`, `import/no-anonymous-default-export`, `import/no-nodejs-modules`, `import/no-unassigned-import`, `import/no-namespace`, `import/max-dependencies`, `import/first`, `import/consistent-type-specifier-style` |
+| **Pedantic style preferences** | `no-magic-numbers`, `no-ternary`, `no-inline-comments`, `capitalized-comments`, `arrow-body-style`, `func-style`, `func-names`, `init-declarations`, `no-inferrable-types`, `prefer-destructuring`, `no-negated-condition`, `no-continue`, `parameter-properties`, `max-statements`, `max-lines-per-function`, `id-length` |
+| **Unicorn overreach** | `unicorn/prefer-global-this`, `unicorn/no-useless-undefined`, `unicorn/no-nested-ternary`, `unicorn/explicit-length-check`, `unicorn/custom-error-definition`, `unicorn/no-zero-fractions`, `unicorn/escape-case`, `unicorn/no-array-callback-reference`, `unicorn/no-array-for-each`, `unicorn/no-array-reduce` |
+| **Promise rules with broken assumptions** | `promise/prefer-await-to-callbacks`, `promise/avoid-new`, `promise/param-names` |
+
+A few of these are particularly worth calling out because they form **contradictory pairs** when both fire on the same code:
+
+- `unicorn/explicit-length-check` ↔ `no-magic-numbers` — the first asks you to write `arr.length === 0`, the second then flags the `0`. No way to satisfy both.
+- `import/no-named-export` ↔ `import/prefer-default-export` — exact opposites; one of them is always going to complain.
+- `import/no-namespace` ↔ canonical patterns from Sentry, Prisma, lodash that recommend namespace imports — the rule doesn't know about library conventions.
+- `unicorn/no-zero-fractions` ↔ float-math code that uses `1.0` for type-clarity intent — the rule has no signal about why the `.0` is there.
+
+If you want any of these back on for your project, add them to your `oxlint.config.ts` overrides.
 
 ## Sorting Rules Disabled
 

@@ -134,17 +134,18 @@ export default defineConfig({
     '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
 
     // Core eslint — custom options
+    'eslint/no-duplicate-imports': ['error',
+      {
+      allowSeparateTypeImports: true,
+      }
+    ],
     'no-warning-comments': [
       'error',
       {
         terms: ['@nocommit'],
       },
     ],
-    'eslint/no-duplicate-imports': ['error',
-      {
-      allowSeparateTypeImports: true,
-      }
-    ],
+
     
 
     // Restriction — cherry-picked (not bulk-enabled)
@@ -152,7 +153,6 @@ export default defineConfig({
     'default-case': 'error',
     eqeqeq: 'error',
     'grouped-accessor-pairs': 'error',
-    'id-length': ['error', { exceptions: ['_', 'a', 'b', 'i', 'j', 'k', 'x', 'y', 'z'] }],
     'max-classes-per-file': ['error', { max: 1 }],
     'max-depth': ['error', { max: 4 }],
     'max-lines': ['error', { max: 400, skipBlankLines: true, skipComments: true }],
@@ -176,6 +176,62 @@ export default defineConfig({
     'no-void': ['error', { allowAsStatement: true }],
     'prefer-promise-reject-errors': 'error',
     'prefer-template': 'error',
+
+    // Disabled — incompatible with React 17+ JSX transform and common composition patterns
+    'react/jsx-max-depth': 'off',
+    'react/jsx-no-constructed-context-values': 'off',
+    'react/jsx-no-useless-fragment': 'off',
+    'react/jsx-props-no-spreading': 'off',
+    'react/no-array-index-key': 'off',
+    'react/react-in-jsx-scope': 'off',
+
+    // Disabled — modern ESM uses named exports; side-effect imports (CSS, polyfills, node: protocol) are legitimate; namespace imports are canonical for Sentry, Prisma, etc.
+    'import/consistent-type-specifier-style': 'off',
+    'import/exports-last': 'off',
+    'import/first': 'off',
+    'import/group-exports': 'off',
+    'import/max-dependencies': 'off',
+    'import/no-anonymous-default-export': 'off',
+    'import/no-named-export': 'off',
+    'import/no-namespace': 'off',
+    'import/no-nodejs-modules': 'off',
+    'import/no-unassigned-import': 'off',
+    'import/prefer-default-export': 'off',
+
+    // Disabled — pedantic style preferences that fight day-to-day clarity
+    'arrow-body-style': 'off',
+    'capitalized-comments': 'off',
+    'func-names': 'off',
+    'func-style': 'off',
+    'id-length': 'off',
+    'init-declarations': 'off',
+    'max-lines-per-function': 'off',
+    'max-statements': 'off',
+    'no-continue': 'off',
+    'no-inferrable-types': 'off',
+    'no-inline-comments': 'off',
+    'no-magic-numbers': 'off',
+    'no-negated-condition': 'off',
+    'no-ternary': 'off',
+    'parameter-properties': 'off',
+    'prefer-destructuring': 'off',
+
+    // Disabled — unicorn rules that overreach into legitimate patterns
+    'unicorn/custom-error-definition': 'off',
+    'unicorn/escape-case': 'off',
+    'unicorn/explicit-length-check': 'off',
+    'unicorn/no-array-callback-reference': 'off',
+    'unicorn/no-array-for-each': 'off',
+    'unicorn/no-array-reduce': 'off',
+    'unicorn/no-nested-ternary': 'off',
+    'unicorn/no-useless-undefined': 'off',
+    'unicorn/no-zero-fractions': 'off',
+    'unicorn/prefer-global-this': 'off',
+
+    // Disabled — async/await is preferred but raw Promise constructors and callbacks remain idiomatic in many APIs (event emitters, streams, callback adapters)
+    'promise/avoid-new': 'off',
+    'promise/param-names': 'off',
+    'promise/prefer-await-to-callbacks': 'off',
 
     // Style overrides — handled by perfectionist/oxfmt
     'sort-imports': 'off',
