@@ -34,7 +34,9 @@ if (command !== "init") {
 const target = resolve("oxlint.config.ts");
 
 if (existsSync(target) && !values.force) {
-  process.stderr.write("oxlint.config.ts already exists. Re-run with --force.\n");
+  process.stderr.write(
+    "oxlint.config.ts already exists. Re-run with --force.\n",
+  );
   process.exit(1);
 }
 
