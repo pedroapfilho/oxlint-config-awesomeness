@@ -140,6 +140,12 @@ export default defineConfig({
         terms: ['@nocommit'],
       },
     ],
+    'eslint/no-duplicate-imports': ['error',
+      {
+      allowSeparateTypeImports: true,
+      }
+    ],
+    
 
     // Restriction — cherry-picked (not bulk-enabled)
     curly: 'error',
