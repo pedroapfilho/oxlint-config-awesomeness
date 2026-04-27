@@ -347,6 +347,11 @@ export default defineConfig({
 
     // Disabled — incompatible with React 17+ JSX transform and common composition patterns
 
+    // Three-way deadlock: `[v, setV]` trips `no-unused-vars` if setter unused;
+    // `[v, _setV]` trips this rule's strict `[thing, setThing]` naming;
+    // `[v]` trips this rule's "must destructure both" requirement.
+    // TypeScript already catches setter-name typos via type errors, so the value is low.
+    "react/hook-use-state": "off",
     // JSX depth is constrained by composition, not by a magic number.
     "react/jsx-max-depth": "off",
     // React Compiler (`react-hooks-js`) handles memoization — no need to pre-extract context values.

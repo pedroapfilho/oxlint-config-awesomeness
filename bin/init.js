@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import { copyFileSync, existsSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 
 const HELP = `Usage: npx oxlint-config-awesomeness init [--force]
@@ -40,6 +39,5 @@ if (existsSync(target) && !values.force) {
   process.exit(1);
 }
 
-const here = dirname(fileURLToPath(import.meta.url));
-copyFileSync(resolve(here, "template.ts"), target);
+copyFileSync(resolve(import.meta.dirname, "template.ts"), target);
 process.stdout.write(`Created ${target}\nNext: npx oxlint\n`);
