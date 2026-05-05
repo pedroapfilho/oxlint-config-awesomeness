@@ -139,6 +139,11 @@ export default defineConfig({
       allowSeparateTypeImports: true,
       }
     ],
+    'eslint/require-unicode-regexp': ['error',
+      {
+        requireFlag: 'v',
+      }
+    ],
     'no-warning-comments': [
       'error',
       {
