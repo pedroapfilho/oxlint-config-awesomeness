@@ -1,6 +1,6 @@
 {
   "name": "oxlint-config-awesomeness",
-  "version": "2.0.0",
+  "version": "3.0.1",
   "description": "Oxlint config with sensible defaults.",
   "keywords": [
     "autofix",
@@ -13,7 +13,8 @@
   "files": [
     "index.js",
     "index.d.ts",
-    "bin/init.js"
+    "bin/init.js",
+    "bin/template.ts"
   ],
   "type": "module",
   "main": "index.js",

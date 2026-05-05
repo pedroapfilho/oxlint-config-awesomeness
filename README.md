@@ -2,7 +2,7 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-**430 rules** across **10 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+**450 rules** across **10 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
@@ -37,6 +37,38 @@ export default defineConfig({
 ```
 
 Then run `pnpm oxlint` or `npx oxlint`.
+
+## Upgrading from 2.x
+
+3.0 adds **28 new restriction-level rules** that error on patterns AI-generated code routinely produces. Existing 2.x codebases may see new lint errors on upgrade — this is intentional; each rule catches a real failure mode.
+
+**What's newly enforced:**
+
+- **TypeScript escape hatches** — `no-explicit-any`, `no-non-null-assertion`, `no-non-null-asserted-nullish-coalescing`, `no-require-imports`, `no-var-requires`, `no-import-type-side-effects`, `use-unknown-in-catch-callback-variable`, `promise-function-async`, `no-dynamic-delete`, `no-invalid-void-type`, `no-empty-object-type`
+- **React correctness** — `button-has-type` (defaults silently submit forms), `no-danger` (XSS vector), `no-unknown-property`; `react/jsx-no-useless-fragment` re-enabled via `pedantic`
+- **Modern JS / Node hygiene** — `unicorn/prefer-node-protocol`, `unicorn/prefer-number-properties`, `unicorn/prefer-modern-math-apis`, `unicorn/no-document-cookie`, `unicorn/no-process-exit`, `unicorn/no-abusive-eslint-disable`, `node/handle-callback-err`, `node/no-new-require`, `node/no-path-concat`, `promise/catch-or-return`
+- **Core ESLint** — `no-var`, `no-use-before-define`, `no-empty`
+- **Import graph** — `import/no-cycle`
+- **Accessibility** — `jsx-a11y/anchor-ambiguous-text`
+
+**What changed in overrides:**
+
+- New `bin/**` and `scripts/**` override turns off `no-console` and `unicorn/no-process-exit` for CLI entry points.
+- Test override extended: the new strict rules that produce noise in tests (`no-require-imports`, `no-var-requires`, `promise-function-async`, `no-non-null-asserted-nullish-coalescing`, `import/no-cycle`, `no-empty`, `no-use-before-define`) are off inside tests.
+
+**Fixing common failures:**
+
+| Error | Fix |
+|-------|-----|
+| `: any` / `as any` | Use `unknown` + narrowing, or a real type. |
+| `value!` | Narrow with a type guard or throw explicitly. |
+| `<button onClick={...}>` | Add `type="button"` (or `"submit"`/`"reset"` as needed). |
+| `import fs from 'fs'` | `import fs from 'node:fs'`. |
+| `require(...)` in TS | Convert to ESM `import`. |
+| `fn(): Promise<T>` | Add `async` to the function. |
+| `catch((err) => err.message)` | `err` is `unknown` — narrow with `err instanceof Error`. |
+
+Every rule has inline code documentation with bad/good examples in the [All Rules](#all-rules) section below.
 
 ## FAQ
 
@@ -96,18 +128,38 @@ The config includes smart overrides so strict rules don't create noise in files 
 
 | Files | Relaxed Rules |
 |-------|---------------|
-| `*.test.ts`, `*.spec.ts`, `__tests__/**` | `no-explicit-any`, all `no-unsafe-*`, `max-lines`, `max-statements`, `no-empty-function` |
+| `*.test.ts`, `*.spec.ts`, `__tests__/**` | `no-explicit-any`, `no-non-null-assertion` (+ asserted-nullish variant), `no-require-imports`, `no-var-requires`, `promise-function-async`, all `no-unsafe-*`, `import/no-cycle`, `max-lines`, `max-lines-per-function`, `max-nested-callbacks`, `max-statements`, `no-empty`, `no-empty-function`, `no-use-before-define` |
 | `*.stories.tsx` | `no-console`, `no-multi-comp` |
 | `**/seed.ts`, `**/migrate.ts` | `no-console` |
+| `**/bin/**`, `scripts/**` | `no-console`, `unicorn/no-process-exit` |
 | `*.config.ts`, `next.config.*`, etc. | `max-lines`, `no-anonymous-default-export` |
 | `**/e2e/**/fixtures/**` | `rules-of-hooks` |
 | `*.ts`, `*.tsx` (all TypeScript) | Rules handled natively by the TS compiler (`no-undef`, `no-redeclare`, etc.) |
 
 ## Cherry-Picked Restriction Rules
 
-Instead of enabling the entire `restriction` category (which includes rules like `no-bitwise`, `no-plusplus`, `capitalized-comments` that cause daily friction), this config cherry-picks the most valuable restriction rules:
+Instead of enabling the entire `restriction` category (which includes rules like `no-bitwise`, `no-plusplus`, `capitalized-comments` that cause daily friction), this config cherry-picks the most valuable restriction rules, grouped by plugin:
 
-`curly`, `default-case`, `eqeqeq`, `grouped-accessor-pairs`, `max-classes-per-file`, `max-depth`, `max-lines`, `max-nested-callbacks`, `max-params`, `no-alert`, `no-caller`, `no-console`, `no-eval`, `no-extend-native`, `no-implicit-coercion`, `no-new-func`, `no-new-wrappers`, `no-object-constructor`, `no-param-reassign`, `no-proto`, `no-return-assign`, `no-script-url`, `no-shadow`, `no-throw-literal`, `no-void`, `prefer-promise-reject-errors`, `prefer-template`
+**Core ESLint**
+`curly`, `default-case`, `eqeqeq`, `grouped-accessor-pairs`, `max-classes-per-file`, `max-depth`, `max-lines`, `max-nested-callbacks`, `max-params`, `no-alert`, `no-caller`, `no-console`, `no-empty`, `no-eval`, `no-extend-native`, `no-implicit-coercion`, `no-new-func`, `no-new-wrappers`, `no-object-constructor`, `no-param-reassign`, `no-proto`, `no-return-assign`, `no-script-url`, `no-shadow`, `no-throw-literal`, `no-use-before-define`, `no-var`, `no-void`, `prefer-promise-reject-errors`, `prefer-template`
+
+**TypeScript** — blocks escape hatches (`any`, `!`, `require`) that AI-generated code routinely produces:
+`@typescript-eslint/no-dynamic-delete`, `no-empty-object-type`, `no-explicit-any`, `no-import-type-side-effects`, `no-invalid-void-type`, `no-non-null-asserted-nullish-coalescing`, `no-non-null-assertion`, `no-require-imports`, `no-var-requires`, `promise-function-async`, `use-unknown-in-catch-callback-variable`
+
+**React**
+`react/button-has-type`, `react/no-danger`, `react/no-unknown-property`
+
+**Import graph**
+`import/no-cycle`
+
+**Unicorn** (modern JS + anti-escape-hatch)
+`unicorn/no-abusive-eslint-disable`, `unicorn/no-document-cookie`, `unicorn/no-process-exit`, `unicorn/prefer-modern-math-apis`, `unicorn/prefer-node-protocol`, `unicorn/prefer-number-properties`
+
+**Promise / Node**
+`promise/catch-or-return`, `node/handle-callback-err`, `node/no-new-require`, `node/no-path-concat`
+
+**Accessibility**
+`jsx-a11y/anchor-ambiguous-text`
 
 ## Disabled by Intent
 
@@ -115,7 +167,7 @@ The five categories are enabled at `error`, but a small set of category-included
 
 | Category of fight | Rules off |
 |-------------------|-----------|
-| **React 17+ JSX transform / composition** | `react/react-in-jsx-scope`, `react/jsx-props-no-spreading`, `react/jsx-max-depth`, `react/no-array-index-key`, `react/jsx-no-useless-fragment`, `react/jsx-no-constructed-context-values` |
+| **React 17+ JSX transform / composition** | `react/react-in-jsx-scope`, `react/jsx-props-no-spreading`, `react/jsx-max-depth`, `react/no-array-index-key`, `react/jsx-no-constructed-context-values` |
 | **Modern ESM (named exports, side-effect imports, namespace imports, `node:` protocol)** | `import/no-named-export`, `import/prefer-default-export`, `import/group-exports`, `import/exports-last`, `import/no-anonymous-default-export`, `import/no-nodejs-modules`, `import/no-unassigned-import`, `import/no-namespace`, `import/max-dependencies`, `import/first`, `import/consistent-type-specifier-style` |
 | **Pedantic style preferences** | `no-magic-numbers`, `no-ternary`, `no-inline-comments`, `capitalized-comments`, `arrow-body-style`, `func-style`, `func-names`, `init-declarations`, `no-inferrable-types`, `prefer-destructuring`, `no-negated-condition`, `no-continue`, `parameter-properties`, `max-statements`, `max-lines-per-function`, `id-length` |
 | **Unicorn overreach** | `unicorn/prefer-global-this`, `unicorn/no-useless-undefined`, `unicorn/no-nested-ternary`, `unicorn/explicit-length-check`, `unicorn/custom-error-definition`, `unicorn/no-zero-fractions`, `unicorn/escape-case`, `unicorn/no-array-callback-reference`, `unicorn/no-array-for-each`, `unicorn/no-array-reduce` |
