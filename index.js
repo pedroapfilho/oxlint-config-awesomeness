@@ -205,6 +205,8 @@ export default defineConfig({
       "error",
       { allowSeparateTypeImports: true },
     ],
+    // Require the `v` flag on regex literals — opts into Unicode-aware matching with set notation.
+    "eslint/require-unicode-regexp": ["error", { requireFlag: "v" }],
     // Block `@nocommit` markers from reaching main — a hard stop for WIP code.
     "no-warning-comments": ["error", { terms: ["@nocommit"] }],
 
