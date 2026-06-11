@@ -2,7 +2,7 @@ Guidance for AI coding agents working in `oxlint-config-awesomeness`. `CLAUDE.md
 
 ## What This Repo Is
 
-`oxlint-config-awesomeness` is the shared oxlint configuration consumed by every managed repo in the fleet at `^3.0.2`. It exports a single default `OxlintConfig` object built with `defineConfig` — 450 rules across 10 plugins (typescript, import, react, unicorn, jsx-a11y, promise, nextjs, oxc, node, plus three JS-bridge plugins: no-only-tests, perfectionist, react-hooks).
+`oxlint-config-awesomeness` is the shared oxlint configuration consumed by every managed repo in the fleet at `^3.0.2`. It exports a single default `OxlintConfig` object built with `defineConfig` — ~600 rules across 9 native plugins (typescript, import, react, unicorn, jsx-a11y, promise, nextjs, oxc, node) and five JS-bridge plugins (no-only-tests, perfectionist, unused-imports, react-hooks as react-hooks-js, and react-doctor).
 
 This is a **flat single-package repo** — no workspace, no `pnpm-workspace.yaml`, no `turbo.json`.
 

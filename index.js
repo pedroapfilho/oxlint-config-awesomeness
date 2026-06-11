@@ -1,3 +1,5 @@
+/* oxlint-disable max-lines -- the shipped config is deliberately one flat,
+   greppable file; splitting it into modules would obscure the rule inventory. */
 import { defineConfig } from "oxlint";
 
 export default defineConfig({
@@ -30,6 +32,8 @@ export default defineConfig({
     // React Compiler's own lint rules — stricter than classic react-hooks;
     // enforce the purity/memoization/gating invariants the compiler needs.
     { name: "react-hooks-js", specifier: "eslint-plugin-react-hooks" },
+    // React Doctor diagnostics (security, perf, correctness, RSC, TanStack Query).
+    { name: "react-doctor", specifier: "oxlint-plugin-react-doctor" },
   ],
   overrides: [
     // TypeScript files — turn off rules the TS compiler already enforces via its type system.
@@ -543,5 +547,202 @@ export default defineConfig({
 
     // Dead imports bloat bundles and mislead readers — remove them.
     "unused-imports/no-unused-imports": "error",
+
+    // React Doctor (react-doctor) — original diagnostic rules from the upstream
+    // recommended + next + tanstack-query presets, at upstream severities (warn =
+    // advisory, error = definite bug). Excluded on purpose: the a11y/react-builtins
+    // buckets (1:1 ports of oxlint-native react/jsx-a11y/react-hooks rules already
+    // enabled above — or deliberately disabled, like no-array-index-key), the six
+    // rules the native nextjs plugin already covers, no-eval (core eslint rule is
+    // on), and react-compiler-no-manual-memoization (contradicts
+    // react-hooks-js/preserve-manual-memoization).
+
+    // Architecture — component structure, module boundaries, export hygiene.
+    "react-doctor/no-giant-component": "warn",
+    "react-doctor/no-legacy-class-lifecycles": "error",
+    "react-doctor/no-legacy-context-api": "error",
+    "react-doctor/no-many-boolean-props": "warn",
+    "react-doctor/no-nested-component-definition": "error",
+    "react-doctor/no-react-dom-deprecated-apis": "warn",
+    "react-doctor/no-react19-deprecated-apis": "warn",
+    "react-doctor/no-render-in-render": "warn",
+    "react-doctor/no-render-prop-children": "warn",
+    "react-doctor/prefer-explicit-variants": "warn",
+    "react-doctor/prefer-module-scope-pure-function": "warn",
+    "react-doctor/prefer-module-scope-static-value": "warn",
+
+    // Bundle size — heavy imports that bloat client bundles.
+    "react-doctor/no-barrel-import": "warn",
+    "react-doctor/no-dynamic-import-path": "warn",
+    "react-doctor/no-full-lodash-import": "warn",
+    "react-doctor/no-moment": "warn",
+    "react-doctor/no-undeferred-third-party": "warn",
+    "react-doctor/prefer-dynamic-import": "warn",
+    "react-doctor/use-lazy-motion": "warn",
+
+    // Client/browser API usage.
+    "react-doctor/client-localstorage-no-version": "warn",
+    "react-doctor/client-passive-event-listeners": "warn",
+
+    // Correctness — invalid HTML/DOM structure React will render broken.
+    "react-doctor/html-no-invalid-paragraph-child": "warn",
+    "react-doctor/html-no-invalid-table-nesting": "warn",
+    "react-doctor/html-no-nested-interactive": "warn",
+    "react-doctor/no-jsx-element-type": "error",
+    "react-doctor/no-polymorphic-children": "warn",
+    "react-doctor/no-prevent-default": "warn",
+    "react-doctor/no-random-key": "error",
+    "react-doctor/no-uncontrolled-input": "warn",
+    "react-doctor/rendering-conditional-render": "warn",
+    "react-doctor/rendering-svg-precision": "warn",
+
+    // Design/UX — visual anti-patterns (focus rings, contrast, transitions).
+    "react-doctor/no-disabled-zoom": "error",
+    "react-doctor/no-gray-on-colored-background": "warn",
+    "react-doctor/no-inline-bounce-easing": "warn",
+    "react-doctor/no-inline-exhaustive-style": "warn",
+    "react-doctor/no-layout-transition-inline": "warn",
+    "react-doctor/no-long-transition-duration": "warn",
+    "react-doctor/no-outline-none": "warn",
+    "react-doctor/no-tiny-text": "warn",
+
+    // Jotai — no-ops in repos that do not use it.
+    "react-doctor/jotai-derived-atom-returns-fresh-object": "warn",
+    "react-doctor/jotai-select-atom-in-render-body": "error",
+    "react-doctor/jotai-tq-use-raw-query-atom": "warn",
+
+    // JS performance — micro-patterns with measurable render cost.
+    "react-doctor/async-await-in-loop": "warn",
+    "react-doctor/async-parallel": "warn",
+    "react-doctor/js-async-reduce-without-awaited-acc": "warn",
+    "react-doctor/js-batch-dom-css": "warn",
+    "react-doctor/js-cache-property-access": "warn",
+    "react-doctor/js-cache-storage": "warn",
+    "react-doctor/js-combine-iterations": "warn",
+    "react-doctor/js-early-exit": "warn",
+    "react-doctor/js-flatmap-filter": "warn",
+    "react-doctor/js-hoist-intl": "warn",
+    "react-doctor/js-hoist-regexp": "warn",
+    "react-doctor/js-index-maps": "warn",
+    "react-doctor/js-length-check-first": "warn",
+    "react-doctor/js-min-max-loop": "warn",
+    "react-doctor/js-set-map-lookups": "warn",
+    "react-doctor/js-tosorted-immutable": "warn",
+
+    // Next.js App Router — RSC/route-handler/metadata pitfalls beyond the native nextjs plugin.
+    "react-doctor/nextjs-error-boundary-missing-use-client": "error",
+    "react-doctor/nextjs-global-error-missing-html-body": "error",
+    "react-doctor/nextjs-image-missing-sizes": "warn",
+    "react-doctor/nextjs-missing-metadata": "warn",
+    "react-doctor/nextjs-no-a-element": "warn",
+    "react-doctor/nextjs-no-client-fetch-for-server-data": "warn",
+    "react-doctor/nextjs-no-client-side-redirect": "warn",
+    "react-doctor/nextjs-no-default-export-in-route-handler": "error",
+    "react-doctor/nextjs-no-edge-og-runtime": "warn",
+    "react-doctor/nextjs-no-font-link": "warn",
+    "react-doctor/nextjs-no-head-import": "error",
+    "react-doctor/nextjs-no-native-script": "warn",
+    "react-doctor/nextjs-no-redirect-in-try-catch": "warn",
+    "react-doctor/nextjs-no-script-in-head": "error",
+    "react-doctor/nextjs-no-side-effect-in-get-handler": "error",
+    "react-doctor/nextjs-no-use-search-params-without-suspense": "warn",
+    "react-doctor/nextjs-no-vercel-og-import": "warn",
+
+    // React performance — re-render and memoization diagnostics.
+    "react-doctor/async-defer-await": "warn",
+    "react-doctor/no-global-css-variable-animation": "error",
+    "react-doctor/no-inline-prop-on-memo-component": "warn",
+    "react-doctor/no-large-animated-blur": "warn",
+    "react-doctor/no-layout-property-animation": "error",
+    "react-doctor/no-permanent-will-change": "warn",
+    "react-doctor/no-scale-from-zero": "warn",
+    "react-doctor/no-transition-all": "warn",
+    "react-doctor/no-usememo-simple-expression": "warn",
+    "react-doctor/prefer-stable-empty-fallback": "warn",
+    "react-doctor/rendering-animate-svg-wrapper": "warn",
+    "react-doctor/rendering-hoist-jsx": "warn",
+    "react-doctor/rendering-hydration-mismatch-time": "warn",
+    "react-doctor/rendering-hydration-no-flicker": "warn",
+    "react-doctor/rendering-script-defer-async": "warn",
+    "react-doctor/rendering-usetransition-loading": "warn",
+    "react-doctor/rerender-derived-state-from-hook": "warn",
+    "react-doctor/rerender-memo-before-early-return": "warn",
+    "react-doctor/rerender-memo-with-default-value": "warn",
+    "react-doctor/rerender-transitions-scroll": "warn",
+
+    // Security.
+    "react-doctor/no-secrets-in-client-code": "warn",
+
+    // Server Components / server code.
+    "react-doctor/server-after-nonblocking": "warn",
+    "react-doctor/server-auth-actions": "error",
+    "react-doctor/server-cache-with-object-literal": "warn",
+    "react-doctor/server-dedup-props": "warn",
+    "react-doctor/server-fetch-without-revalidate": "warn",
+    "react-doctor/server-hoist-static-io": "warn",
+    "react-doctor/server-no-mutable-module-state": "error",
+    "react-doctor/server-sequential-independent-await": "warn",
+
+    // State and effects — the 'You Might Not Need an Effect' family and friends.
+    "react-doctor/activity-wraps-effect-heavy-subtree": "warn",
+    "react-doctor/advanced-event-handler-refs": "warn",
+    "react-doctor/effect-needs-cleanup": "error",
+    "react-doctor/hooks-no-nan-in-deps": "warn",
+    "react-doctor/no-adjust-state-on-prop-change": "error",
+    "react-doctor/no-cascading-set-state": "warn",
+    "react-doctor/no-chain-state-updates": "warn",
+    "react-doctor/no-create-context-in-render": "error",
+    "react-doctor/no-create-store-in-render": "error",
+    "react-doctor/no-derived-state": "warn",
+    "react-doctor/no-derived-state-effect": "warn",
+    "react-doctor/no-derived-useState": "warn",
+    "react-doctor/no-direct-state-mutation": "warn",
+    "react-doctor/no-effect-chain": "warn",
+    "react-doctor/no-effect-event-handler": "warn",
+    "react-doctor/no-effect-event-in-deps": "error",
+    "react-doctor/no-effect-with-fresh-deps": "error",
+    "react-doctor/no-event-handler": "warn",
+    "react-doctor/no-event-trigger-state": "warn",
+    "react-doctor/no-fetch-in-effect": "warn",
+    "react-doctor/no-initialize-state": "warn",
+    "react-doctor/no-mirror-prop-effect": "warn",
+    "react-doctor/no-mutable-in-deps": "error",
+    "react-doctor/no-mutating-reducer-state": "error",
+    "react-doctor/no-pass-data-to-parent": "warn",
+    "react-doctor/no-pass-live-state-to-parent": "warn",
+    "react-doctor/no-prop-callback-in-effect": "warn",
+    "react-doctor/no-reset-all-state-on-prop-change": "warn",
+    "react-doctor/no-self-updating-effect": "warn",
+    "react-doctor/no-set-state-in-render": "warn",
+    "react-doctor/prefer-use-effect-event": "warn",
+    "react-doctor/prefer-use-sync-external-store": "warn",
+    "react-doctor/prefer-useReducer": "warn",
+    "react-doctor/redux-useselector-inline-derivation": "warn",
+    "react-doctor/redux-useselector-returns-new-collection": "warn",
+    "react-doctor/rerender-defer-reads-hook": "warn",
+    "react-doctor/rerender-dependencies": "error",
+    "react-doctor/rerender-functional-setstate": "warn",
+    "react-doctor/rerender-lazy-ref-init": "warn",
+    "react-doctor/rerender-lazy-state-init": "warn",
+    "react-doctor/rerender-state-only-in-handlers": "warn",
+
+    // TanStack Query.
+    "react-doctor/query-destructure-result": "error",
+    "react-doctor/query-mutation-missing-invalidation": "warn",
+    "react-doctor/query-no-query-in-effect": "warn",
+    "react-doctor/query-no-rest-destructuring": "warn",
+    "react-doctor/query-no-usequery-for-mutation": "warn",
+    "react-doctor/query-no-void-query-fn": "warn",
+    "react-doctor/query-stable-query-client": "warn",
+
+    // View Transitions API.
+    "react-doctor/no-document-start-view-transition": "warn",
+    "react-doctor/no-flush-sync": "warn",
+
+    // Zod v4 — deprecated API usage.
+    "react-doctor/zod-v4-no-deprecated-error-apis": "warn",
+    "react-doctor/zod-v4-no-deprecated-error-customization": "warn",
+    "react-doctor/zod-v4-no-deprecated-schema-apis": "warn",
+    "react-doctor/zod-v4-prefer-top-level-string-formats": "warn",
   },
 });
