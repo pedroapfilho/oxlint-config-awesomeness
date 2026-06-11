@@ -10,6 +10,13 @@
     "strict"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pedroapfilho/oxlint-config-awesomeness.git"
+  },
+  "bin": {
+    "oxlint-config-awesomeness": "./bin/init.js"
+  },
   "files": [
     "index.js",
     "index.d.ts",
@@ -17,12 +24,26 @@
     "bin/template.ts"
   ],
   "type": "module",
+  "sideEffects": false,
   "main": "index.js",
-  "bin": {
-    "oxlint-config-awesomeness": "./bin/init.js"
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
-    "lint": "oxlint ."
+    "lint": "oxlint .",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "changeset publish",
+    "fallow": "fallow",
+    "fallow:dead": "fallow dead-code",
+    "fallow:dupes": "fallow dupes",
+    "fallow:health": "fallow health --score",
+    "fallow:audit": "fallow audit --base main",
+    "prepare": "husky"
   },
   "dependencies": {
     "eslint-plugin-no-only-tests": "^3.4.0",
@@ -31,10 +52,27 @@
     "eslint-plugin-unused-imports": "~4.4.1"
   },
   "devDependencies": {
-    "oxlint": "^1.63.0"
+    "@changesets/cli": "^2.31.0",
+    "fallow": "^2.85.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
+    "oxfmt": "^0.52.0",
+    "oxlint": "^1.67.0",
+    "vitest": "^4.1.8"
   },
   "peerDependencies": {
     "oxlint": ">=1.63.0 <2.0.0"
   },
-  "packageManager": "pnpm@10.24.0"
+  "lint-staged": {
+    "!(*.d).{ts,tsx,mts,cts,js,jsx,mjs,cjs}": [
+      "oxlint"
+    ],
+    "*.{ts,tsx,mts,cts,js,jsx,mjs,cjs,json,md}": [
+      "oxfmt"
+    ]
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@11.1.3"
 }

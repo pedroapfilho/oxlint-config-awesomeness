@@ -28,8 +28,8 @@ This creates `oxlint.config.ts` in the current directory with the extends boiler
 If you'd rather write the file yourself, here's all it needs to be:
 
 ```ts
-import awesomeness from 'oxlint-config-awesomeness';
-import { defineConfig } from 'oxlint';
+import awesomeness from "oxlint-config-awesomeness";
+import { defineConfig } from "oxlint";
 
 export default defineConfig({
   extends: [awesomeness],
@@ -58,14 +58,14 @@ Then run `pnpm oxlint` or `npx oxlint`.
 
 **Fixing common failures:**
 
-| Error | Fix |
-|-------|-----|
-| `: any` / `as any` | Use `unknown` + narrowing, or a real type. |
-| `value!` | Narrow with a type guard or throw explicitly. |
-| `<button onClick={...}>` | Add `type="button"` (or `"submit"`/`"reset"` as needed). |
-| `import fs from 'fs'` | `import fs from 'node:fs'`. |
-| `require(...)` in TS | Convert to ESM `import`. |
-| `fn(): Promise<T>` | Add `async` to the function. |
+| Error                         | Fix                                                      |
+| ----------------------------- | -------------------------------------------------------- |
+| `: any` / `as any`            | Use `unknown` + narrowing, or a real type.               |
+| `value!`                      | Narrow with a type guard or throw explicitly.            |
+| `<button onClick={...}>`      | Add `type="button"` (or `"submit"`/`"reset"` as needed). |
+| `import fs from 'fs'`         | `import fs from 'node:fs'`.                              |
+| `require(...)` in TS          | Convert to ESM `import`.                                 |
+| `fn(): Promise<T>`            | Add `async` to the function.                             |
 | `catch((err) => err.message)` | `err` is `unknown` — narrow with `err instanceof Error`. |
 
 Every rule has inline code documentation with bad/good examples in the [All Rules](#all-rules) section below.
@@ -85,14 +85,12 @@ No. Oxlint's JSON config format only supports file-path `extends`, not package i
 `defineConfig` merges the `awesomeness` config with anything else you pass. Add overrides alongside `extends`:
 
 ```ts
-import awesomeness from 'oxlint-config-awesomeness';
-import { defineConfig } from 'oxlint';
+import awesomeness from "oxlint-config-awesomeness";
+import { defineConfig } from "oxlint";
 
 export default defineConfig({
   extends: [awesomeness],
-  overrides: [
-    { files: ['scripts/**/*.ts'], rules: { 'no-console': 'off' } },
-  ],
+  overrides: [{ files: ["scripts/**/*.ts"], rules: { "no-console": "off" } }],
 });
 ```
 
@@ -107,18 +105,18 @@ export default defineConfig({
 
 ## Plugins
 
-| Plugin | Rules | Description |
-|--------|-------|-------------|
-| eslint (core) | 151 | JavaScript best practices and error prevention |
-| unicorn | 112 | Modern JavaScript patterns and idioms |
-| typescript | 80 | Strict type safety and TypeScript conventions |
-| react | 44 | React component rules, hooks, and performance |
-| jsx-a11y | 30 | Accessibility enforcement for JSX |
-| import | 21 | Module hygiene and import/export conventions |
-| nextjs | 21 | Next.js framework best practices |
-| oxc | 19 | Bug-catching rules unique to oxlint |
-| promise | 13 | Async/promise handling |
-| node | 2 | Node.js environment rules |
+| Plugin        | Rules | Description                                    |
+| ------------- | ----- | ---------------------------------------------- |
+| eslint (core) | 151   | JavaScript best practices and error prevention |
+| unicorn       | 112   | Modern JavaScript patterns and idioms          |
+| typescript    | 80    | Strict type safety and TypeScript conventions  |
+| react         | 44    | React component rules, hooks, and performance  |
+| jsx-a11y      | 30    | Accessibility enforcement for JSX              |
+| import        | 21    | Module hygiene and import/export conventions   |
+| nextjs        | 21    | Next.js framework best practices               |
+| oxc           | 19    | Bug-catching rules unique to oxlint            |
+| promise       | 13    | Async/promise handling                         |
+| node          | 2     | Node.js environment rules                      |
 
 Plus JS plugins: **perfectionist** (sorting), **react-hooks** + **React Compiler**, **no-only-tests**, **unused-imports**.
 
@@ -126,15 +124,15 @@ Plus JS plugins: **perfectionist** (sorting), **react-hooks** + **React Compiler
 
 The config includes smart overrides so strict rules don't create noise in files that need flexibility:
 
-| Files | Relaxed Rules |
-|-------|---------------|
+| Files                                    | Relaxed Rules                                                                                                                                                                                                                                                                                                              |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `*.test.ts`, `*.spec.ts`, `__tests__/**` | `no-explicit-any`, `no-non-null-assertion` (+ asserted-nullish variant), `no-require-imports`, `no-var-requires`, `promise-function-async`, all `no-unsafe-*`, `import/no-cycle`, `max-lines`, `max-lines-per-function`, `max-nested-callbacks`, `max-statements`, `no-empty`, `no-empty-function`, `no-use-before-define` |
-| `*.stories.tsx` | `no-console`, `no-multi-comp` |
-| `**/seed.ts`, `**/migrate.ts` | `no-console` |
-| `**/bin/**`, `scripts/**` | `no-console`, `unicorn/no-process-exit` |
-| `*.config.ts`, `next.config.*`, etc. | `max-lines`, `no-anonymous-default-export` |
-| `**/e2e/**/fixtures/**` | `rules-of-hooks` |
-| `*.ts`, `*.tsx` (all TypeScript) | Rules handled natively by the TS compiler (`no-undef`, `no-redeclare`, etc.) |
+| `*.stories.tsx`                          | `no-console`, `no-multi-comp`                                                                                                                                                                                                                                                                                              |
+| `**/seed.ts`, `**/migrate.ts`            | `no-console`                                                                                                                                                                                                                                                                                                               |
+| `**/bin/**`, `scripts/**`                | `no-console`, `unicorn/no-process-exit`                                                                                                                                                                                                                                                                                    |
+| `*.config.ts`, `next.config.*`, etc.     | `max-lines`, `no-anonymous-default-export`                                                                                                                                                                                                                                                                                 |
+| `**/e2e/**/fixtures/**`                  | `rules-of-hooks`                                                                                                                                                                                                                                                                                                           |
+| `*.ts`, `*.tsx` (all TypeScript)         | Rules handled natively by the TS compiler (`no-undef`, `no-redeclare`, etc.)                                                                                                                                                                                                                                               |
 
 ## Cherry-Picked Restriction Rules
 
@@ -165,13 +163,13 @@ Instead of enabling the entire `restriction` category (which includes rules like
 
 The five categories are enabled at `error`, but a small set of category-included rules are explicitly disabled because they fight modern React, Next.js, and ESM conventions:
 
-| Category of fight | Rules off |
-|-------------------|-----------|
-| **React 17+ JSX transform / composition** | `react/react-in-jsx-scope`, `react/jsx-props-no-spreading`, `react/jsx-max-depth`, `react/no-array-index-key`, `react/jsx-no-constructed-context-values` |
-| **Modern ESM (named exports, side-effect imports, namespace imports, `node:` protocol)** | `import/no-named-export`, `import/prefer-default-export`, `import/group-exports`, `import/exports-last`, `import/no-anonymous-default-export`, `import/no-nodejs-modules`, `import/no-unassigned-import`, `import/no-namespace`, `import/max-dependencies`, `import/first`, `import/consistent-type-specifier-style` |
-| **Pedantic style preferences** | `no-magic-numbers`, `no-ternary`, `no-inline-comments`, `capitalized-comments`, `arrow-body-style`, `func-style`, `func-names`, `init-declarations`, `no-inferrable-types`, `prefer-destructuring`, `no-negated-condition`, `no-continue`, `parameter-properties`, `max-statements`, `max-lines-per-function`, `id-length` |
-| **Unicorn overreach** | `unicorn/prefer-global-this`, `unicorn/no-useless-undefined`, `unicorn/no-nested-ternary`, `unicorn/explicit-length-check`, `unicorn/custom-error-definition`, `unicorn/no-zero-fractions`, `unicorn/escape-case`, `unicorn/no-array-callback-reference`, `unicorn/no-array-for-each`, `unicorn/no-array-reduce` |
-| **Promise rules with broken assumptions** | `promise/prefer-await-to-callbacks`, `promise/avoid-new`, `promise/param-names` |
+| Category of fight                                                                        | Rules off                                                                                                                                                                                                                                                                                                                  |
+| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **React 17+ JSX transform / composition**                                                | `react/react-in-jsx-scope`, `react/jsx-props-no-spreading`, `react/jsx-max-depth`, `react/no-array-index-key`, `react/jsx-no-constructed-context-values`                                                                                                                                                                   |
+| **Modern ESM (named exports, side-effect imports, namespace imports, `node:` protocol)** | `import/no-named-export`, `import/prefer-default-export`, `import/group-exports`, `import/exports-last`, `import/no-anonymous-default-export`, `import/no-nodejs-modules`, `import/no-unassigned-import`, `import/no-namespace`, `import/max-dependencies`, `import/first`, `import/consistent-type-specifier-style`       |
+| **Pedantic style preferences**                                                           | `no-magic-numbers`, `no-ternary`, `no-inline-comments`, `capitalized-comments`, `arrow-body-style`, `func-style`, `func-names`, `init-declarations`, `no-inferrable-types`, `prefer-destructuring`, `no-negated-condition`, `no-continue`, `parameter-properties`, `max-statements`, `max-lines-per-function`, `id-length` |
+| **Unicorn overreach**                                                                    | `unicorn/prefer-global-this`, `unicorn/no-useless-undefined`, `unicorn/no-nested-ternary`, `unicorn/explicit-length-check`, `unicorn/custom-error-definition`, `unicorn/no-zero-fractions`, `unicorn/escape-case`, `unicorn/no-array-callback-reference`, `unicorn/no-array-for-each`, `unicorn/no-array-reduce`           |
+| **Promise rules with broken assumptions**                                                | `promise/prefer-await-to-callbacks`, `promise/avoid-new`, `promise/param-names`                                                                                                                                                                                                                                            |
 
 A few of these are particularly worth calling out because they form **contradictory pairs** when both fire on the same code:
 
@@ -188,10 +186,10 @@ If you want any of these back on for your project, add them to your `oxlint.conf
 
 ## Unicorn Overrides
 
-| Rule | Setting | Reason |
-|------|---------|--------|
+| Rule                    | Setting                            | Reason                                            |
+| ----------------------- | ---------------------------------- | ------------------------------------------------- |
 | `unicorn/filename-case` | kebab-case with Next.js exceptions | Allows `[slug]`, `[...catchAll]`, `_app` patterns |
-| `unicorn/no-null` | off | APIs, JSON, and DOM all return `null` |
+| `unicorn/no-null`       | off                                | APIs, JSON, and DOM all return `null`             |
 
 ## Suggestions
 
@@ -220,13 +218,19 @@ Enforce getter/setter pairs in objects and classes.
 ```js
 // bad
 const obj = {
-  set value(val) { this._value = val; }
+  set value(val) {
+    this._value = val;
+  },
 };
 
 // good
 const obj = {
-  get value() { return this._value; },
-  set value(val) { this._value = val; }
+  get value() {
+    return this._value;
+  },
+  set value(val) {
+    this._value = val;
+  },
 };
 ```
 
@@ -295,12 +299,16 @@ Require class methods to use `this` or be made static.
 ```js
 // bad
 class Foo {
-  greet() { return 'hello'; }
+  greet() {
+    return "hello";
+  }
 }
 
 // good
 class Foo {
-  greet() { return this.name; }
+  greet() {
+    return this.name;
+  }
 }
 ```
 
@@ -311,7 +319,16 @@ Enforce a maximum cyclomatic complexity for functions.
 ```js
 // bad
 function check(a, b, c, d, e) {
-  if (a) { if (b) { if (c) { if (d) { if (e) {} } } } }
+  if (a) {
+    if (b) {
+      if (c) {
+        if (d) {
+          if (e) {
+          }
+        }
+      }
+    }
+  }
 }
 
 // good
@@ -328,12 +345,17 @@ Require `super()` calls in constructors of derived classes.
 ```js
 // bad
 class Child extends Parent {
-  constructor() { this.x = 1; }
+  constructor() {
+    this.x = 1;
+  }
 }
 
 // good
 class Child extends Parent {
-  constructor() { super(); this.x = 1; }
+  constructor() {
+    super();
+    this.x = 1;
+  }
 }
 ```
 
@@ -358,13 +380,19 @@ Require a `default` case in `switch` statements.
 ```js
 // bad
 switch (action) {
-  case 'run': run(); break;
+  case "run":
+    run();
+    break;
 }
 
 // good
 switch (action) {
-  case 'run': run(); break;
-  default: idle(); break;
+  case "run":
+    run();
+    break;
+  default:
+    idle();
+    break;
 }
 ```
 
@@ -375,14 +403,22 @@ Enforce `default` clause to be the last case in `switch`.
 ```js
 // bad
 switch (action) {
-  default: idle(); break;
-  case 'run': run(); break;
+  default:
+    idle();
+    break;
+  case "run":
+    run();
+    break;
 }
 
 // good
 switch (action) {
-  case 'run': run(); break;
-  default: idle(); break;
+  case "run":
+    run();
+    break;
+  default:
+    idle();
+    break;
 }
 ```
 
@@ -404,10 +440,12 @@ Require `===` and `!==` instead of `==` and `!=`.
 
 ```js
 // bad
-if (x == 1) {}
+if (x == 1) {
+}
 
 // good
-if (x === 1) {}
+if (x === 1) {
+}
 ```
 
 ### for-direction
@@ -455,14 +493,14 @@ Require getter and setter pairs to be adjacent in objects.
 const obj = {
   get a() {},
   b: 1,
-  set a(val) {}
+  set a(val) {},
 };
 
 // good
 const obj = {
   get a() {},
   set a(val) {},
-  b: 1
+  b: 1,
 };
 ```
 
@@ -527,7 +565,16 @@ Enforce a maximum nesting depth of 4.
 
 ```js
 // bad
-if (a) { if (b) { if (c) { if (d) { if (e) {} } } } }
+if (a) {
+  if (b) {
+    if (c) {
+      if (d) {
+        if (e) {
+        }
+      }
+    }
+  }
+}
 
 // good
 if (!a || !b) return;
@@ -568,7 +615,13 @@ Enforce a maximum of 3 nested callbacks.
 
 ```js
 // bad
-fn(() => { fn(() => { fn(() => { fn(() => {}); }); }); });
+fn(() => {
+  fn(() => {
+    fn(() => {
+      fn(() => {});
+    });
+  });
+});
 
 // good
 const inner = () => {};
@@ -622,10 +675,10 @@ Disallow `alert`, `confirm`, and `prompt`.
 
 ```js
 // bad
-alert('done');
+alert("done");
 
 // good
-showNotification('done');
+showNotification("done");
 ```
 
 ### no-array-constructor
@@ -686,10 +739,14 @@ Disallow `arguments.caller` and `arguments.callee`.
 
 ```js
 // bad
-function fn() { return arguments.callee; }
+function fn() {
+  return arguments.callee;
+}
 
 // good
-function fn() { return fn; }
+function fn() {
+  return fn;
+}
 ```
 
 ### no-case-declarations
@@ -718,11 +775,11 @@ Disallow reassigning class declarations.
 ```js
 // bad
 class Foo {}
-Foo = 'bar';
+Foo = "bar";
 
 // good
 class Foo {}
-const bar = 'bar';
+const bar = "bar";
 ```
 
 ### no-compare-neg-zero
@@ -731,10 +788,12 @@ Disallow comparing against `-0`.
 
 ```js
 // bad
-if (x === -0) {}
+if (x === -0) {
+}
 
 // good
-if (Object.is(x, -0)) {}
+if (Object.is(x, -0)) {
+}
 ```
 
 ### no-cond-assign
@@ -743,10 +802,12 @@ Disallow assignment operators in conditional statements.
 
 ```js
 // bad
-if (x = 0) {}
+if ((x = 0)) {
+}
 
 // good
-if (x === 0) {}
+if (x === 0) {
+}
 ```
 
 ### no-console
@@ -755,10 +816,10 @@ Disallow `console` usage in production code.
 
 ```js
 // bad
-console.log('debug');
+console.log("debug");
 
 // good
-logger.info('debug');
+logger.info("debug");
 ```
 
 ### no-const-assign
@@ -793,10 +854,12 @@ Disallow constant expressions in conditions.
 
 ```js
 // bad
-if (true) {}
+if (true) {
+}
 
 // good
-if (isReady) {}
+if (isReady) {
+}
 ```
 
 ### no-constructor-return
@@ -806,12 +869,16 @@ Disallow returning a value from a constructor.
 ```js
 // bad
 class Foo {
-  constructor() { return {}; }
+  constructor() {
+    return {};
+  }
 }
 
 // good
 class Foo {
-  constructor() { this.x = 1; }
+  constructor() {
+    this.x = 1;
+  }
 }
 ```
 
@@ -906,10 +973,14 @@ Disallow duplicate conditions in `else-if` chains.
 
 ```js
 // bad
-if (a) {} else if (a) {}
+if (a) {
+} else if (a) {
+}
 
 // good
-if (a) {} else if (b) {}
+if (a) {
+} else if (b) {
+}
 ```
 
 ### no-dupe-keys
@@ -931,14 +1002,18 @@ Disallow duplicate `case` labels in `switch`.
 ```js
 // bad
 switch (x) {
-  case 1: break;
-  case 1: break;
+  case 1:
+    break;
+  case 1:
+    break;
 }
 
 // good
 switch (x) {
-  case 1: break;
-  case 2: break;
+  case 1:
+    break;
+  case 2:
+    break;
 }
 ```
 
@@ -948,11 +1023,11 @@ Disallow duplicate module imports.
 
 ```js
 // bad
-import { a } from 'mod';
-import { b } from 'mod';
+import { a } from "mod";
+import { b } from "mod";
 
 // good
-import { a, b } from 'mod';
+import { a, b } from "mod";
 ```
 
 ### no-else-return
@@ -961,10 +1036,16 @@ Disallow `else` blocks after `return` in `if`.
 
 ```js
 // bad
-if (x) { return a; } else { return b; }
+if (x) {
+  return a;
+} else {
+  return b;
+}
 
 // good
-if (x) { return a; }
+if (x) {
+  return a;
+}
 return b;
 ```
 
@@ -974,7 +1055,8 @@ Disallow empty block statements.
 
 ```js
 // bad
-if (condition) {}
+if (condition) {
+}
 
 // good
 if (condition) {
@@ -1003,7 +1085,9 @@ Disallow empty functions.
 function noop() {}
 
 // good
-function noop() { /* Intentionally empty */ }
+function noop() {
+  /* Intentionally empty */
+}
 ```
 
 ### no-empty-pattern
@@ -1024,10 +1108,16 @@ Disallow empty static blocks in classes.
 
 ```js
 // bad
-class Foo { static {} }
+class Foo {
+  static {}
+}
 
 // good
-class Foo { static { this.count = 0; } }
+class Foo {
+  static {
+    this.count = 0;
+  }
+}
 ```
 
 ### no-eq-null
@@ -1036,10 +1126,12 @@ Disallow `== null` comparisons.
 
 ```js
 // bad
-if (x == null) {}
+if (x == null) {
+}
 
 // good
-if (x === null || x === undefined) {}
+if (x === null || x === undefined) {
+}
 ```
 
 ### no-eval
@@ -1051,7 +1143,7 @@ Disallow `eval()`.
 eval('alert("hi")');
 
 // good
-alert('hi');
+alert("hi");
 ```
 
 ### no-ex-assign
@@ -1060,10 +1152,16 @@ Disallow reassigning exceptions in `catch` clauses.
 
 ```js
 // bad
-try {} catch (e) { e = new Error(); }
+try {
+} catch (e) {
+  e = new Error();
+}
 
 // good
-try {} catch (e) { const wrapped = new Error(); }
+try {
+} catch (e) {
+  const wrapped = new Error();
+}
 ```
 
 ### no-extend-native
@@ -1075,7 +1173,9 @@ Disallow extending native objects.
 Array.prototype.first = function () {};
 
 // good
-function first(arr) { return arr[0]; }
+function first(arr) {
+  return arr[0];
+}
 ```
 
 ### no-extra-bind
@@ -1084,10 +1184,14 @@ Disallow unnecessary `.bind()` calls.
 
 ```js
 // bad
-const fn = function () { return 1; }.bind(this);
+const fn = function () {
+  return 1;
+}.bind(this);
 
 // good
-const fn = function () { return 1; };
+const fn = function () {
+  return 1;
+};
 ```
 
 ### no-extra-boolean-cast
@@ -1096,10 +1200,12 @@ Disallow unnecessary boolean casts.
 
 ```js
 // bad
-if (!!x) {}
+if (!!x) {
+}
 
 // good
-if (x) {}
+if (x) {
+}
 ```
 
 ### no-extra-label
@@ -1108,10 +1214,14 @@ Disallow unnecessary labels.
 
 ```js
 // bad
-outer: while (true) { break outer; }
+outer: while (true) {
+  break outer;
+}
 
 // good
-while (true) { break; }
+while (true) {
+  break;
+}
 ```
 
 ### no-fallthrough
@@ -1170,7 +1280,7 @@ Disallow shorthand type conversions.
 
 ```js
 // bad
-const str = '' + value;
+const str = "" + value;
 const num = +value;
 
 // good
@@ -1184,11 +1294,11 @@ Disallow assigning to imported bindings.
 
 ```js
 // bad
-import { x } from 'mod';
+import { x } from "mod";
 x = 1;
 
 // good
-import { x } from 'mod';
+import { x } from "mod";
 const y = 1;
 ```
 
@@ -1217,7 +1327,9 @@ if (test) {
 
 // good
 function doSomething() {}
-if (test) { doSomething(); }
+if (test) {
+  doSomething();
+}
 ```
 
 ### no-invalid-regexp
@@ -1226,10 +1338,10 @@ Disallow invalid regular expression strings in `RegExp` constructors.
 
 ```js
 // bad
-new RegExp('[');
+new RegExp("[");
 
 // good
-new RegExp('[a-z]');
+new RegExp("[a-z]");
 ```
 
 ### no-irregular-whitespace
@@ -1238,10 +1350,10 @@ Disallow irregular whitespace characters.
 
 ```js
 // bad
-const desc = 'foo\u00A0bar';
+const desc = "foo\u00A0bar";
 
 // good
-const desc = 'foo bar';
+const desc = "foo bar";
 ```
 
 ### no-iterator
@@ -1263,10 +1375,14 @@ Disallow labels that share a name with a variable.
 ```js
 // bad
 let x = 1;
-x: while (true) { break x; }
+x: while (true) {
+  break x;
+}
 
 // good
-loop: while (true) { break loop; }
+loop: while (true) {
+  break loop;
+}
 ```
 
 ### no-labels
@@ -1275,10 +1391,14 @@ Disallow labeled statements.
 
 ```js
 // bad
-outer: for (;;) { break outer; }
+outer: for (;;) {
+  break outer;
+}
 
 // good
-for (;;) { break; }
+for (;;) {
+  break;
+}
 ```
 
 ### no-lone-blocks
@@ -1287,7 +1407,9 @@ Disallow unnecessary nested blocks.
 
 ```js
 // bad
-{ const x = 1; }
+{
+  const x = 1;
+}
 
 // good
 const x = 1;
@@ -1299,10 +1421,16 @@ Disallow `if` as the only statement in an `else` block.
 
 ```js
 // bad
-if (a) {} else { if (b) {} }
+if (a) {
+} else {
+  if (b) {
+  }
+}
 
 // good
-if (a) {} else if (b) {}
+if (a) {
+} else if (b) {
+}
 ```
 
 ### no-loop-func
@@ -1351,7 +1479,7 @@ Disallow chained assignment expressions.
 
 ```js
 // bad
-let a = b = c = 1;
+let a = (b = c = 1);
 
 // good
 let a = 1;
@@ -1365,11 +1493,12 @@ Disallow multiline strings using backslash.
 
 ```js
 // bad
-const str = 'line1 \
-line2';
+const str =
+  "line1 \
+line2";
 
 // good
-const str = 'line1\nline2';
+const str = "line1\nline2";
 ```
 
 ### no-negated-condition
@@ -1378,10 +1507,18 @@ Disallow negated conditions when an `else` is present.
 
 ```js
 // bad
-if (!x) { a(); } else { b(); }
+if (!x) {
+  a();
+} else {
+  b();
+}
 
 // good
-if (x) { b(); } else { a(); }
+if (x) {
+  b();
+} else {
+  a();
+}
 ```
 
 ### no-nested-ternary
@@ -1390,7 +1527,7 @@ Disallow nested ternary expressions.
 
 ```js
 // bad
-const x = a ? b ? c : d : e;
+const x = a ? (b ? c : d) : e;
 
 // good
 const inner = b ? c : d;
@@ -1415,7 +1552,7 @@ Disallow the `Function` constructor.
 
 ```js
 // bad
-const fn = new Function('a', 'return a');
+const fn = new Function("a", "return a");
 
 // good
 const fn = (a) => a;
@@ -1427,10 +1564,10 @@ Disallow `new` operators with `Symbol` and `BigInt`.
 
 ```js
 // bad
-const sym = new Symbol('desc');
+const sym = new Symbol("desc");
 
 // good
-const sym = Symbol('desc');
+const sym = Symbol("desc");
 ```
 
 ### no-new-wrappers
@@ -1439,10 +1576,10 @@ Disallow primitive wrapper instances (`new String`, `new Number`, `new Boolean`)
 
 ```js
 // bad
-const str = new String('hello');
+const str = new String("hello");
 
 // good
-const str = 'hello';
+const str = "hello";
 ```
 
 ### no-nonoctal-decimal-escape
@@ -1451,10 +1588,10 @@ Disallow `\8` and `\9` escape sequences in string literals.
 
 ```js
 // bad
-const str = '\8';
+const str = "\8";
 
 // good
-const str = '8';
+const str = "8";
 ```
 
 ### no-obj-calls
@@ -1487,10 +1624,14 @@ Disallow reassigning function parameters.
 
 ```js
 // bad
-function fn(x) { x = 10; }
+function fn(x) {
+  x = 10;
+}
 
 // good
-function fn(x) { const y = 10; }
+function fn(x) {
+  const y = 10;
+}
 ```
 
 ### no-plusplus
@@ -1516,7 +1657,9 @@ Disallow returning values from Promise executor functions.
 new Promise((resolve) => resolve(1));
 
 // good
-new Promise((resolve) => { resolve(1); });
+new Promise((resolve) => {
+  resolve(1);
+});
 ```
 
 ### no-proto
@@ -1537,10 +1680,10 @@ Disallow calling `Object.prototype` methods directly on objects.
 
 ```js
 // bad
-obj.hasOwnProperty('key');
+obj.hasOwnProperty("key");
 
 // good
-Object.hasOwn(obj, 'key');
+Object.hasOwn(obj, "key");
 ```
 
 ### no-redeclare
@@ -1578,7 +1721,9 @@ Disallow specified global variables.
 event.preventDefault();
 
 // good
-function handler(event) { event.preventDefault(); }
+function handler(event) {
+  event.preventDefault();
+}
 ```
 
 ### no-restricted-imports
@@ -1587,10 +1732,10 @@ Disallow specified modules when loaded by `import`.
 
 ```js
 // bad
-import _ from 'lodash';
+import _ from "lodash";
 
 // good
-import groupBy from 'lodash/groupBy';
+import groupBy from "lodash/groupBy";
 ```
 
 ### no-return-assign
@@ -1599,10 +1744,12 @@ Disallow assignment operators in `return` statements.
 
 ```js
 // bad
-const fn = () => result = value;
+const fn = () => (result = value);
 
 // good
-const fn = () => { result = value; };
+const fn = () => {
+  result = value;
+};
 ```
 
 ### no-script-url
@@ -1611,10 +1758,10 @@ Disallow `javascript:` URLs.
 
 ```js
 // bad
-location.href = 'javascript:void(0)';
+location.href = "javascript:void(0)";
 
 // good
-location.href = '#';
+location.href = "#";
 ```
 
 ### no-self-assign
@@ -1635,10 +1782,12 @@ Disallow comparisons where both sides are exactly the same.
 
 ```js
 // bad
-if (x === x) {}
+if (x === x) {
+}
 
 // good
-if (Number.isNaN(x)) {}
+if (Number.isNaN(x)) {
+}
 ```
 
 ### no-sequences
@@ -1660,10 +1809,18 @@ Disallow returning values from setters.
 
 ```js
 // bad
-const obj = { set x(val) { return val; } };
+const obj = {
+  set x(val) {
+    return val;
+  },
+};
 
 // good
-const obj = { set x(val) { this._x = val; } };
+const obj = {
+  set x(val) {
+    this._x = val;
+  },
+};
 ```
 
 ### no-shadow
@@ -1673,11 +1830,15 @@ Disallow variable declarations from shadowing outer scope variables.
 ```js
 // bad
 const x = 1;
-function fn() { const x = 2; }
+function fn() {
+  const x = 2;
+}
 
 // good
 const x = 1;
-function fn() { const y = 2; }
+function fn() {
+  const y = 2;
+}
 ```
 
 ### no-shadow-restricted-names
@@ -1686,10 +1847,10 @@ Disallow shadowing restricted identifiers like `undefined`, `NaN`, `Infinity`.
 
 ```js
 // bad
-const undefined = 'foo';
+const undefined = "foo";
 
 // good
-const undef = 'foo';
+const undef = "foo";
 ```
 
 ### no-sparse-arrays
@@ -1710,7 +1871,7 @@ Disallow template literal placeholder syntax in regular strings.
 
 ```js
 // bad
-const msg = 'Hello ${name}';
+const msg = "Hello ${name}";
 
 // good
 const msg = `Hello ${name}`;
@@ -1723,12 +1884,18 @@ Disallow `this`/`super` before calling `super()` in constructors.
 ```js
 // bad
 class A extends B {
-  constructor() { this.x = 1; super(); }
+  constructor() {
+    this.x = 1;
+    super();
+  }
 }
 
 // good
 class A extends B {
-  constructor() { super(); this.x = 1; }
+  constructor() {
+    super();
+    this.x = 1;
+  }
 }
 ```
 
@@ -1738,10 +1905,10 @@ Require throwing `Error` objects only.
 
 ```js
 // bad
-throw 'error';
+throw "error";
 
 // good
-throw new Error('error');
+throw new Error("error");
 ```
 
 ### no-unassigned-vars
@@ -1764,8 +1931,7 @@ Disallow confusing multiline expressions.
 
 ```js
 // bad
-const foo = bar
-(1 + 2).toString();
+const foo = bar(1 + 2).toString();
 
 // good
 const foo = bar;
@@ -1779,11 +1945,15 @@ Disallow unmodified conditions in loops.
 ```js
 // bad
 let x = true;
-while (x) { doSomething(); }
+while (x) {
+  doSomething();
+}
 
 // good
 let x = true;
-while (x) { x = doSomething(); }
+while (x) {
+  x = doSomething();
+}
 ```
 
 ### no-unneeded-ternary
@@ -1804,10 +1974,16 @@ Disallow control flow statements in `finally` blocks.
 
 ```js
 // bad
-try {} finally { return 1; }
+try {
+} finally {
+  return 1;
+}
 
 // good
-try {} finally { cleanup(); }
+try {
+} finally {
+  cleanup();
+}
 ```
 
 ### no-unsafe-negation
@@ -1816,10 +1992,12 @@ Disallow negating the left operand of relational operators.
 
 ```js
 // bad
-if (!key in object) {}
+if ((!key) in object) {
+}
 
 // good
-if (!(key in object)) {}
+if (!(key in object)) {
+}
 ```
 
 ### no-unsafe-optional-chaining
@@ -1852,10 +2030,14 @@ Disallow unused labels.
 
 ```js
 // bad
-OUTER: for (;;) { break; }
+OUTER: for (;;) {
+  break;
+}
 
 // good
-for (;;) { break; }
+for (;;) {
+  break;
+}
 ```
 
 ### no-unused-private-class-members
@@ -1864,12 +2046,16 @@ Disallow unused private class members.
 
 ```js
 // bad
-class Foo { #unused = 1; }
+class Foo {
+  #unused = 1;
+}
 
 // good
 class Foo {
   #count = 0;
-  increment() { this.#count += 1; }
+  increment() {
+    this.#count += 1;
+  }
 }
 ```
 
@@ -1930,7 +2116,11 @@ Disallow `catch` clauses that only rethrow.
 
 ```js
 // bad
-try { doSomething(); } catch (e) { throw e; }
+try {
+  doSomething();
+} catch (e) {
+  throw e;
+}
 
 // good
 doSomething();
@@ -1942,7 +2132,7 @@ Disallow unnecessary computed property keys.
 
 ```js
 // bad
-const obj = { ['a']: 1 };
+const obj = { ["a"]: 1 };
 
 // good
 const obj = { a: 1 };
@@ -1954,10 +2144,10 @@ Disallow unnecessary concatenation of strings.
 
 ```js
 // bad
-const str = 'a' + 'b';
+const str = "a" + "b";
 
 // good
-const str = 'ab';
+const str = "ab";
 ```
 
 ### no-useless-constructor
@@ -1966,7 +2156,9 @@ Disallow unnecessary constructors.
 
 ```js
 // bad
-class Foo { constructor() {} }
+class Foo {
+  constructor() {}
+}
 
 // good
 class Foo {}
@@ -1990,10 +2182,10 @@ Disallow renaming import, export, and destructured assignments to the same name.
 
 ```js
 // bad
-import { foo as foo } from 'mod';
+import { foo as foo } from "mod";
 
 // good
-import { foo } from 'mod';
+import { foo } from "mod";
 ```
 
 ### no-useless-return
@@ -2002,10 +2194,15 @@ Disallow redundant return statements.
 
 ```js
 // bad
-function fn() { doSomething(); return; }
+function fn() {
+  doSomething();
+  return;
+}
 
 // good
-function fn() { doSomething(); }
+function fn() {
+  doSomething();
+}
 ```
 
 ### no-var
@@ -2050,7 +2247,9 @@ Disallow `with` statements.
 
 ```js
 // bad
-with (obj) { foo = 1; }
+with (obj) {
+  foo = 1;
+}
 
 // good
 obj.foo = 1;
@@ -2112,7 +2311,7 @@ Require binary, octal, and hexadecimal literals instead of `parseInt()`.
 
 ```js
 // bad
-const x = parseInt('111110111', 2);
+const x = parseInt("111110111", 2);
 
 // good
 const x = 0b111110111;
@@ -2124,10 +2323,10 @@ Require `Object.hasOwn()` over `Object.prototype.hasOwnProperty.call()`.
 
 ```js
 // bad
-Object.prototype.hasOwnProperty.call(obj, 'key');
+Object.prototype.hasOwnProperty.call(obj, "key");
 
 // good
-Object.hasOwn(obj, 'key');
+Object.hasOwn(obj, "key");
 ```
 
 ### prefer-object-spread
@@ -2148,10 +2347,10 @@ Require `Error` objects as Promise rejection reasons.
 
 ```js
 // bad
-Promise.reject('error');
+Promise.reject("error");
 
 // good
-Promise.reject(new Error('error'));
+Promise.reject(new Error("error"));
 ```
 
 ### prefer-rest-params
@@ -2160,10 +2359,14 @@ Require rest parameters instead of `arguments`.
 
 ```js
 // bad
-function fn() { return arguments; }
+function fn() {
+  return arguments;
+}
 
 // good
-function fn(...args) { return args; }
+function fn(...args) {
+  return args;
+}
 ```
 
 ### prefer-spread
@@ -2184,7 +2387,7 @@ Require template literals instead of string concatenation.
 
 ```js
 // bad
-const msg = 'Hello ' + name;
+const msg = "Hello " + name;
 
 // good
 const msg = `Hello ${name}`;
@@ -2196,10 +2399,16 @@ Require a parameter in `catch` clauses.
 
 ```js
 // bad
-try {} catch { handleError(); }
+try {
+} catch {
+  handleError();
+}
 
 // good
-try {} catch (error) { handleError(error); }
+try {
+} catch (error) {
+  handleError(error);
+}
 ```
 
 ### radix
@@ -2208,10 +2417,10 @@ Require the radix parameter in `parseInt()`.
 
 ```js
 // bad
-parseInt('071');
+parseInt("071");
 
 // good
-parseInt('071', 10);
+parseInt("071", 10);
 ```
 
 ### require-await
@@ -2220,10 +2429,14 @@ Disallow `async` functions that have no `await` expression.
 
 ```js
 // bad
-async function fn() { return 1; }
+async function fn() {
+  return 1;
+}
 
 // good
-async function fn() { return await fetchData(); }
+async function fn() {
+  return await fetchData();
+}
 ```
 
 ### require-yield
@@ -2232,10 +2445,14 @@ Require `yield` in generator functions.
 
 ```js
 // bad
-function* gen() { return 1; }
+function* gen() {
+  return 1;
+}
 
 // good
-function* gen() { yield 1; }
+function* gen() {
+  yield 1;
+}
 ```
 
 ### symbol-description
@@ -2247,7 +2464,7 @@ Require a description when creating `Symbol`.
 const sym = Symbol();
 
 // good
-const sym = Symbol('id');
+const sym = Symbol("id");
 ```
 
 ### unicode-bom
@@ -2268,10 +2485,12 @@ Require `Number.isNaN()` instead of comparison with `NaN`.
 
 ```js
 // bad
-if (x === NaN) {}
+if (x === NaN) {
+}
 
 // good
-if (Number.isNaN(x)) {}
+if (Number.isNaN(x)) {
+}
 ```
 
 ### valid-typeof
@@ -2280,10 +2499,10 @@ Enforce comparing `typeof` expressions against valid strings.
 
 ```js
 // bad
-typeof x === 'strig';
+typeof x === "strig";
 
 // good
-typeof x === 'string';
+typeof x === "string";
 ```
 
 ### vars-on-top
@@ -2310,10 +2529,12 @@ Disallow Yoda conditions.
 
 ```js
 // bad
-if ('red' === color) {}
+if ("red" === color) {
+}
 
 // good
-if (color === 'red') {}
+if (color === "red") {
+}
 ```
 
 ## TypeScript Rules
@@ -2353,10 +2574,10 @@ Disallow `@ts-ignore`, `@ts-nocheck`, and `@ts-check` comments.
 ```ts
 // bad
 // @ts-ignore
-const x: number = 'hello';
+const x: number = "hello";
 
 // good
-const x: number = Number('hello');
+const x: number = Number("hello");
 ```
 
 ### @typescript-eslint/ban-tslint-comment
@@ -2390,12 +2611,14 @@ Enforce using readonly fields over getters that return literals.
 ```ts
 // bad
 class Foo {
-  get name() { return 'foo'; }
+  get name() {
+    return "foo";
+  }
 }
 
 // good
 class Foo {
-  readonly name = 'foo';
+  readonly name = "foo";
 }
 ```
 
@@ -2445,10 +2668,10 @@ Enforce consistent usage of type imports.
 
 ```ts
 // bad
-import { User } from './types';
+import { User } from "./types";
 
 // good
-import type { User } from './types';
+import type { User } from "./types";
 ```
 
 ### @typescript-eslint/default-param-last
@@ -2469,10 +2692,10 @@ Require explicit return types on functions and class methods.
 
 ```ts
 // bad
-const fn = () => 'hello';
+const fn = () => "hello";
 
 // good
-const fn = (): string => 'hello';
+const fn = (): string => "hello";
 ```
 
 ### @typescript-eslint/explicit-member-accessibility
@@ -2481,10 +2704,14 @@ Require explicit accessibility modifiers on class properties and methods.
 
 ```ts
 // bad
-class Foo { x = 1; }
+class Foo {
+  x = 1;
+}
 
 // good
-class Foo { public x = 1; }
+class Foo {
+  public x = 1;
+}
 ```
 
 ### @typescript-eslint/explicit-module-boundary-types
@@ -2565,10 +2792,10 @@ Require expressions of type `void` to appear in statement position.
 
 ```ts
 // bad
-const x = alert('hi');
+const x = alert("hi");
 
 // good
-alert('hi');
+alert("hi");
 ```
 
 ### @typescript-eslint/no-deprecated
@@ -2609,10 +2836,16 @@ Disallow duplicate enum member values.
 
 ```ts
 // bad
-enum E { A = 1, B = 1 }
+enum E {
+  A = 1,
+  B = 1,
+}
 
 // good
-enum E { A = 1, B = 2 }
+enum E {
+  A = 1,
+  B = 2,
+}
 ```
 
 ### @typescript-eslint/no-dynamic-delete
@@ -2636,7 +2869,9 @@ Disallow empty functions (TypeScript version).
 function noop(): void {}
 
 // good
-function noop(): void { /* Intentionally empty */ }
+function noop(): void {
+  /* Intentionally empty */
+}
 ```
 
 ### @typescript-eslint/no-empty-interface
@@ -2719,10 +2954,12 @@ Disallow iterating over arrays with `for...in`.
 
 ```ts
 // bad
-for (const i in arr) {}
+for (const i in arr) {
+}
 
 // good
-for (const item of arr) {}
+for (const item of arr) {
+}
 ```
 
 ### @typescript-eslint/no-import-type-side-effects
@@ -2731,10 +2968,10 @@ Enforce that type-only imports have inline `type` qualifiers.
 
 ```ts
 // bad
-import type { A, B } from 'mod';
+import type { A, B } from "mod";
 
 // good
-import { type A, type B } from 'mod';
+import { type A, type B } from "mod";
 ```
 
 ### @typescript-eslint/no-inferrable-types
@@ -2761,7 +2998,9 @@ for (let i = 0; i < 5; i++) {
 
 // good
 const makeFn = (i: number) => () => i;
-for (let i = 0; i < 5; i++) { fns.push(makeFn(i)); }
+for (let i = 0; i < 5; i++) {
+  fns.push(makeFn(i));
+}
 ```
 
 ### @typescript-eslint/no-loss-of-precision
@@ -2778,7 +3017,7 @@ const x = 9007199254740992n;
 
 ### @typescript-eslint/no-magic-numbers
 
-Disallow magic numbers. *Disabled in this config.*
+Disallow magic numbers. _Disabled in this config._
 
 ### @typescript-eslint/no-meaningless-void-operator
 
@@ -2814,10 +3053,12 @@ Disallow Promises in places not designed to handle them.
 
 ```ts
 // bad
-if (fetchData()) {}
+if (fetchData()) {
+}
 
 // good
-if (await fetchData()) {}
+if (await fetchData()) {
+}
 ```
 
 ### @typescript-eslint/no-mixed-enums
@@ -2826,10 +3067,16 @@ Disallow enums from mixing string and number members.
 
 ```ts
 // bad
-enum E { A = 0, B = 'b' }
+enum E {
+  A = 0,
+  B = "b",
+}
 
 // good
-enum E { A = 'a', B = 'b' }
+enum E {
+  A = "a",
+  B = "b",
+}
 ```
 
 ### @typescript-eslint/no-namespace
@@ -2838,7 +3085,9 @@ Disallow TypeScript namespaces.
 
 ```ts
 // bad
-namespace Foo { export const x = 1; }
+namespace Foo {
+  export const x = 1;
+}
 
 // good
 export const x = 1;
@@ -2900,10 +3149,10 @@ Disallow `require()` calls.
 
 ```ts
 // bad
-const fs = require('fs');
+const fs = require("fs");
 
 // good
-import fs from 'fs';
+import fs from "fs";
 ```
 
 ### @typescript-eslint/no-restricted-imports
@@ -2912,10 +3161,10 @@ Disallow specified modules when loaded by `import` (TypeScript version).
 
 ```ts
 // bad
-import _ from 'lodash';
+import _ from "lodash";
 
 // good
-import groupBy from 'lodash/groupBy';
+import groupBy from "lodash/groupBy";
 ```
 
 ### @typescript-eslint/no-shadow
@@ -2925,11 +3174,15 @@ Disallow variable shadowing (TypeScript version).
 ```ts
 // bad
 const x = 1;
-const fn = () => { const x = 2; };
+const fn = () => {
+  const x = 2;
+};
 
 // good
 const x = 1;
-const fn = () => { const y = 2; };
+const fn = () => {
+  const y = 2;
+};
 ```
 
 ### @typescript-eslint/no-this-alias
@@ -2946,7 +3199,7 @@ const fn = () => this.value;
 
 ### @typescript-eslint/no-type-alias
 
-Disallow type aliases in favor of interfaces. *Superseded by consistent-type-definitions.*
+Disallow type aliases in favor of interfaces. _Superseded by consistent-type-definitions._
 
 ```ts
 // bad
@@ -2962,10 +3215,12 @@ Disallow unnecessary equality comparison against boolean literals.
 
 ```ts
 // bad
-if (isReady === true) {}
+if (isReady === true) {
+}
 
 // good
-if (isReady) {}
+if (isReady) {
+}
 ```
 
 ### @typescript-eslint/no-unnecessary-condition
@@ -2974,12 +3229,14 @@ Disallow conditionals where the type is always truthy or always falsy.
 
 ```ts
 // bad
-const x = 'hello';
-if (x) {}
+const x = "hello";
+if (x) {
+}
 
 // good
 const x = getValue();
-if (x) {}
+if (x) {
+}
 ```
 
 ### @typescript-eslint/no-unnecessary-qualifier
@@ -2990,13 +3247,13 @@ Disallow unnecessary namespace qualifiers.
 // bad
 namespace Foo {
   export type Bar = string;
-  const x: Foo.Bar = 'hi';
+  const x: Foo.Bar = "hi";
 }
 
 // good
 namespace Foo {
   export type Bar = string;
-  const x: Bar = 'hi';
+  const x: Bar = "hi";
 }
 ```
 
@@ -3018,10 +3275,10 @@ Disallow type assertions that do not change the type.
 
 ```ts
 // bad
-const x = 'hello' as string;
+const x = "hello" as string;
 
 // good
-const x = 'hello';
+const x = "hello";
 ```
 
 ### @typescript-eslint/no-unnecessary-type-constraint
@@ -3107,12 +3364,18 @@ Disallow comparing an enum value with a non-enum value.
 
 ```ts
 // bad
-enum Status { Active }
-if (status === 0) {}
+enum Status {
+  Active,
+}
+if (status === 0) {
+}
 
 // good
-enum Status { Active }
-if (status === Status.Active) {}
+enum Status {
+  Active,
+}
+if (status === Status.Active) {
+}
 ```
 
 ### @typescript-eslint/no-unsafe-member-access
@@ -3135,10 +3398,14 @@ Disallow returning a value with type `any`.
 
 ```ts
 // bad
-function fn(): string { return anyValue; }
+function fn(): string {
+  return anyValue;
+}
 
 // good
-function fn(): string { return String(anyValue); }
+function fn(): string {
+  return String(anyValue);
+}
 ```
 
 ### @typescript-eslint/no-unsafe-unary-minus
@@ -3147,7 +3414,7 @@ Disallow unary minus on non-numeric types.
 
 ```ts
 // bad
-const x: any = '5';
+const x: any = "5";
 const y = -x;
 
 // good
@@ -3201,7 +3468,9 @@ Disallow unnecessary constructors (TypeScript version).
 ```ts
 // bad
 class Foo {
-  constructor() { super(); }
+  constructor() {
+    super();
+  }
 }
 
 // good
@@ -3230,7 +3499,7 @@ Disallow unnecessary template literals.
 const x = `hello`;
 
 // good
-const x = 'hello';
+const x = "hello";
 ```
 
 ### @typescript-eslint/no-var-requires
@@ -3239,10 +3508,10 @@ Disallow `require` statements except in import statements.
 
 ```ts
 // bad
-const fs = require('fs');
+const fs = require("fs");
 
 // good
-import fs from 'fs';
+import fs from "fs";
 ```
 
 ### @typescript-eslint/no-wrapper-object-types
@@ -3275,10 +3544,10 @@ Require throwing `Error` objects only (TypeScript version).
 
 ```ts
 // bad
-throw 'error';
+throw "error";
 
 // good
-throw new Error('error');
+throw new Error("error");
 ```
 
 ### @typescript-eslint/parameter-properties
@@ -3289,7 +3558,9 @@ Require or disallow parameter properties in class constructors.
 // bad
 class Foo {
   x: number;
-  constructor(x: number) { this.x = x; }
+  constructor(x: number) {
+    this.x = x;
+  }
 }
 
 // good
@@ -3304,10 +3575,10 @@ Enforce the use of `as const` over literal types.
 
 ```ts
 // bad
-const x: 'hello' = 'hello';
+const x: "hello" = "hello";
 
 // good
-const x = 'hello' as const;
+const x = "hello" as const;
 ```
 
 ### @typescript-eslint/prefer-enum-initializers
@@ -3316,10 +3587,16 @@ Require initializers for each enum member.
 
 ```ts
 // bad
-enum Status { Active, Inactive }
+enum Status {
+  Active,
+  Inactive,
+}
 
 // good
-enum Status { Active = 0, Inactive = 1 }
+enum Status {
+  Active = 0,
+  Inactive = 1,
+}
 ```
 
 ### @typescript-eslint/prefer-find
@@ -3356,7 +3633,9 @@ Enforce using function types instead of interfaces with call signatures.
 
 ```ts
 // bad
-interface Fn { (): void; }
+interface Fn {
+  (): void;
+}
 
 // good
 type Fn = () => void;
@@ -3368,10 +3647,12 @@ Enforce using `includes()` over `indexOf() !== -1`.
 
 ```ts
 // bad
-if (arr.indexOf(item) !== -1) {}
+if (arr.indexOf(item) !== -1) {
+}
 
 // good
-if (arr.includes(item)) {}
+if (arr.includes(item)) {
+}
 ```
 
 ### @typescript-eslint/prefer-literal-enum-member
@@ -3380,10 +3661,14 @@ Enforce that enum members are literal values.
 
 ```ts
 // bad
-enum E { A = computed() }
+enum E {
+  A = computed(),
+}
 
 // good
-enum E { A = 'a' }
+enum E {
+  A = "a",
+}
 ```
 
 ### @typescript-eslint/prefer-namespace-keyword
@@ -3404,10 +3689,10 @@ Enforce using `??` instead of `||` for nullable values.
 
 ```ts
 // bad
-const x = value || 'default';
+const x = value || "default";
 
 // good
-const x = value ?? 'default';
+const x = value ?? "default";
 ```
 
 ### @typescript-eslint/prefer-optional-chain
@@ -3428,10 +3713,14 @@ Enforce that class members not modified after construction are marked `readonly`
 
 ```ts
 // bad
-class Foo { private x = 1; }
+class Foo {
+  private x = 1;
+}
 
 // good
-class Foo { private readonly x = 1; }
+class Foo {
+  private readonly x = 1;
+}
 ```
 
 ### @typescript-eslint/prefer-reduce-type-parameter
@@ -3452,10 +3741,10 @@ Enforce using `RegExp.exec()` over `String.match()` when no global flag.
 
 ```ts
 // bad
-'hello'.match(/ell/);
+"hello".match(/ell/);
 
 // good
-/ell/.exec('hello');
+/ell/.exec("hello");
 ```
 
 ### @typescript-eslint/prefer-return-this-type
@@ -3465,12 +3754,16 @@ Enforce that `this` is used as the return type when a class method returns `this
 ```ts
 // bad
 class Builder {
-  set(): Builder { return this; }
+  set(): Builder {
+    return this;
+  }
 }
 
 // good
 class Builder {
-  set(): this { return this; }
+  set(): this {
+    return this;
+  }
 }
 ```
 
@@ -3480,10 +3773,12 @@ Enforce using `startsWith()` and `endsWith()` over equivalent string methods.
 
 ```ts
 // bad
-if (str.indexOf('abc') === 0) {}
+if (str.indexOf("abc") === 0) {
+}
 
 // good
-if (str.startsWith('abc')) {}
+if (str.startsWith("abc")) {
+}
 ```
 
 ### @typescript-eslint/prefer-ts-expect-error
@@ -3493,11 +3788,11 @@ Enforce using `@ts-expect-error` over `@ts-ignore`.
 ```ts
 // bad
 // @ts-ignore
-const x: number = 'hello';
+const x: number = "hello";
 
 // good
 // @ts-expect-error -- testing invalid input
-const x: number = 'hello';
+const x: number = "hello";
 ```
 
 ### @typescript-eslint/promise-function-async
@@ -3506,10 +3801,14 @@ Require functions that return Promises to be marked `async`.
 
 ```ts
 // bad
-function fn(): Promise<void> { return doWork(); }
+function fn(): Promise<void> {
+  return doWork();
+}
 
 // good
-async function fn(): Promise<void> { return doWork(); }
+async function fn(): Promise<void> {
+  return doWork();
+}
 ```
 
 ### @typescript-eslint/require-array-sort-compare
@@ -3530,7 +3829,7 @@ Require both operands of `+` to be the same type.
 
 ```ts
 // bad
-const x = 'count: ' + 5;
+const x = "count: " + 5;
 
 // good
 const x = `count: ${5}`;
@@ -3570,16 +3869,19 @@ Require switch statements over unions to be exhaustive.
 
 ```ts
 // bad
-type T = 'a' | 'b';
+type T = "a" | "b";
 switch (x as T) {
-  case 'a': break;
+  case "a":
+    break;
 }
 
 // good
-type T = 'a' | 'b';
+type T = "a" | "b";
 switch (x as T) {
-  case 'a': break;
-  case 'b': break;
+  case "a":
+    break;
+  case "b":
+    break;
 }
 ```
 
@@ -3592,7 +3894,7 @@ Disallow triple-slash reference directives.
 /// <reference path="foo" />
 
 // good
-import foo from 'foo';
+import foo from "foo";
 ```
 
 ### @typescript-eslint/typedef
@@ -3682,10 +3984,14 @@ Verify the list of dependencies for Hooks like `useEffect` and `useCallback`.
 
 ```tsx
 // bad
-useEffect(() => { fetchData(id); }, []);
+useEffect(() => {
+  fetchData(id);
+}, []);
 
 // good
-useEffect(() => { fetchData(id); }, [id]);
+useEffect(() => {
+  fetchData(id);
+}, [id]);
 ```
 
 ### react/forward-ref-uses-ref
@@ -3790,11 +4096,11 @@ Disallow `.bind()` or arrow functions in JSX props.
 
 ```tsx
 // bad
-<Button onClick={() => handleClick(id)} />
+<Button onClick={() => handleClick(id)} />;
 
 // good
 const handleButtonClick = useCallback(() => handleClick(id), [id]);
-<Button onClick={handleButtonClick} />
+<Button onClick={handleButtonClick} />;
 ```
 
 ### react/jsx-no-comment-textnodes
@@ -3840,10 +4146,14 @@ Prevent problematic leaked values from being rendered.
 
 ```tsx
 // bad
-{count && <Items count={count} />}
+{
+  count && <Items count={count} />;
+}
 
 // good
-{count > 0 && <Items count={count} />}
+{
+  count > 0 && <Items count={count} />;
+}
 ```
 
 ### react/jsx-no-script-url
@@ -3879,7 +4189,7 @@ Disallow undeclared variables in JSX.
 const App = () => <MissingComponent />;
 
 // good
-import { MyComponent } from './my-component';
+import { MyComponent } from "./my-component";
 const App = () => <MyComponent />;
 ```
 
@@ -3889,10 +4199,12 @@ Disallow unnecessary fragments.
 
 ```tsx
 // bad
-<>{child}</>
+<>{child}</>;
 
 // good
-{child}
+{
+  child;
+}
 ```
 
 ### react/jsx-props-no-spread-key
@@ -3910,7 +4222,7 @@ const props = { key: 'id', name: 'foo' };
 
 ### react/jsx-sort-props
 
-Enforce alphabetical prop sorting. *Handled by perfectionist.*
+Enforce alphabetical prop sorting. _Handled by perfectionist._
 
 ### react/jsx-uses-vars
 
@@ -3918,7 +4230,7 @@ Mark variables used in JSX as used.
 
 ```tsx
 // good
-import { Component } from './component';
+import { Component } from "./component";
 const App = () => <Component />;
 ```
 
@@ -4048,7 +4360,9 @@ Disallow `isMounted`.
 
 ```tsx
 // bad
-if (this.isMounted()) { this.setState({}); }
+if (this.isMounted()) {
+  this.setState({});
+}
 
 // good
 // Use an AbortController or cleanup in useEffect
@@ -4086,7 +4400,9 @@ Disallow `shouldComponentUpdate` when extending `PureComponent`.
 ```tsx
 // bad
 class Foo extends PureComponent {
-  shouldComponentUpdate() { return true; }
+  shouldComponentUpdate() {
+    return true;
+  }
 }
 
 // good
@@ -4189,12 +4505,16 @@ Disallow unused methods in class components.
 // bad
 class Foo extends Component {
   unusedMethod() {}
-  render() { return <div />; }
+  render() {
+    return <div />;
+  }
 }
 
 // good
 class Foo extends Component {
-  render() { return <div />; }
+  render() {
+    return <div />;
+  }
 }
 ```
 
@@ -4247,7 +4567,9 @@ Enforce ES6 class syntax for React components.
 const Comp = createReactClass({ render() {} });
 
 // good
-class Comp extends Component { render() {} }
+class Comp extends Component {
+  render() {}
+}
 ```
 
 ### react/prefer-stateless-function
@@ -4257,7 +4579,9 @@ Encourage stateless functional components.
 ```tsx
 // bad
 class Foo extends Component {
-  render() { return <div>{this.props.name}</div>; }
+  render() {
+    return <div>{this.props.name}</div>;
+  }
 }
 
 // good
@@ -4271,12 +4595,16 @@ Require `render` method to return a value.
 ```tsx
 // bad
 class Foo extends Component {
-  render() { <div />; }
+  render() {
+    <div />;
+  }
 }
 
 // good
 class Foo extends Component {
-  render() { return <div />; }
+  render() {
+    return <div />;
+  }
 }
 ```
 
@@ -4286,7 +4614,9 @@ Enforce Rules of Hooks.
 
 ```tsx
 // bad
-if (condition) { useState(0); }
+if (condition) {
+  useState(0);
+}
 
 // good
 const [count, setCount] = useState(0);
@@ -4374,7 +4704,9 @@ class ErrorBoundary extends Component {
 // good
 class ErrorBoundary extends Component {
   state = { hasError: false };
-  static getDerivedStateFromError() { return { hasError: true }; }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
 }
 ```
 
@@ -4384,7 +4716,9 @@ Enforce gating patterns are compatible with the compiler.
 
 ```tsx
 // bad
-if (__DEV__) { useDebugHook(); }
+if (__DEV__) {
+  useDebugHook();
+}
 
 // good
 useDebugHook(__DEV__);
@@ -4396,7 +4730,9 @@ Enforce that global references are compatible with the compiler.
 
 ```tsx
 // bad
-function Comp() { return <div>{window.x}</div>; }
+function Comp() {
+  return <div>{window.x}</div>;
+}
 
 // good
 function Comp() {
@@ -4429,7 +4765,7 @@ Flag usage of libraries incompatible with the React Compiler.
 
 ```tsx
 // bad
-import { observer } from 'mobx-react';
+import { observer } from "mobx-react";
 
 // good
 // Use compiler-compatible state management
@@ -4515,7 +4851,9 @@ function Comp() {
 // good
 function Comp() {
   const [x, setX] = useState(0);
-  useEffect(() => { setX(1); }, []);
+  useEffect(() => {
+    setX(1);
+  }, []);
   return <div />;
 }
 ```
@@ -4533,7 +4871,9 @@ function Parent() {
 
 // good
 const Header = () => <h1>Title</h1>;
-function Parent() { return <Header />; }
+function Parent() {
+  return <Header />;
+}
 ```
 
 ### react-hooks-js/unsupported-syntax
@@ -4543,11 +4883,15 @@ Flag syntax patterns not yet supported by the React Compiler.
 ```tsx
 // bad
 function Comp() {
-  with (obj) { return <div />; }
+  with (obj) {
+    return <div />;
+  }
 }
 
 // good
-function Comp() { return <div>{obj.value}</div>; }
+function Comp() {
+  return <div>{obj.value}</div>;
+}
 ```
 
 ### react-hooks-js/use-memo
@@ -4582,10 +4926,12 @@ Enforce a specific parameter name in catch clauses.
 
 ```js
 // bad
-try {} catch (e) {}
+try {
+} catch (e) {}
 
 // good
-try {} catch (error) {}
+try {
+} catch (error) {}
 ```
 
 ### unicorn/consistent-destructuring
@@ -4619,10 +4965,12 @@ Enforce consistent style for checking element existence with `indexOf`.
 
 ```js
 // bad
-if (arr.indexOf(item) >= 0) {}
+if (arr.indexOf(item) >= 0) {
+}
 
 // good
-if (arr.includes(item)) {}
+if (arr.includes(item)) {
+}
 ```
 
 ### unicorn/consistent-function-scoping
@@ -4632,13 +4980,19 @@ Move functions to the highest possible scope.
 ```js
 // bad
 function outer() {
-  function inner(x) { return x * 2; }
+  function inner(x) {
+    return x * 2;
+  }
   return inner(5);
 }
 
 // good
-function inner(x) { return x * 2; }
-function outer() { return inner(5); }
+function inner(x) {
+  return x * 2;
+}
+function outer() {
+  return inner(5);
+}
 ```
 
 ### unicorn/empty-brace-spaces
@@ -4647,7 +5001,7 @@ Enforce no spaces in empty braces.
 
 ```js
 // bad
-const obj = {  };
+const obj = {};
 
 // good
 const obj = {};
@@ -4662,7 +5016,7 @@ Require `Error` messages.
 throw new Error();
 
 // good
-throw new Error('Something went wrong');
+throw new Error("Something went wrong");
 ```
 
 ### unicorn/escape-case
@@ -4671,10 +5025,10 @@ Require uppercase escape sequences.
 
 ```js
 // bad
-const str = '\xa9';
+const str = "\xa9";
 
 // good
-const str = '\xA9';
+const str = "\xA9";
 ```
 
 ### unicorn/explicit-length-check
@@ -4683,10 +5037,12 @@ Enforce explicitly comparing the `length` property.
 
 ```js
 // bad
-if (arr.length) {}
+if (arr.length) {
+}
 
 // good
-if (arr.length > 0) {}
+if (arr.length > 0) {
+}
 ```
 
 ### unicorn/filename-case
@@ -4707,10 +5063,10 @@ Enforce specific import styles per module.
 
 ```js
 // bad
-import * as path from 'path';
+import * as path from "path";
 
 // good
-import path from 'path';
+import path from "path";
 ```
 
 ### unicorn/new-for-builtins
@@ -4719,12 +5075,12 @@ Require `new` for builtins that need it, forbid for those that do not.
 
 ```js
 // bad
-const err = Error('fail');
-const sym = new Symbol('x');
+const err = Error("fail");
+const sym = new Symbol("x");
 
 // good
-const err = new Error('fail');
-const sym = Symbol('x');
+const err = new Error("fail");
+const sym = Symbol("x");
 ```
 
 ### unicorn/no-abusive-eslint-disable
@@ -4758,10 +5114,10 @@ Disallow passing a function reference directly to array methods.
 
 ```js
 // bad
-const nums = ['1', '2'].map(Number);
+const nums = ["1", "2"].map(Number);
 
 // good
-const nums = ['1', '2'].map((x) => Number(x));
+const nums = ["1", "2"].map((x) => Number(x));
 ```
 
 ### unicorn/no-array-for-each
@@ -4773,7 +5129,9 @@ Prefer `for...of` over `Array.forEach`.
 items.forEach((item) => process(item));
 
 // good
-for (const item of items) { process(item); }
+for (const item of items) {
+  process(item);
+}
 ```
 
 ### unicorn/no-array-method-this-argument
@@ -4811,7 +5169,9 @@ const sum = arr.reduce((a, b) => a + b, 0);
 
 // good
 let sum = 0;
-for (const n of arr) { sum += n; }
+for (const n of arr) {
+  sum += n;
+}
 ```
 
 ### unicorn/no-await-expression-member
@@ -4845,10 +5205,10 @@ Disallow leading/trailing spaces inside `console.log` parameters.
 
 ```js
 // bad
-console.log(' hello ');
+console.log(" hello ");
 
 // good
-console.log('hello');
+console.log("hello");
 ```
 
 ### unicorn/no-document-cookie
@@ -4857,7 +5217,7 @@ Disallow `document.cookie` direct access.
 
 ```js
 // bad
-document.cookie = 'key=value';
+document.cookie = "key=value";
 
 // good
 // Use a cookie library instead
@@ -4872,7 +5232,7 @@ Disallow empty files.
 // empty file
 
 // good
-export const EMPTY = '';
+export const EMPTY = "";
 ```
 
 ### unicorn/no-for-loop
@@ -4884,7 +5244,8 @@ Prefer `for...of` over `for` loops with index access.
 for (let i = 0; i < arr.length; i++) {}
 
 // good
-for (const item of arr) {}
+for (const item of arr) {
+}
 ```
 
 ### unicorn/no-hex-escape
@@ -4893,10 +5254,10 @@ Enforce using Unicode escapes instead of hexadecimal escapes.
 
 ```js
 // bad
-const str = '\x1B';
+const str = "\x1B";
 
 // good
-const str = '\u001B';
+const str = "\u001B";
 ```
 
 ### unicorn/no-instanceof-array
@@ -4905,10 +5266,12 @@ Require `Array.isArray()` instead of `instanceof Array`.
 
 ```js
 // bad
-if (x instanceof Array) {}
+if (x instanceof Array) {
+}
 
 // good
-if (Array.isArray(x)) {}
+if (Array.isArray(x)) {
+}
 ```
 
 ### unicorn/no-invalid-fetch-options
@@ -4929,12 +5292,12 @@ Prevent invalid `removeEventListener` calls.
 
 ```js
 // bad
-el.removeEventListener('click', () => {});
+el.removeEventListener("click", () => {});
 
 // good
 const handler = () => {};
-el.addEventListener('click', handler);
-el.removeEventListener('click', handler);
+el.addEventListener("click", handler);
+el.removeEventListener("click", handler);
 ```
 
 ### unicorn/no-keyword-prefix
@@ -4967,10 +5330,16 @@ Disallow `if` as the only statement in `else`.
 
 ```js
 // bad
-if (a) {} else { if (b) {} }
+if (a) {
+} else {
+  if (b) {
+  }
+}
 
 // good
-if (a) {} else if (b) {}
+if (a) {
+} else if (b) {
+}
 ```
 
 ### unicorn/no-magic-array-flat-depth
@@ -4991,10 +5360,18 @@ Simplify negated conditions.
 
 ```js
 // bad
-if (!x) { a(); } else { b(); }
+if (!x) {
+  a();
+} else {
+  b();
+}
 
 // good
-if (x) { b(); } else { a(); }
+if (x) {
+  b();
+} else {
+  a();
+}
 ```
 
 ### unicorn/no-negation-in-equality-check
@@ -5003,10 +5380,12 @@ Disallow negation in equality checks.
 
 ```js
 // bad
-if (!x === y) {}
+if (!x === y) {
+}
 
 // good
-if (x !== y) {}
+if (x !== y) {
+}
 ```
 
 ### unicorn/no-nested-ternary
@@ -5015,7 +5394,7 @@ Disallow nested ternary expressions.
 
 ```js
 // bad
-const x = a ? b ? c : d : e;
+const x = a ? (b ? c : d) : e;
 
 // good
 const inner = b ? c : d;
@@ -5040,10 +5419,10 @@ Disallow `new Buffer()`.
 
 ```js
 // bad
-const buf = new Buffer('abc');
+const buf = new Buffer("abc");
 
 // good
-const buf = Buffer.from('abc');
+const buf = Buffer.from("abc");
 ```
 
 ### unicorn/no-null
@@ -5079,7 +5458,7 @@ Disallow `process.exit()`.
 process.exit(1);
 
 // good
-throw new Error('Fatal error');
+throw new Error("Fatal error");
 ```
 
 ### unicorn/no-single-promise-in-promise-methods
@@ -5100,7 +5479,9 @@ Disallow classes with only static members.
 
 ```js
 // bad
-class Utils { static format() {} }
+class Utils {
+  static format() {}
+}
 
 // good
 const format = () => {};
@@ -5136,10 +5517,12 @@ Prefer direct comparison over `typeof x === 'undefined'`.
 
 ```js
 // bad
-if (typeof x === 'undefined') {}
+if (typeof x === "undefined") {
+}
 
 // good
-if (x === undefined) {}
+if (x === undefined) {
+}
 ```
 
 ### unicorn/no-unnecessary-await
@@ -5148,10 +5531,10 @@ Disallow awaiting non-promise values.
 
 ```js
 // bad
-const x = await 'hello';
+const x = await "hello";
 
 // good
-const x = 'hello';
+const x = "hello";
 ```
 
 ### unicorn/no-unnecessary-polyfills
@@ -5160,7 +5543,7 @@ Disallow unnecessary polyfills based on target environments.
 
 ```js
 // bad
-import 'array-flat-polyfill';
+import "array-flat-polyfill";
 
 // good
 // Native Array.flat is available in your target
@@ -5172,7 +5555,7 @@ Disallow unreadable array destructuring.
 
 ```js
 // bad
-const [,, z] = arr;
+const [, , z] = arr;
 
 // good
 const z = arr[2];
@@ -5235,10 +5618,14 @@ Disallow unnecessary `Promise.resolve` or `Promise.reject`.
 
 ```js
 // bad
-async function fn() { return Promise.resolve(1); }
+async function fn() {
+  return Promise.resolve(1);
+}
 
 // good
-async function fn() { return 1; }
+async function fn() {
+  return 1;
+}
 ```
 
 ### unicorn/no-useless-spread
@@ -5261,13 +5648,17 @@ Disallow useless switch cases.
 // bad
 switch (x) {
   case 1:
-  default: handle();
+  default:
+    handle();
 }
 
 // good
 switch (x) {
-  case 1: handleOne(); break;
-  default: handle();
+  case 1:
+    handleOne();
+    break;
+  default:
+    handle();
 }
 ```
 
@@ -5277,10 +5668,14 @@ Disallow unnecessary `undefined`.
 
 ```js
 // bad
-function fn() { return undefined; }
+function fn() {
+  return undefined;
+}
 
 // good
-function fn() { return; }
+function fn() {
+  return;
+}
 ```
 
 ### unicorn/no-zero-fractions
@@ -5301,10 +5696,10 @@ Enforce proper case for numeric literals.
 
 ```js
 // bad
-const x = 0XFF;
+const x = 0xff;
 
 // good
-const x = 0xFF;
+const x = 0xff;
 ```
 
 ### unicorn/numeric-separators-style
@@ -5328,7 +5723,7 @@ Prefer `addEventListener` over `on*` properties.
 el.onclick = handler;
 
 // good
-el.addEventListener('click', handler);
+el.addEventListener("click", handler);
 ```
 
 ### unicorn/prefer-array-find
@@ -5385,10 +5780,12 @@ Prefer `.some()` over `.find()` or `.filter().length`.
 
 ```js
 // bad
-if (arr.filter((x) => x > 0).length > 0) {}
+if (arr.filter((x) => x > 0).length > 0) {
+}
 
 // good
-if (arr.some((x) => x > 0)) {}
+if (arr.some((x) => x > 0)) {
+}
 ```
 
 ### unicorn/prefer-at
@@ -5458,10 +5855,10 @@ Prefer `dataset` over `setAttribute`/`getAttribute` for data attributes.
 
 ```js
 // bad
-el.setAttribute('data-id', '123');
+el.setAttribute("data-id", "123");
 
 // good
-el.dataset.id = '123';
+el.dataset.id = "123";
 ```
 
 ### unicorn/prefer-dom-node-remove
@@ -5482,10 +5879,10 @@ Prefer `textContent` over `innerText`.
 
 ```js
 // bad
-el.innerText = 'hello';
+el.innerText = "hello";
 
 // good
-el.textContent = 'hello';
+el.textContent = "hello";
 ```
 
 ### unicorn/prefer-event-target
@@ -5518,10 +5915,12 @@ Prefer `includes()` over `indexOf() !== -1`.
 
 ```js
 // bad
-if (arr.indexOf(x) !== -1) {}
+if (arr.indexOf(x) !== -1) {
+}
 
 // good
-if (arr.includes(x)) {}
+if (arr.includes(x)) {
+}
 ```
 
 ### unicorn/prefer-json-parse-buffer
@@ -5530,7 +5929,7 @@ Prefer reading JSON from a Buffer.
 
 ```js
 // bad
-JSON.parse(fs.readFileSync(path, 'utf8'));
+JSON.parse(fs.readFileSync(path, "utf8"));
 
 // good
 JSON.parse(fs.readFileSync(path));
@@ -5542,10 +5941,12 @@ Prefer `KeyboardEvent.key` over `keyCode`.
 
 ```js
 // bad
-if (event.keyCode === 13) {}
+if (event.keyCode === 13) {
+}
 
 // good
-if (event.key === 'Enter') {}
+if (event.key === "Enter") {
+}
 ```
 
 ### unicorn/prefer-logical-operator-over-ternary
@@ -5650,10 +6051,10 @@ Prefer `node:` protocol for built-in modules.
 
 ```js
 // bad
-import fs from 'fs';
+import fs from "fs";
 
 // good
-import fs from 'node:fs';
+import fs from "node:fs";
 ```
 
 ### unicorn/prefer-number-properties
@@ -5662,10 +6063,12 @@ Prefer `Number` static properties over global ones.
 
 ```js
 // bad
-if (isNaN(x)) {}
+if (isNaN(x)) {
+}
 
 // good
-if (Number.isNaN(x)) {}
+if (Number.isNaN(x)) {
+}
 ```
 
 ### unicorn/prefer-object-from-entries
@@ -5675,7 +6078,9 @@ Prefer `Object.fromEntries` over manual construction.
 ```js
 // bad
 const obj = {};
-pairs.forEach(([k, v]) => { obj[k] = v; });
+pairs.forEach(([k, v]) => {
+  obj[k] = v;
+});
 
 // good
 const obj = Object.fromEntries(pairs);
@@ -5687,10 +6092,16 @@ Prefer omitting the catch binding when unused.
 
 ```js
 // bad
-try {} catch (error) { handleGenericError(); }
+try {
+} catch (error) {
+  handleGenericError();
+}
 
 // good
-try {} catch { handleGenericError(); }
+try {
+} catch {
+  handleGenericError();
+}
 ```
 
 ### unicorn/prefer-prototype-methods
@@ -5711,10 +6122,10 @@ Prefer `querySelector`/`querySelectorAll` over older methods.
 
 ```js
 // bad
-document.getElementById('app');
+document.getElementById("app");
 
 // good
-document.querySelector('#app');
+document.querySelector("#app");
 ```
 
 ### unicorn/prefer-reflect-apply
@@ -5735,10 +6146,12 @@ Prefer `RegExp.test()` over `String.match()` for boolean results.
 
 ```js
 // bad
-if ('hello'.match(/ell/)) {}
+if ("hello".match(/ell/)) {
+}
 
 // good
-if (/ell/.test('hello')) {}
+if (/ell/.test("hello")) {
+}
 ```
 
 ### unicorn/prefer-set-has
@@ -5785,7 +6198,7 @@ Prefer `String.raw` for strings with backslashes.
 
 ```js
 // bad
-const path = 'C:\\Users\\foo';
+const path = "C:\\Users\\foo";
 
 // good
 const path = String.raw`C:\Users\foo`;
@@ -5797,10 +6210,10 @@ Prefer `replaceAll` over `replace` with global regex.
 
 ```js
 // bad
-str.replace(/foo/g, 'bar');
+str.replace(/foo/g, "bar");
 
 // good
-str.replaceAll('foo', 'bar');
+str.replaceAll("foo", "bar");
 ```
 
 ### unicorn/prefer-string-slice
@@ -5821,10 +6234,12 @@ Prefer `startsWith`/`endsWith` over regex or index checks.
 
 ```js
 // bad
-if (str.indexOf('abc') === 0) {}
+if (str.indexOf("abc") === 0) {
+}
 
 // good
-if (str.startsWith('abc')) {}
+if (str.startsWith("abc")) {
+}
 ```
 
 ### unicorn/prefer-string-trim-start-end
@@ -5857,13 +6272,19 @@ Prefer `switch` over multiple `if-else-if` on the same variable.
 
 ```js
 // bad
-if (x === 'a') {} else if (x === 'b') {} else if (x === 'c') {}
+if (x === "a") {
+} else if (x === "b") {
+} else if (x === "c") {
+}
 
 // good
 switch (x) {
-  case 'a': break;
-  case 'b': break;
-  case 'c': break;
+  case "a":
+    break;
+  case "b":
+    break;
+  case "c":
+    break;
 }
 ```
 
@@ -5874,10 +6295,14 @@ Prefer ternary over simple `if-else` assignments.
 ```js
 // bad
 let x;
-if (cond) { x = 'a'; } else { x = 'b'; }
+if (cond) {
+  x = "a";
+} else {
+  x = "b";
+}
 
 // good
-const x = cond ? 'a' : 'b';
+const x = cond ? "a" : "b";
 ```
 
 ### unicorn/prefer-top-level-await
@@ -5886,7 +6311,9 @@ Prefer top-level await over IIFEs.
 
 ```js
 // bad
-(async () => { await setup(); })();
+(async () => {
+  await setup();
+})();
 
 // good
 await setup();
@@ -5898,10 +6325,10 @@ Throw `TypeError` for type-checking conditions.
 
 ```js
 // bad
-if (typeof x !== 'string') throw new Error('Expected string');
+if (typeof x !== "string") throw new Error("Expected string");
 
 // good
-if (typeof x !== 'string') throw new TypeError('Expected string');
+if (typeof x !== "string") throw new TypeError("Expected string");
 ```
 
 ### unicorn/prevent-abbreviations
@@ -5910,10 +6337,10 @@ Enforce full words in identifiers.
 
 ```js
 // bad
-const btn = document.querySelector('button');
+const btn = document.querySelector("button");
 
 // good
-const button = document.querySelector('button');
+const button = document.querySelector("button");
 ```
 
 ### unicorn/relative-url-style
@@ -5922,10 +6349,10 @@ Enforce consistent style for relative URL strings.
 
 ```js
 // bad
-new URL('./foo', base);
+new URL("./foo", base);
 
 // good
-new URL('foo', base);
+new URL("foo", base);
 ```
 
 ### unicorn/require-array-join-separator
@@ -5937,7 +6364,7 @@ Require a separator argument in `Array.join()`.
 arr.join();
 
 // good
-arr.join(',');
+arr.join(",");
 ```
 
 ### unicorn/require-number-to-fixed-digits-argument
@@ -5961,7 +6388,7 @@ Require a `targetOrigin` argument in `postMessage`.
 window.postMessage(data);
 
 // good
-window.postMessage(data, 'https://example.com');
+window.postMessage(data, "https://example.com");
 ```
 
 ### unicorn/switch-case-braces
@@ -5991,10 +6418,10 @@ Enforce correct case for text encoding identifiers.
 
 ```js
 // bad
-new TextDecoder('UTF-8');
+new TextDecoder("UTF-8");
 
 // good
-new TextDecoder('utf-8');
+new TextDecoder("utf-8");
 ```
 
 ### unicorn/throw-new-error
@@ -6003,10 +6430,10 @@ Require `new` when throwing errors.
 
 ```js
 // bad
-throw Error('fail');
+throw Error("fail");
 
 // good
-throw new Error('fail');
+throw new Error("fail");
 ```
 
 ## JSX Accessibility Rules
@@ -6407,10 +6834,10 @@ Ensure a default export is present when importing default.
 
 ```js
 // bad
-import foo from './no-default-export';
+import foo from "./no-default-export";
 
 // good
-import foo from './has-default-export';
+import foo from "./has-default-export";
 ```
 
 ### import/export
@@ -6434,10 +6861,10 @@ Ensure all imports appear before other statements.
 ```js
 // bad
 const x = 1;
-import { foo } from 'mod';
+import { foo } from "mod";
 
 // good
-import { foo } from 'mod';
+import { foo } from "mod";
 const x = 1;
 ```
 
@@ -6459,10 +6886,10 @@ Ensure named imports correspond to a named export.
 
 ```js
 // bad
-import { notExported } from './module';
+import { notExported } from "./module";
 
 // good
-import { exported } from './module';
+import { exported } from "./module";
 ```
 
 ### import/namespace
@@ -6471,11 +6898,11 @@ Ensure namespace imports do not dereference non-existent properties.
 
 ```js
 // bad
-import * as mod from './module';
+import * as mod from "./module";
 mod.notExported;
 
 // good
-import * as mod from './module';
+import * as mod from "./module";
 mod.exported;
 ```
 
@@ -6485,10 +6912,10 @@ Disallow importing with absolute file paths.
 
 ```js
 // bad
-import foo from '/Users/me/project/foo';
+import foo from "/Users/me/project/foo";
 
 // good
-import foo from './foo';
+import foo from "./foo";
 ```
 
 ### import/no-amd
@@ -6497,10 +6924,10 @@ Disallow AMD `require` and `define` calls.
 
 ```js
 // bad
-define(['dep'], (dep) => {});
+define(["dep"], (dep) => {});
 
 // good
-import dep from 'dep';
+import dep from "dep";
 ```
 
 ### import/no-commonjs
@@ -6509,10 +6936,10 @@ Disallow CommonJS `require` calls and `module.exports`.
 
 ```js
 // bad
-const fs = require('fs');
+const fs = require("fs");
 
 // good
-import fs from 'node:fs';
+import fs from "node:fs";
 ```
 
 ### import/no-cycle
@@ -6533,10 +6960,10 @@ Disallow importing deprecated modules.
 
 ```js
 // bad
-import { oldFunction } from 'lib'; // @deprecated
+import { oldFunction } from "lib"; // @deprecated
 
 // good
-import { newFunction } from 'lib';
+import { newFunction } from "lib";
 ```
 
 ### import/no-duplicates
@@ -6545,11 +6972,11 @@ Merge imports from the same module.
 
 ```js
 // bad
-import { a } from 'mod';
-import { b } from 'mod';
+import { a } from "mod";
+import { b } from "mod";
 
 // good
-import { a, b } from 'mod';
+import { a, b } from "mod";
 ```
 
 ### import/no-empty-named-blocks
@@ -6558,10 +6985,10 @@ Disallow empty named import blocks.
 
 ```js
 // bad
-import {} from 'mod';
+import {} from "mod";
 
 // good
-import { something } from 'mod';
+import { something } from "mod";
 ```
 
 ### import/no-extraneous-dependencies
@@ -6570,10 +6997,10 @@ Disallow importing packages not listed in dependencies.
 
 ```js
 // bad
-import test from 'unlisted-package';
+import test from "unlisted-package";
 
 // good
-import listed from 'listed-package';
+import listed from "listed-package";
 ```
 
 ### import/no-mutable-exports
@@ -6594,10 +7021,10 @@ Disallow using the default import name as a named import.
 
 ```js
 // bad
-import Foo from './foo'; // Foo is also a named export
+import Foo from "./foo"; // Foo is also a named export
 
 // good
-import { Foo } from './foo';
+import { Foo } from "./foo";
 ```
 
 ### import/no-named-as-default-member
@@ -6606,11 +7033,11 @@ Disallow accessing default export properties from a named import.
 
 ```js
 // bad
-import foo from './foo';
+import foo from "./foo";
 foo.bar; // bar is a named export
 
 // good
-import { bar } from './foo';
+import { bar } from "./foo";
 ```
 
 ### import/no-named-default
@@ -6619,10 +7046,10 @@ Disallow named default exports.
 
 ```js
 // bad
-import { default as foo } from './foo';
+import { default as foo } from "./foo";
 
 // good
-import foo from './foo';
+import foo from "./foo";
 ```
 
 ### import/no-rename-default
@@ -6631,10 +7058,10 @@ Disallow renaming default imports.
 
 ```js
 // bad
-import { default as MyComponent } from './component';
+import { default as MyComponent } from "./component";
 
 // good
-import MyComponent from './component';
+import MyComponent from "./component";
 ```
 
 ### import/no-self-import
@@ -6667,10 +7094,10 @@ Disallow webpack loader syntax in imports.
 
 ```js
 // bad
-import styles from 'style-loader!css!./styles.css';
+import styles from "style-loader!css!./styles.css";
 
 // good
-import styles from './styles.css';
+import styles from "./styles.css";
 ```
 
 ## Next.js Rules
@@ -6769,10 +7196,10 @@ Disallow manual `<link>` stylesheet tags.
 
 ```jsx
 // bad
-<link rel="stylesheet" href="/styles.css" />
+<link rel="stylesheet" href="/styles.css" />;
 
 // good
-import '/styles.css';
+import "/styles.css";
 ```
 
 ### nextjs/no-document-import-in-page
@@ -6782,11 +7209,11 @@ Disallow importing `next/document` outside `_document`.
 ```jsx
 // bad
 // In pages/index.js:
-import Document from 'next/document';
+import Document from "next/document";
 
 // good
 // In pages/_document.js:
-import Document from 'next/document';
+import Document from "next/document";
 ```
 
 ### nextjs/no-duplicate-head
@@ -6821,11 +7248,11 @@ Disallow `next/head` in `_document`; use `<Head>` from `next/document`.
 ```jsx
 // bad
 // In _document.js:
-import Head from 'next/head';
+import Head from "next/head";
 
 // good
 // In _document.js:
-import { Head } from 'next/document';
+import { Head } from "next/document";
 ```
 
 ### nextjs/no-img-element
@@ -6873,7 +7300,11 @@ Disallow styled-jsx in `_document`.
 ```jsx
 // bad
 // In _document.js:
-<style jsx>{`p { color: red; }`}</style>
+<style jsx>{`
+  p {
+    color: red;
+  }
+`}</style>
 
 // good
 // Use global CSS or CSS modules instead
@@ -6937,7 +7368,9 @@ Avoid creating `new Promise` when not needed.
 
 ```js
 // bad
-const p = new Promise((resolve) => { resolve(value); });
+const p = new Promise((resolve) => {
+  resolve(value);
+});
 
 // good
 const p = Promise.resolve(value);
@@ -6979,7 +7412,9 @@ new Promise((resolve) => {
 });
 
 // good
-new Promise((resolve) => { resolve(1); });
+new Promise((resolve) => {
+  resolve(1);
+});
 ```
 
 ### promise/no-native
@@ -7025,12 +7460,12 @@ Disallow using promises inside callbacks.
 
 ```js
 // bad
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   fetch(url).then((data) => res.json(data));
 });
 
 // good
-app.get('/', async (req, res) => {
+app.get("/", async (req, res) => {
   const data = await fetch(url);
   res.json(data);
 });
@@ -7042,10 +7477,14 @@ Disallow return statements in `finally`.
 
 ```js
 // bad
-promise.finally(() => { return cleanup; });
+promise.finally(() => {
+  return cleanup;
+});
 
 // good
-promise.finally(() => { cleanup(); });
+promise.finally(() => {
+  cleanup();
+});
 ```
 
 ### promise/no-return-wrap
@@ -7078,10 +7517,10 @@ Prefer `async`/`await` over callbacks.
 
 ```js
 // bad
-readFile('file.txt', (err, data) => {});
+readFile("file.txt", (err, data) => {});
 
 // good
-const data = await readFile('file.txt');
+const data = await readFile("file.txt");
 ```
 
 ### promise/prefer-await-to-then
@@ -7141,10 +7580,14 @@ Disallow calling array methods on `arguments`.
 
 ```js
 // bad
-function fn() { arguments.map((x) => x); }
+function fn() {
+  arguments.map((x) => x);
+}
 
 // good
-function fn(...args) { args.map((x) => x); }
+function fn(...args) {
+  args.map((x) => x);
+}
 ```
 
 ### oxc/bad-bitwise-operator
@@ -7153,10 +7596,12 @@ Flag potentially incorrect bitwise operators.
 
 ```js
 // bad
-if (x | 0 === 0) {}
+if (x | (0 === 0)) {
+}
 
 // good
-if ((x | 0) === 0) {}
+if ((x | 0) === 0) {
+}
 ```
 
 ### oxc/bad-char-at-comparison
@@ -7165,10 +7610,12 @@ Disallow incorrect `charAt` comparisons.
 
 ```js
 // bad
-if (str.charAt(0) === 'ab') {}
+if (str.charAt(0) === "ab") {
+}
 
 // good
-if (str.charAt(0) === 'a') {}
+if (str.charAt(0) === "a") {
+}
 ```
 
 ### oxc/bad-comparison-sequence
@@ -7177,10 +7624,12 @@ Disallow comparison chains that do not work as intended.
 
 ```js
 // bad
-if (a < b < c) {}
+if (a < b < c) {
+}
 
 // good
-if (a < b && b < c) {}
+if (a < b && b < c) {
+}
 ```
 
 ### oxc/bad-min-max-func
@@ -7201,10 +7650,12 @@ Disallow comparing against object literals that always create new references.
 
 ```js
 // bad
-if (x === {}) {}
+if (x === {}) {
+}
 
 // good
-if (Object.keys(x).length === 0) {}
+if (Object.keys(x).length === 0) {
+}
 ```
 
 ### oxc/bad-replace-all-arg
@@ -7213,10 +7664,10 @@ Disallow incorrect arguments to `replaceAll`.
 
 ```js
 // bad
-str.replaceAll(/foo/, 'bar');
+str.replaceAll(/foo/, "bar");
 
 // good
-str.replaceAll(/foo/g, 'bar');
+str.replaceAll(/foo/g, "bar");
 ```
 
 ### oxc/const-comparisons
@@ -7225,10 +7676,12 @@ Disallow redundant comparisons involving constants.
 
 ```js
 // bad
-if (x >= 0 && x >= 1) {}
+if (x >= 0 && x >= 1) {
+}
 
 // good
-if (x >= 1) {}
+if (x >= 1) {
+}
 ```
 
 ### oxc/double-comparisons
@@ -7237,10 +7690,12 @@ Simplify double comparisons.
 
 ```js
 // bad
-if (x === y || x < y) {}
+if (x === y || x < y) {
+}
 
 // good
-if (x <= y) {}
+if (x <= y) {
+}
 ```
 
 ### oxc/erasing-op
@@ -7261,10 +7716,14 @@ Detect missing `throw` before `new Error()`.
 
 ```js
 // bad
-function fail() { new Error('fail'); }
+function fail() {
+  new Error("fail");
+}
 
 // good
-function fail() { throw new Error('fail'); }
+function fail() {
+  throw new Error("fail");
+}
 ```
 
 ### oxc/misrefactored-assign-op
@@ -7286,11 +7745,15 @@ Disallow spreading in a loop that accumulates.
 ```js
 // bad
 let result = [];
-for (const item of items) { result = [...result, item]; }
+for (const item of items) {
+  result = [...result, item];
+}
 
 // good
 const result = [];
-for (const item of items) { result.push(item); }
+for (const item of items) {
+  result.push(item);
+}
 ```
 
 ### oxc/no-barrel-file
@@ -7299,11 +7762,11 @@ Disallow barrel files that re-export everything.
 
 ```js
 // bad
-export * from './a';
-export * from './b';
+export * from "./a";
+export * from "./b";
 
 // good
-export { specific } from './a';
+export { specific } from "./a";
 ```
 
 ### oxc/number-arg-out-of-range
@@ -7312,10 +7775,10 @@ Disallow numeric arguments outside the allowed range.
 
 ```js
 // bad
-const x = Number.parseInt('ff', 37);
+const x = Number.parseInt("ff", 37);
 
 // good
-const x = Number.parseInt('ff', 16);
+const x = Number.parseInt("ff", 16);
 ```
 
 ### oxc/only-used-in-recursion
@@ -7324,10 +7787,14 @@ Flag parameters only used in recursive calls.
 
 ```js
 // bad
-function fn(a, b) { return fn(a, b - 1); }
+function fn(a, b) {
+  return fn(a, b - 1);
+}
 
 // good
-function fn(b) { return fn(b - 1); }
+function fn(b) {
+  return fn(b - 1);
+}
 ```
 
 ### oxc/uninvoked-array-callback
@@ -7350,10 +7817,12 @@ Require error handling in callbacks.
 
 ```js
 // bad
-fs.readFile('f', (err, data) => { use(data); });
+fs.readFile("f", (err, data) => {
+  use(data);
+});
 
 // good
-fs.readFile('f', (err, data) => {
+fs.readFile("f", (err, data) => {
   if (err) throw err;
   use(data);
 });
@@ -7377,10 +7846,10 @@ Disallow `new require()`.
 
 ```js
 // bad
-const app = new require('express')();
+const app = new require("express")();
 
 // good
-const express = require('express');
+const express = require("express");
 const app = express();
 ```
 
@@ -7393,7 +7862,7 @@ Disallow `process.env` usage directly; use a config module.
 const port = process.env.PORT;
 
 // good
-import { config } from './config';
+import { config } from "./config";
 const port = config.port;
 ```
 
@@ -7403,10 +7872,10 @@ Disallow specified modules when loaded by `import`.
 
 ```js
 // bad
-import banned from 'banned-module';
+import banned from "banned-module";
 
 // good
-import allowed from 'allowed-module';
+import allowed from "allowed-module";
 ```
 
 ### node/prefer-global/text-decoder
@@ -7415,7 +7884,7 @@ Prefer the global `TextDecoder` over `require('util').TextDecoder`.
 
 ```js
 // bad
-const { TextDecoder } = require('util');
+const { TextDecoder } = require("util");
 
 // good
 const decoder = new TextDecoder();
