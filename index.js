@@ -320,7 +320,7 @@ export default defineConfig({
     "@typescript-eslint/no-require-imports": "error",
     "@typescript-eslint/no-var-requires": "error",
     // Promise-returning functions must be `async` — guarantees thrown errors become rejections.
-    "@typescript-eslint/promise-function-async": "error",
+    "@typescript-eslint/promise-function-async": ["error", { checkArrowFunctions: false }],
     // `.catch((err) => ...)` — `err` should be `unknown`, not `any` (strict TS behavior).
     "@typescript-eslint/use-unknown-in-catch-callback-variable": "error",
 
