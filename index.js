@@ -105,6 +105,8 @@ export default defineConfig({
         "@typescript-eslint/no-unsafe-call": "off",
         "@typescript-eslint/no-unsafe-member-access": "off",
         "@typescript-eslint/no-unsafe-return": "off",
+        // Same rationale: casting mock/fixture data is routine in tests.
+        "@typescript-eslint/no-unsafe-type-assertion": "off",
         // Legacy `var x = require(...)` still appears in older test setups.
         "@typescript-eslint/no-var-requires": "off",
         // Mock implementations may return bare promises without `async`.
@@ -147,6 +149,8 @@ export default defineConfig({
       files: ["**/bin/**", "scripts/**"],
       rules: {
         "no-console": "off",
+        // One-shot CLI tools run sequentially; sync fs is the simpler, correct choice.
+        "node/no-sync": "off",
         "unicorn/no-process-exit": "off",
       },
     },
@@ -167,6 +171,9 @@ export default defineConfig({
       rules: {
         // Tool configs are traditionally `export default {...}` with no name.
         "import-x/no-anonymous-default-export": "off",
+        // Config files branch on optional env vars (`if (process.env.CI)`);
+        // spelling out the nullish/empty cases there is ceremony, not safety.
+        "@typescript-eslint/strict-boolean-expressions": "off",
         // Big configs (webpack, next) routinely exceed 400 lines.
         "max-lines": "off",
       },
@@ -175,6 +182,17 @@ export default defineConfig({
     {
       files: ["**/e2e/**/fixtures/**", "**/e2e/**/*.ts"],
       rules: {
+        // E2E helpers parse untyped external payloads (webhooks, test inboxes);
+        // the unsafe-`any` family and assertion rules are mock-data noise here,
+        // matching the unit-test override above.
+        "@typescript-eslint/no-unsafe-argument": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/no-unsafe-type-assertion": "off",
+        // Harness code branches on optional env vars (`if (process.env.CI)`).
+        "@typescript-eslint/strict-boolean-expressions": "off",
         // Playwright fixtures use hook-like names (`test.extend`) that trip the rule.
         "react-hooks/rules-of-hooks": "off",
       },
@@ -302,14 +320,30 @@ export default defineConfig({
     "@typescript-eslint/no-require-imports": "error",
     "@typescript-eslint/no-var-requires": "error",
     // Promise-returning functions must be `async` — guarantees thrown errors become rejections.
-    "@typescript-eslint/promise-function-async": "error",
+    "@typescript-eslint/promise-function-async": ["error", { checkArrowFunctions: false }],
     // `.catch((err) => ...)` — `err` should be `unknown`, not `any` (strict TS behavior).
     "@typescript-eslint/use-unknown-in-catch-callback-variable": "error",
+
+    // Type-aware (tsgolint) tuning. These rules only run when the consuming
+    // repo enables `options.typeAware`; configuring them here is a no-op otherwise.
+
+    // Requires `Readonly<>` on virtually every object/array parameter and fights
+    // React, Playwright, and Hono signatures. Upstream keeps it out of every preset.
+    "@typescript-eslint/prefer-readonly-parameter-types": "off",
+    // Fires on idiomatic destructuring of library hooks (`const { push } = useRouter()`)
+    // because their types lack `this: void` annotations; false positives dominate.
+    "@typescript-eslint/unbound-method": "off",
 
     // Restriction — React
 
     // `<button>` defaults to `type="submit"` — silently submits enclosing forms. Must be explicit.
     "react/button-has-type": "error",
+    // Arrow components (`const X = () =>`) are the fleet standard; the rule's
+    // default demands `function` declarations, so pin it to arrows explicitly.
+    "react/function-component-definition": [
+      "error",
+      { namedComponents: "arrow-function", unnamedComponents: "arrow-function" },
+    ],
     // Raw HTML insertion in JSX is an XSS vector — require a deliberate opt-out.
     "react/no-danger": "error",
     // Catches typos like `class=` or `tabindex=` in JSX.
