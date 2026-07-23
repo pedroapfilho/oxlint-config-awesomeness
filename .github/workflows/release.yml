@@ -37,4 +37,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # actions/setup-node generates an .npmrc that reads NODE_AUTH_TOKEN — must match.
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # changesets/action reads NPM_TOKEN from the env; without it, it falls back
+          # to OIDC trusted publishing (not configured for this package) and fails E404.
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
