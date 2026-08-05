@@ -3,6 +3,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Dispatched by release.yml for the changeset-release/main PR, whose
+  # pull_request runs are parked unexecuted behind an approval gate.
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

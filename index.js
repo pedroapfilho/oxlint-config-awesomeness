@@ -762,7 +762,15 @@ export default defineConfig({
 
     // TanStack Query.
     "react-doctor/query-destructure-result": "error",
-    "react-doctor/query-mutation-missing-invalidation": "warn",
+    // Off: the plugin's 0.5.x check only scans the `useMutation` options object
+    // literal for a `queryClient.invalidateQueries`-style call, so extracting the
+    // invalidation into a named hook (`onSuccess: invalidateWallets`) reports as
+    // missing even though the cache is invalidated. That extraction is the
+    // idiomatic React Query pattern, and the rule cannot follow any indirection,
+    // so it fires on correct code and stays silent on the real bug (a mismatched
+    // queryKey). oxlint-plugin-react-doctor 0.9.x resolves the callback through
+    // scope; re-enable when this config moves off 0.5.x.
+    "react-doctor/query-mutation-missing-invalidation": "off",
     "react-doctor/query-no-query-in-effect": "warn",
     "react-doctor/query-no-rest-destructuring": "warn",
     "react-doctor/query-no-usequery-for-mutation": "warn",
