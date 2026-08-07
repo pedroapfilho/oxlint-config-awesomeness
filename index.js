@@ -732,7 +732,10 @@ export default defineConfig({
     "react-doctor/no-string-false-on-boolean-attribute": "warn",
     "react-doctor/no-unescaped-dynamic-string-in-regexp": "warn",
     "react-doctor/no-unguarded-browser-global-at-module-scope": "warn",
-    "react-doctor/no-unguarded-browser-global-in-render-or-hook-init": "error",
+    // Downgraded from its upstream "error": the rule cannot see a `ssr: false`
+    // dynamic boundary or a repo whose app is a client-only SPA, and every
+    // occurrence across the consuming repos was one of those two.
+    "react-doctor/no-unguarded-browser-global-in-render-or-hook-init": "warn",
     "react-doctor/no-unguarded-numeric-input-parse": "warn",
     "react-doctor/no-unguarded-throwing-parse-call": "warn",
     "react-doctor/no-unowned-async-error-clear": "warn",
