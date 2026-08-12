@@ -34,6 +34,12 @@ export default defineConfig({
     { name: "react-hooks-js", specifier: "eslint-plugin-react-hooks" },
     // React Doctor diagnostics (security, perf, correctness, RSC, TanStack Query).
     { name: "react-doctor", specifier: "oxlint-plugin-react-doctor" },
+    // Anti-slop: rejects low-evidence TypeScript patterns. Vendored into this
+    // package (anti-slop/index.js) because upstream is source-distributed and
+    // not on npm yet; the specifier resolves via this package's exports map.
+    { name: "anti-slop", specifier: "oxlint-config-awesomeness/anti-slop" },
+    // First-party rules that ship with this config (awesomeness/index.js).
+    { name: "awesomeness", specifier: "oxlint-config-awesomeness/awesomeness" },
   ],
   overrides: [
     // TypeScript files — turn off rules the TS compiler already enforces via its type system.
@@ -124,6 +130,8 @@ export default defineConfig({
         "no-empty-function": "off",
         // Test helpers are often defined after the `describe` that uses them.
         "no-use-before-define": "off",
+        // Inline wrapper/mock components (providers, stubs) are test idiom.
+        "react/no-multi-comp": "off",
       },
     },
     // Storybook stories — component documentation has its own idioms.
@@ -231,6 +239,10 @@ export default defineConfig({
     "eslint/require-unicode-regexp": ["error", { requireFlag: "v" }],
     // Block `@nocommit` markers from reaching main — a hard stop for WIP code.
     "no-warning-comments": ["error", { terms: ["@nocommit"] }],
+    // New in oxlint 1.78 under `style`, where its upstream default ("always")
+    // demands comma-combined declarations. Pin to "never": one declaration per
+    // variable, matching how the fleet already writes.
+    "one-var": ["error", "never"],
 
     // Restriction — core eslint (cherry-picked from the 90 rules in `restriction`)
 
@@ -346,6 +358,9 @@ export default defineConfig({
     ],
     // Raw HTML insertion in JSX is an XSS vector — require a deliberate opt-out.
     "react/no-danger": "error",
+    // One component per file, stateless included; keeps files focused and
+    // imports unambiguous. Stories and test files are relaxed in overrides.
+    "react/no-multi-comp": "error",
     // Catches typos like `class=` or `tabindex=` in JSX.
     "react/no-unknown-property": "error",
 
@@ -581,6 +596,42 @@ export default defineConfig({
 
     // Dead imports bloat bundles and mislead readers — remove them.
     "unused-imports/no-unused-imports": "error",
+
+    // Anti-slop (vendored, see anti-slop/index.js): reject patterns that fake
+    // type evidence instead of establishing it, i.e. the assertion/widening
+    // escape hatches AI-generated code reaches for beyond plain `any`.
+
+    // `x as unknown as T` launders any value into any type.
+    "anti-slop/no-chained-type-assertions": "error",
+    // `...(cond ? {} : obj)` hides field omission; declare the property directly.
+    "anti-slop/no-conditional-empty-object-spread": "error",
+    // Annotating a known literal with a broad type discards what TS inferred.
+    "anti-slop/no-known-value-widening": "error",
+    // `object` on inputs accepts nearly everything; name the expected fields.
+    "anti-slop/no-object-parameters": "error",
+    // Flags every `typeof` unary, including the `typeof window` SSR guards the
+    // react-doctor browser-global rules steer toward and ordinary
+    // `typeof x === "string"` narrowing. Off until upstream scopes it.
+    "anti-slop/no-runtime-typeof": "off",
+    // Warn, not error: matches any identifier containing "shape", which hits
+    // zod's `schema.shape` introspection API (form resolvers, tRPC).
+    "anti-slop/no-shape-in-symbol-names": "warn",
+    // Warn, not error: `use-unknown-in-catch-callback-variable` (above) autofixes
+    // catch callbacks to `(err: unknown)`, which this rule then flags; upstream
+    // only exempts parameters named `cause`.
+    "anti-slop/no-unknown-parameters": "warn",
+    // `type X = unknown` hides the escape hatch behind a domain-sounding name.
+    "anti-slop/no-unknown-type-aliases": "error",
+    // Dictionary values typed `unknown`/`any`/`object`/`{}` defeat lookups.
+    "anti-slop/no-unsafe-dictionary-type": "error",
+    // Widening a known value and asserting it back is a two-step type lie.
+    "anti-slop/no-widen-then-assert": "error",
+
+    // Awesomeness: first-party rules shipped with this config.
+
+    // Comments longer than 5 lines narrate instead of inform. Directive
+    // comments (eslint-/oxlint-/@ts-) and license headers are exempt.
+    "awesomeness/no-novel-comments": "error",
 
     // React Doctor (react-doctor): original diagnostic rules at upstream severities
     // (warn = advisory, error = definite bug). Excluded on purpose: the ports of
