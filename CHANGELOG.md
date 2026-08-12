@@ -1,5 +1,25 @@
 # oxlint-config-awesomeness
 
+## 3.4.0
+
+### Minor Changes
+
+- c0b15f2: Add the anti-slop plugin (10 rules rejecting low-evidence TypeScript patterns), vendored from https://github.com/dmmulroy/anti-slop (MIT, commit b5d2288) because upstream is not published to npm yet. It ships as a compiled bundle at the `oxlint-config-awesomeness/anti-slop` subpath export and loads through `jsPlugins`, backed by a new `@oxlint/plugins` dependency.
+
+  Severities: 7 rules at error (`no-chained-type-assertions`, `no-conditional-empty-object-spread`, `no-known-value-widening`, `no-object-parameters`, `no-unknown-type-aliases`, `no-unsafe-dictionary-type`, `no-widen-then-assert`), 2 at warn (`no-shape-in-symbol-names` matches zod's `schema.shape` API; `no-unknown-parameters` collides with the `use-unknown-in-catch-callback-variable` autofix), and 1 off (`no-runtime-typeof` flags every `typeof`, including SSR guards and type-guard narrowing).
+
+- c0b15f2: Dependency refresh and the rules that came with it. **Requires oxlint >= 1.78** (peer range bumped from 1.75): older oxlint fails to parse the config because it does not know the `one-var` rule.
+
+  - oxlint 1.75 -> 1.78: pins the new `one-var` style rule to `"never"` (one declaration per variable). Without the pin, oxlint's upstream default would error on every consecutive `const` demanding comma-combined declarations. Also newly active through categories: `oxc/bad-match-all-arg` (correctness: `matchAll` without the global flag throws) and `node/exports-style` (style: `module.exports` over the `exports` alias).
+  - oxlint-plugin-react-doctor 0.9.6 -> 0.9.11: no rule additions or renames, false-positive reductions in effect cleanup detection.
+  - eslint-plugin-perfectionist 5.9 -> 5.10.1: no new rules, sorting fixes.
+  - Tooling: @changesets/cli 3, fallow 3, oxfmt 0.63, lint-staged 17.3, vitest 4.1.10.
+
+- c0b15f2: Two additions against narrative slop and grab-bag files:
+
+  - New first-party `awesomeness` plugin (shipped at the `oxlint-config-awesomeness/awesomeness` subpath) with `awesomeness/no-novel-comments` at error: flags any block comment or contiguous run of line comments longer than 5 lines. Directive comments (`eslint-`, `oxlint-`, `@ts-`, and similar) and license headers are exempt.
+  - `react/no-multi-comp` at error: one React component per file, stateless included. Stories keep their existing exemption; test files are now exempt too, since inline provider wrappers and mock components are test idiom.
+
 ## 3.3.0
 
 ### Minor Changes
