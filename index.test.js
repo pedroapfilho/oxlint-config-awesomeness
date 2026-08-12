@@ -59,14 +59,32 @@ describe("oxlint-config-awesomeness", () => {
     }
   });
 
-  it("enforces one component per file outside stories and tests", () => {
-    expect(config.rules["react/no-multi-comp"]).toBe("error");
+  it("relaxes the anti-slop assertion family in tests and e2e harnesses", () => {
+    const assertionRules = [
+      "anti-slop/no-chained-type-assertions",
+      "anti-slop/no-known-value-widening",
+      "anti-slop/no-unknown-type-aliases",
+      "anti-slop/no-unsafe-dictionary-type",
+      "anti-slop/no-widen-then-assert",
+    ];
+
+    for (const ruleName of assertionRules) {
+      expect(config.rules[ruleName]).toBe("error");
+    }
 
     const testOverride = config.overrides.find((override) =>
       override.files.includes("**/__tests__/**"),
     );
     expect(testOverride.files).toEqual(["**/*.test.*", "**/*.spec.*", "**/__tests__/**"]);
-    expect(testOverride.rules["react/no-multi-comp"]).toBe("off");
+
+    const e2eOverride = config.overrides.find((override) =>
+      override.files.includes("**/e2e/**/*.ts"),
+    );
+
+    for (const ruleName of assertionRules) {
+      expect(testOverride.rules[ruleName]).toBe("off");
+      expect(e2eOverride.rules[ruleName]).toBe("off");
+    }
   });
 
   it("exempts complete line-comment license headers", () => {

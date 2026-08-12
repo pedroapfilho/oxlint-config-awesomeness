@@ -111,6 +111,16 @@ export default defineConfig({
         "@typescript-eslint/no-unsafe-return": "off",
         // Same rationale: casting mock/fixture data is routine in tests.
         "@typescript-eslint/no-unsafe-type-assertion": "off",
+        // anti-slop's premise is "parse external data once at its boundary and
+        // carry the domain type from there." A test is the other side of that
+        // boundary: it asserts on whatever the system under test emitted, often
+        // an untyped document (an OpenAPI blob, a webhook body), and reaching
+        // into it with a cast or an index signature is the assertion, not slop.
+        "anti-slop/no-chained-type-assertions": "off",
+        "anti-slop/no-known-value-widening": "off",
+        "anti-slop/no-unknown-type-aliases": "off",
+        "anti-slop/no-unsafe-dictionary-type": "off",
+        "anti-slop/no-widen-then-assert": "off",
         // Legacy `var x = require(...)` still appears in older test setups.
         "@typescript-eslint/no-var-requires": "off",
         // Mock implementations may return bare promises without `async`.
@@ -128,8 +138,6 @@ export default defineConfig({
         "no-empty-function": "off",
         // Test helpers are often defined after the `describe` that uses them.
         "no-use-before-define": "off",
-        // Inline wrapper/mock components (providers, stubs) are test idiom.
-        "react/no-multi-comp": "off",
       },
     },
     // Storybook stories — component documentation has its own idioms.
@@ -138,8 +146,6 @@ export default defineConfig({
       rules: {
         // `console.log` is a valid teaching tool in stories.
         "no-console": "off",
-        // Stories legitimately export multiple component variants.
-        "react/no-multi-comp": "off",
       },
     },
     // Seed and migration scripts — one-shot CLI tools with log output.
@@ -197,6 +203,13 @@ export default defineConfig({
         "@typescript-eslint/no-unsafe-member-access": "off",
         "@typescript-eslint/no-unsafe-return": "off",
         "@typescript-eslint/no-unsafe-type-assertion": "off",
+        // Matching the unit-test override: a harness asserting on what the app
+        // emitted sits on the far side of the parse boundary anti-slop guards.
+        "anti-slop/no-chained-type-assertions": "off",
+        "anti-slop/no-known-value-widening": "off",
+        "anti-slop/no-unknown-type-aliases": "off",
+        "anti-slop/no-unsafe-dictionary-type": "off",
+        "anti-slop/no-widen-then-assert": "off",
         // Harness code branches on optional env vars (`if (process.env.CI)`).
         "@typescript-eslint/strict-boolean-expressions": "off",
         // Playwright fixtures use hook-like names (`test.extend`) that trip the rule.
@@ -356,9 +369,13 @@ export default defineConfig({
     ],
     // Raw HTML insertion in JSX is an XSS vector — require a deliberate opt-out.
     "react/no-danger": "error",
-    // One component per file, stateless included; keeps files focused and
-    // imports unambiguous. Stories and test files are relaxed in overrides.
-    "react/no-multi-comp": "error",
+    // Off: the two dominant shapes in these codebases both put several
+    // components in one file on purpose. shadcn primitives ship as families
+    // (`card.tsx` exports Card, CardHeader, CardTitle, CardContent, ...) and
+    // splitting them permanently forks the file from upstream; form shells keep
+    // their single-use field components colocated so each form stays readable
+    // on its own. Enforcing one-per-file trades both for import ceremony.
+    "react/no-multi-comp": "off",
     // Catches typos like `class=` or `tabindex=` in JSX.
     "react/no-unknown-property": "error",
 
