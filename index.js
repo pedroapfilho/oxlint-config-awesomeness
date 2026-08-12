@@ -90,10 +90,8 @@ export default defineConfig({
     // Test files — relax strict rules that generate noise in mocks, fixtures, describe blocks.
     {
       files: [
-        "**/*.test.ts",
-        "**/*.test.tsx",
-        "**/*.spec.ts",
-        "**/*.spec.tsx",
+        "**/*.test.*",
+        "**/*.spec.*",
         "**/__tests__/**",
       ],
       rules: {

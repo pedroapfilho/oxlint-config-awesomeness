@@ -14,11 +14,15 @@ const EXEMPT_PATTERNS = [
   /^\s*@jsx/v,
   /^\s*\/\s*<reference/v,
   /^!/v,
-  /@license|@preserve|SPDX-License-Identifier|^\s*Copyright\b/v,
 ];
+
+const LICENSE_PATTERN =
+  /@license|@preserve|SPDX-License-Identifier|^\s*Copyright\b/v;
 
 const isExempt = (comment) =>
   EXEMPT_PATTERNS.some((pattern) => pattern.test(comment.value));
+
+const isLicense = (comment) => LICENSE_PATTERN.test(comment.value);
 
 const lineSpan = (comment) => comment.loc.end.line - comment.loc.start.line + 1;
 
@@ -38,11 +42,11 @@ const noNovelCommentsRule = defineRule({
       Program() {
         const comments = context.sourceCode
           .getAllComments()
-          .filter((comment) => comment.type !== "Shebang" && !isExempt(comment));
+          .filter((comment) => comment.type !== "Shebang");
 
         let run = [];
         const flushRun = () => {
-          if (run.length > maxLines) {
+          if (run.length > maxLines && !run.some(isLicense)) {
             report(run[0], run.length);
           }
           run = [];
@@ -51,10 +55,17 @@ const noNovelCommentsRule = defineRule({
         for (const comment of comments) {
           if (comment.type === "Block") {
             flushRun();
+            if (isExempt(comment) || isLicense(comment)) {
+              continue;
+            }
             const lines = lineSpan(comment);
             if (lines > maxLines) {
               report(comment, lines);
             }
+            continue;
+          }
+          if (isExempt(comment)) {
+            flushRun();
             continue;
           }
           const previous = run.at(-1);

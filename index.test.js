@@ -1,6 +1,31 @@
 import { describe, expect, it } from "vitest";
 
+import awesomenessPlugin from "./awesomeness/index.js";
+
 import config from "./index.js";
+
+const createLineComment = (value, line) => ({
+  loc: {
+    end: { column: value.length + 2, line },
+    start: { column: 0, line },
+  },
+  type: "Line",
+  value,
+});
+
+const runNoNovelComments = (comments) => {
+  const reports = [];
+  const rule = awesomenessPlugin.rules["no-novel-comments"];
+  const visitors = rule.create({
+    options: [],
+    report: (report) => reports.push(report),
+    sourceCode: { getAllComments: () => comments },
+  });
+
+  const runProgramVisitor = visitors.Program;
+  runProgramVisitor();
+  return reports;
+};
 
 describe("oxlint-config-awesomeness", () => {
   it("exports a non-null object", () => {
@@ -36,6 +61,38 @@ describe("oxlint-config-awesomeness", () => {
 
   it("enforces one component per file outside stories and tests", () => {
     expect(config.rules["react/no-multi-comp"]).toBe("error");
+
+    const testOverride = config.overrides.find((override) =>
+      override.files.includes("**/__tests__/**"),
+    );
+    expect(testOverride.files).toEqual(["**/*.test.*", "**/*.spec.*", "**/__tests__/**"]);
+    expect(testOverride.rules["react/no-multi-comp"]).toBe("off");
+  });
+
+  it("exempts complete line-comment license headers", () => {
+    const licenseLines = [
+      " Copyright (c) 2026 Example",
+      ' Licensed under the Apache License, Version 2.0 (the "License");',
+      " you may not use this file except in compliance with the License.",
+      " You may obtain a copy of the License at",
+      " https://www.apache.org/licenses/LICENSE-2.0",
+      " Unless required by applicable law or agreed to in writing, software",
+      ' distributed under the License is distributed on an "AS IS" BASIS,',
+      " WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.",
+      " See the License for the specific language governing permissions and",
+      " limitations under the License.",
+    ];
+    const comments = licenseLines.map((line, index) => createLineComment(line, index + 1));
+
+    expect(runNoNovelComments(comments)).toEqual([]);
+  });
+
+  it("reports long line-comment runs without a license marker", () => {
+    const comments = Array.from({ length: 6 }, (_, index) =>
+      createLineComment(` prose ${index + 1}`, index + 1),
+    );
+
+    expect(runNoNovelComments(comments)).toHaveLength(1);
   });
 
   it("has the expected top-level keys", () => {
