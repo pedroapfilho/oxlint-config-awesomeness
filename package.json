@@ -21,11 +21,22 @@
     "index.js",
     "index.d.ts",
     "bin/init.js",
-    "bin/template.ts"
+    "bin/template.ts",
+    "anti-slop",
+    "awesomeness"
   ],
   "type": "module",
   "sideEffects": false,
   "main": "index.js",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./anti-slop": "./anti-slop/index.js",
+    "./awesomeness": "./awesomeness/index.js",
+    "./package.json": "./package.json"
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -46,23 +57,24 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@oxlint/plugins": "^1.78.0",
     "eslint-plugin-no-only-tests": "^3.4.0",
-    "eslint-plugin-perfectionist": "^5.9.0",
+    "eslint-plugin-perfectionist": "^5.10.1",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-unused-imports": "~4.4.1",
-    "oxlint-plugin-react-doctor": "^0.9.6"
+    "oxlint-plugin-react-doctor": "^0.9.11"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.31.0",
-    "fallow": "^2.85.0",
+    "@changesets/cli": "^3.0.0",
+    "fallow": "^3.14.0",
     "husky": "^9.1.7",
-    "lint-staged": "^17.0.7",
-    "oxfmt": "^0.52.0",
-    "oxlint": "^1.75.0",
-    "vitest": "^4.1.8"
+    "lint-staged": "^17.3.0",
+    "oxfmt": "^0.63.0",
+    "oxlint": "^1.78.0",
+    "vitest": "^4.1.10"
   },
   "peerDependencies": {
-    "oxlint": ">=1.75.0 <2.0.0"
+    "oxlint": ">=1.78.0 <2.0.0"
   },
   "lint-staged": {
     "!(*.d).{ts,tsx,mts,cts,js,jsx,mjs,cjs}": [

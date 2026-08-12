@@ -2,7 +2,7 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-**450 rules** across **10 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+**451 rules** across **16 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
@@ -118,21 +118,21 @@ export default defineConfig({
 | promise       | 13    | Async/promise handling                         |
 | node          | 2     | Node.js environment rules                      |
 
-Plus JS plugins: **perfectionist** (sorting), **react-hooks** + **React Compiler**, **no-only-tests**, **unused-imports**.
+Plus JS plugins: **perfectionist** (sorting), **react-hooks** + **React Compiler**, **no-only-tests**, **unused-imports**, **react-doctor** (352 diagnostics), **anti-slop** (vendored, low-evidence TypeScript patterns), and the first-party **awesomeness** plugin.
 
 ## File-Type Overrides
 
 The config includes smart overrides so strict rules don't create noise in files that need flexibility:
 
-| Files                                    | Relaxed Rules                                                                                                                                                                                                                                                                                                              |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `*.test.ts`, `*.spec.ts`, `__tests__/**` | `no-explicit-any`, `no-non-null-assertion` (+ asserted-nullish variant), `no-require-imports`, `no-var-requires`, `promise-function-async`, all `no-unsafe-*`, `import/no-cycle`, `max-lines`, `max-lines-per-function`, `max-nested-callbacks`, `max-statements`, `no-empty`, `no-empty-function`, `no-use-before-define` |
-| `*.stories.tsx`                          | `no-console`, `no-multi-comp`                                                                                                                                                                                                                                                                                              |
-| `**/seed.ts`, `**/migrate.ts`            | `no-console`                                                                                                                                                                                                                                                                                                               |
-| `**/bin/**`, `scripts/**`                | `no-console`, `unicorn/no-process-exit`                                                                                                                                                                                                                                                                                    |
-| `*.config.ts`, `next.config.*`, etc.     | `max-lines`, `no-anonymous-default-export`                                                                                                                                                                                                                                                                                 |
-| `**/e2e/**/fixtures/**`                  | `rules-of-hooks`                                                                                                                                                                                                                                                                                                           |
-| `*.ts`, `*.tsx` (all TypeScript)         | Rules handled natively by the TS compiler (`no-undef`, `no-redeclare`, etc.)                                                                                                                                                                                                                                               |
+| Files                                  | Relaxed Rules                                                                                                                                                                                                                                                                                                                                     |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `*.test.*`, `*.spec.*`, `__tests__/**` | `no-explicit-any`, `no-non-null-assertion` (+ asserted-nullish variant), `no-require-imports`, `no-var-requires`, `promise-function-async`, all `no-unsafe-*`, `import/no-cycle`, `max-lines`, `max-lines-per-function`, `max-nested-callbacks`, `max-statements`, `no-empty`, `no-empty-function`, `no-use-before-define`, `react/no-multi-comp` |
+| `*.stories.tsx`                        | `no-console`, `no-multi-comp`                                                                                                                                                                                                                                                                                                                     |
+| `**/seed.ts`, `**/migrate.ts`          | `no-console`                                                                                                                                                                                                                                                                                                                                      |
+| `**/bin/**`, `scripts/**`              | `no-console`, `unicorn/no-process-exit`                                                                                                                                                                                                                                                                                                           |
+| `*.config.ts`, `next.config.*`, etc.   | `max-lines`, `no-anonymous-default-export`                                                                                                                                                                                                                                                                                                        |
+| `**/e2e/**/fixtures/**`                | `rules-of-hooks`                                                                                                                                                                                                                                                                                                                                  |
+| `*.ts`, `*.tsx` (all TypeScript)       | Rules handled natively by the TS compiler (`no-undef`, `no-redeclare`, etc.)                                                                                                                                                                                                                                                                      |
 
 ## Cherry-Picked Restriction Rules
 
@@ -145,7 +145,7 @@ Instead of enabling the entire `restriction` category (which includes rules like
 `@typescript-eslint/no-dynamic-delete`, `no-empty-object-type`, `no-explicit-any`, `no-import-type-side-effects`, `no-invalid-void-type`, `no-non-null-asserted-nullish-coalescing`, `no-non-null-assertion`, `no-require-imports`, `no-var-requires`, `promise-function-async`, `use-unknown-in-catch-callback-variable`
 
 **React**
-`react/button-has-type`, `react/no-danger`, `react/no-unknown-property`
+`react/button-has-type`, `react/no-danger`, `react/no-multi-comp`, `react/no-unknown-property`
 
 **Import graph**
 `import/no-cycle`
@@ -2255,6 +2255,20 @@ with (obj) {
 obj.foo = 1;
 ```
 
+### one-var
+
+Require one declaration per variable; never comma-combine declarations.
+
+```js
+// bad
+const a = 1,
+  b = 2;
+
+// good
+const a = 1;
+const b = 2;
+```
+
 ### operator-assignment
 
 Require shorthand operators where possible.
@@ -2437,6 +2451,18 @@ async function fn() {
 async function fn() {
   return await fetchData();
 }
+```
+
+### require-unicode-regexp
+
+Require the `v` flag on regular expressions for Unicode-aware matching with set notation.
+
+```js
+// bad
+const re = /[a-z]/;
+
+// good
+const re = /[a-z]/v;
 ```
 
 ### require-yield
@@ -2984,6 +3010,18 @@ const x: number = 1;
 
 // good
 const x = 1;
+```
+
+### @typescript-eslint/no-invalid-void-type
+
+Disallow `void` outside of return types and generic type arguments.
+
+```ts
+// bad
+const log = (message: void) => {};
+
+// good
+const log = (message: string): void => {};
 ```
 
 ### @typescript-eslint/no-loop-func
@@ -3936,6 +3974,20 @@ function fn(x: number): void;
 function fn(x: string | number): void;
 ```
 
+### @typescript-eslint/use-unknown-in-catch-callback-variable
+
+Require `unknown` for the error parameter of Promise `.catch()` and `.then()` rejection callbacks.
+
+```ts
+// bad
+promise.catch((err: Error) => log(err.message));
+
+// good
+promise.catch((err: unknown) => {
+  if (err instanceof Error) log(err.message);
+});
+```
+
 ## React Rules
 
 ### react/button-has-type
@@ -4004,6 +4056,20 @@ const Comp = forwardRef((props, ref) => <div />);
 
 // good
 const Comp = forwardRef((props, ref) => <div ref={ref} />);
+```
+
+### react/function-component-definition
+
+Enforce arrow-function components for both named and unnamed components.
+
+```tsx
+// bad
+function Card() {
+  return <div />;
+}
+
+// good
+const Card = () => <div />;
 ```
 
 ### react/iframe-missing-sandbox
@@ -7590,6 +7656,18 @@ function fn(...args) {
 }
 ```
 
+### oxc/bad-match-all-arg
+
+Require the global flag on regular expressions passed to `matchAll`; without it the call throws at runtime.
+
+```js
+// bad
+str.matchAll(/x/);
+
+// good
+str.matchAll(/x/gv);
+```
+
 ### oxc/bad-bitwise-operator
 
 Flag potentially incorrect bitwise operators.
@@ -7811,6 +7889,18 @@ arr.forEach((x) => console.log(x));
 
 ## Node Rules
 
+### node/exports-style
+
+Require `module.exports` over the `exports` alias in CommonJS files.
+
+```js
+// bad
+exports.foo = 1;
+
+// good
+module.exports = { foo: 1 };
+```
+
 ### node/handle-callback-err
 
 Require error handling in callbacks.
@@ -7851,6 +7941,18 @@ const app = new require("express")();
 // good
 const express = require("express");
 const app = express();
+```
+
+### node/no-path-concat
+
+Disallow string concatenation with `__dirname` and `__filename`; use `path.join` so paths work on every platform.
+
+```js
+// bad
+const file = __dirname + "/config.json";
+
+// good
+const file = path.join(__dirname, "config.json");
 ```
 
 ### node/no-process-env
@@ -7933,3 +8035,5283 @@ Disallow `.only` in test files to prevent accidentally committing focused tests 
 ### unused-imports/no-unused-imports
 
 Automatically remove import statements that are not referenced anywhere in the file.
+
+## Anti-Slop Rules
+
+Vendored from [dmmulroy/anti-slop](https://github.com/dmmulroy/anti-slop) (MIT) until upstream publishes to npm. These reject patterns that fake type evidence instead of establishing it: the assertion and widening escape hatches AI-generated code reaches for beyond plain `any`.
+
+### anti-slop/no-chained-type-assertions
+
+Disallow chained type assertions that launder a value into an unrelated type. Severity: `error`.
+
+```ts
+// bad
+const user = JSON.parse(raw) as unknown as User;
+
+// good
+const user = userSchema.parse(JSON.parse(raw));
+```
+
+### anti-slop/no-conditional-empty-object-spread
+
+Disallow spreading a conditional that falls back to an empty object to omit fields. Severity: `error`.
+
+```ts
+// bad
+const payload = { ...(id !== undefined ? { id } : {}) };
+
+// good
+const payload = { id };
+```
+
+### anti-slop/no-known-value-widening
+
+Disallow annotating a known value with a broad type that discards what TypeScript already inferred. Severity: `error`.
+
+```ts
+// bad
+const mode: string = "dark";
+
+// good
+const mode = "dark";
+```
+
+### anti-slop/no-object-parameters
+
+Disallow the broad `object` type on function parameters. Severity: `error`.
+
+```ts
+// bad
+const track = (event: object) => send(event);
+
+// good
+const track = (event: AnalyticsEvent) => send(event);
+```
+
+### anti-slop/no-runtime-typeof
+
+Disallow runtime `typeof` checks in favor of parsing at the I/O boundary. Severity: `off` in this config: the rule flags every `typeof`, including the `typeof window` SSR guards other enabled rules steer toward and ordinary `typeof x === "string"` narrowing.
+
+```ts
+// what it would flag
+if (typeof input === "string") {
+  use(input);
+}
+
+// what it wants
+const parsed = inputSchema.parse(input);
+use(parsed);
+```
+
+### anti-slop/no-shape-in-symbol-names
+
+Disallow the case-insensitive substring "shape" in symbol names. Severity: `warn`, not error, because it also matches zod's `schema.shape` introspection API.
+
+```ts
+// bad
+const responseShape = { id: 0 };
+
+// good
+const response = { id: 0 };
+```
+
+### anti-slop/no-unknown-parameters
+
+Disallow `unknown` function parameters except the `cause` convention; decode input at its I/O boundary instead. Severity: `warn`, not error, because `use-unknown-in-catch-callback-variable` autofixes catch callbacks to the exact `(err: unknown)` annotation this rule flags.
+
+```ts
+// bad
+const handle = (value: unknown) => process(value);
+
+// good
+const handle = (value: Payload) => process(value);
+```
+
+### anti-slop/no-unknown-type-aliases
+
+Disallow type aliases that only rename `unknown`. Severity: `error`.
+
+```ts
+// bad
+type Payload = unknown;
+
+// good
+type Payload = { id: string; body: string };
+```
+
+### anti-slop/no-unsafe-dictionary-type
+
+Disallow dictionary value types that are `unknown`, `any`, `object`, or `{}`. Severity: `error`.
+
+```ts
+// bad
+type Flags = Record<string, unknown>;
+
+// good
+type Flags = Record<string, boolean>;
+```
+
+### anti-slop/no-widen-then-assert
+
+Disallow widening a known value and then asserting it back to a narrow type. Severity: `error`.
+
+```ts
+// bad
+const status: string = "active";
+use(status as "active");
+
+// good
+const status = "active";
+use(status);
+```
+
+## Awesomeness Rules
+
+First-party rules that ship with this config.
+
+### awesomeness/no-novel-comments
+
+Disallow block comments or contiguous runs of line comments longer than 5 lines. Directive comments (`eslint-`, `oxlint-`, `@ts-`, and similar) and license headers are exempt. Severity: `error`.
+
+```ts
+// bad
+// This helper takes the list of users we fetched earlier,
+// checks each one to see whether the account is active,
+// then maps over the remaining users to pull out their emails,
+// lowercases each email so comparisons behave consistently,
+// sorts the result alphabetically for stable output,
+// and finally returns the deduplicated list to the caller.
+const activeEmails = (users: Array<User>) => dedupe(sortedEmails(users));
+
+// good
+// Dedupe AFTER lowercasing: the upstream CRM exports mixed-case duplicates.
+const activeEmails = (users: Array<User>) => dedupe(sortedEmails(users));
+```
+
+## React Doctor Rules
+
+Original diagnostics from [oxlint-plugin-react-doctor](https://www.npmjs.com/package/oxlint-plugin-react-doctor), enabled at upstream severities: `warn` means advisory, `error` means definite bug. Ports of native react/jsx-a11y/react-hooks rules already covered above are excluded, as are rules gated on libraries the fleet does not ship.
+
+## React Doctor: Accessibility
+
+### react-doctor/anchor-target-exists
+
+Require in-page anchor links to point at an element that exists. Severity: `warn`.
+
+```tsx
+// bad
+<a href="#pricing">Pricing</a>
+// no element with id="pricing" is rendered
+
+// good
+<a href="#pricing">Pricing</a>
+<section id="pricing">…</section>
+```
+
+### react-doctor/aria-braille-equivalent
+
+Require elements using `aria-braillelabel` or `aria-brailleroledescription` to also have a matching non-braille equivalent. Severity: `warn`.
+
+```tsx
+// bad
+<button aria-braillelabel="btn">Save</button>
+
+// good
+<button aria-label="Save" aria-braillelabel="Save">Save</button>
+```
+
+### react-doctor/data-table-requires-accessible-name
+
+Require data tables to have an accessible name via `<caption>`, `aria-label`, or `aria-labelledby`. Severity: `warn`.
+
+```tsx
+// bad
+<table>
+  <tr><th>Name</th><th>Price</th></tr>
+</table>
+
+// good
+<table aria-label="Product prices">
+  <tr><th>Name</th><th>Price</th></tr>
+</table>
+```
+
+### react-doctor/details-requires-summary
+
+Require `<details>` elements to contain a `<summary>` child. Severity: `warn`.
+
+```tsx
+// bad
+<details>
+  <p>Shipping takes 3 to 5 days.</p>
+</details>
+
+// good
+<details>
+  <summary>Shipping info</summary>
+  <p>Shipping takes 3 to 5 days.</p>
+</details>
+```
+
+### react-doctor/dialog-has-accessible-name
+
+Require dialogs to have an accessible name via `aria-label` or `aria-labelledby`. Severity: `warn`.
+
+```tsx
+// bad
+<div role="dialog">…</div>
+
+// good
+<div role="dialog" aria-labelledby="dialog-title">
+  <h2 id="dialog-title">Confirm deletion</h2>
+</div>
+```
+
+### react-doctor/empty-table-header
+
+Disallow empty `<th>` elements in table headers. Severity: `warn`.
+
+```tsx
+// bad
+<tr><th></th><th>Price</th></tr>
+
+// good
+<tr><th>Name</th><th>Price</th></tr>
+```
+
+### react-doctor/fieldset-requires-legend
+
+Require `<fieldset>` elements to contain a `<legend>`. Severity: `warn`.
+
+```tsx
+// bad
+<fieldset>
+  <input type="radio" name="plan" /> Basic
+</fieldset>
+
+// good
+<fieldset>
+  <legend>Plan</legend>
+  <input type="radio" name="plan" /> Basic
+</fieldset>
+```
+
+### react-doctor/html-xml-lang-mismatch
+
+Require `lang` and `xml:lang` attributes on `<html>` to match. Severity: `warn`.
+
+```tsx
+// bad
+<html lang="en" xml:lang="fr" />
+
+// good
+<html lang="en" xml:lang="en" />
+```
+
+### react-doctor/iframe-title-unique
+
+Require each `<iframe>` title to be unique within the page. Severity: `warn`.
+
+```tsx
+// bad
+<iframe title="Embedded content" src="/map" />
+<iframe title="Embedded content" src="/video" />
+
+// good
+<iframe title="Store location map" src="/map" />
+<iframe title="Product demo video" src="/video" />
+```
+
+### react-doctor/loading-action-preserves-trigger
+
+Require the control that triggered an async action to stay rendered in a loading state instead of being swapped out. Severity: `warn`.
+
+```tsx
+// bad
+{
+  isSaving ? <Spinner /> : <button onClick={save}>Save</button>;
+}
+
+// good
+<button onClick={save} disabled={isSaving}>
+  {isSaving ? <Spinner /> : null} Save
+</button>;
+```
+
+### react-doctor/no-all-caps-body-text
+
+Disallow all-caps styling on body text. Severity: `warn`.
+
+```tsx
+// bad
+<p style={{ textTransform: "uppercase" }}>Read our full terms of service.</p>
+
+// good
+<p>Read our full terms of service.</p>
+```
+
+### react-doctor/no-arbitrary-px-font-size
+
+Disallow arbitrary pixel font sizes; use relative units or scale tokens. Severity: `warn`.
+
+```tsx
+// bad
+<p style={{ fontSize: "13px" }}>Details</p>
+
+// good
+<p style={{ fontSize: "0.875rem" }}>Details</p>
+```
+
+### react-doctor/no-aria-hidden-on-body
+
+Disallow `aria-hidden` on the `<body>` element. Severity: `error`.
+
+```tsx
+// bad
+<body aria-hidden="true">…</body>
+
+// good
+<body>…</body>
+```
+
+### react-doctor/no-aria-invalid-without-description
+
+Require inputs marked `aria-invalid` to reference an error description. Severity: `warn`.
+
+```tsx
+// bad
+<input aria-invalid="true" />
+
+// good
+<input aria-invalid="true" aria-describedby="email-error" />
+<p id="email-error">Enter a valid email address.</p>
+```
+
+### react-doctor/no-assertive-status
+
+Disallow `aria-live="assertive"` or `role="alert"` for non-critical status updates. Severity: `warn`.
+
+```tsx
+// bad
+<div role="alert">3 results found</div>
+
+// good
+<div role="status">3 results found</div>
+```
+
+### react-doctor/no-autoplay-without-muted
+
+Disallow autoplaying media that is not muted. Severity: `warn`.
+
+```tsx
+// bad
+<video autoPlay src="/intro.mp4" />
+
+// good
+<video autoPlay muted src="/intro.mp4" />
+```
+
+### react-doctor/no-blocked-paste
+
+Disallow blocking paste on inputs. Severity: `error`.
+
+```tsx
+// bad
+<input onPaste={(e) => e.preventDefault()} />
+
+// good
+<input />
+```
+
+### react-doctor/no-controlled-selection-focus-effect
+
+Disallow effects that move focus in response to controlled selection changes. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  itemRefs.current[selectedIndex]?.focus();
+}, [selectedIndex]);
+
+// good
+const handleKeyDown = (e) => {
+  if (e.key === "ArrowDown") itemRefs.current[selectedIndex + 1]?.focus();
+};
+```
+
+### react-doctor/no-cramped-container-padding
+
+Disallow containers with padding too small for their content. Severity: `warn`.
+
+```tsx
+// bad
+<div style={{ padding: "1px", border: "1px solid" }}>Card content</div>
+
+// good
+<div style={{ padding: "16px", border: "1px solid" }}>Card content</div>
+```
+
+### react-doctor/no-crushed-letter-spacing
+
+Disallow negative letter spacing that crushes text legibility. Severity: `warn`.
+
+```tsx
+// bad
+<p style={{ letterSpacing: "-0.1em" }}>Terms and conditions</p>
+
+// good
+<p style={{ letterSpacing: "normal" }}>Terms and conditions</p>
+```
+
+### react-doctor/no-duplicate-static-id-reference
+
+Disallow multiple rendered elements sharing the same static `id` referenced by ARIA attributes. Severity: `error`.
+
+```tsx
+// bad
+{
+  items.map((item) => <input key={item.id} id="field" aria-describedby="hint" />);
+}
+
+// good
+{
+  items.map((item) => (
+    <input key={item.id} id={`field-${item.id}`} aria-describedby={`hint-${item.id}`} />
+  ));
+}
+```
+
+### react-doctor/no-focus-in-animation-completion-handler
+
+Disallow moving focus inside animation completion handlers. Severity: `warn`.
+
+```tsx
+// bad
+<div onAnimationEnd={() => inputRef.current?.focus()} />;
+
+// good
+useEffect(() => {
+  if (isOpen) inputRef.current?.focus();
+}, [isOpen]);
+```
+
+### react-doctor/no-focusable-content-in-aria-hidden
+
+Disallow focusable elements inside `aria-hidden` containers. Severity: `warn`.
+
+```tsx
+// bad
+<div aria-hidden="true">
+  <button>Close</button>
+</div>
+
+// good
+<div aria-hidden="true" inert="">
+  <button tabIndex={-1}>Close</button>
+</div>
+```
+
+### react-doctor/no-focusable-content-in-role-text
+
+Disallow focusable elements inside containers with `role="text"`. Severity: `warn`.
+
+```tsx
+// bad
+<span role="text">
+  Read the <a href="/terms">terms</a>
+</span>
+
+// good
+<span>
+  Read the <a href="/terms">terms</a>
+</span>
+```
+
+### react-doctor/no-hover-only-reveal
+
+Disallow revealing interactive content on hover only, without a focus or keyboard equivalent. Severity: `warn`.
+
+```tsx
+// bad
+<div className="group">
+  <button className="opacity-0 group-hover:opacity-100">Delete</button>
+</div>
+
+// good
+<div className="group">
+  <button className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100">Delete</button>
+</div>
+```
+
+### react-doctor/no-inert-pointer-affordance
+
+Disallow pointer affordances like `cursor: pointer` on non-interactive elements. Severity: `warn`.
+
+```tsx
+// bad
+<div style={{ cursor: "pointer" }} onClick={open}>Open</div>
+
+// good
+<button onClick={open}>Open</button>
+```
+
+### react-doctor/no-invalid-progress-range
+
+Disallow progress values outside the declared min/max range. Severity: `error`.
+
+```tsx
+// bad
+<div role="progressbar" aria-valuenow={150} aria-valuemin={0} aria-valuemax={100} />
+
+// good
+<div role="progressbar" aria-valuenow={75} aria-valuemin={0} aria-valuemax={100} />
+```
+
+### react-doctor/no-invisible-focus-control
+
+Disallow focusable controls that are visually hidden while remaining in the tab order. Severity: `warn`.
+
+```tsx
+// bad
+<button style={{ opacity: 0 }}>Submit</button>
+
+// good
+<button style={{ opacity: 0 }} tabIndex={-1} aria-hidden="true">Submit</button>
+```
+
+### react-doctor/no-low-contrast-inline-style
+
+Disallow inline styles with insufficient text contrast. Severity: `warn`.
+
+```tsx
+// bad
+<p style={{ color: "#bbbbbb", background: "#ffffff" }}>Notice</p>
+
+// good
+<p style={{ color: "#444444", background: "#ffffff" }}>Notice</p>
+```
+
+### react-doctor/no-multiple-main-landmarks
+
+Disallow more than one `<main>` landmark per page. Severity: `warn`.
+
+```tsx
+// bad
+<main>Primary content</main>
+<main>Secondary content</main>
+
+// good
+<main>Primary content</main>
+<section aria-label="Related">Secondary content</section>
+```
+
+### react-doctor/no-multiple-unlabeled-navigation-landmarks
+
+Require multiple navigation landmarks on a page to have distinguishing labels. Severity: `warn`.
+
+```tsx
+// bad
+<nav>…</nav>
+<nav>…</nav>
+
+// good
+<nav aria-label="Primary">…</nav>
+<nav aria-label="Footer">…</nav>
+```
+
+### react-doctor/no-nonresizable-textarea
+
+Disallow disabling resize on textareas. Severity: `warn`.
+
+```tsx
+// bad
+<textarea style={{ resize: "none" }} />
+
+// good
+<textarea style={{ resize: "vertical" }} />
+```
+
+### react-doctor/no-overwide-text-measure
+
+Disallow text containers wider than a readable line length. Severity: `warn`.
+
+```tsx
+// bad
+<p style={{ maxWidth: "1200px" }}>Long article paragraph…</p>
+
+// good
+<p style={{ maxWidth: "65ch" }}>Long article paragraph…</p>
+```
+
+### react-doctor/no-placeholder-only-field
+
+Disallow using a placeholder as the only label for a form field. Severity: `warn`.
+
+```tsx
+// bad
+<input placeholder="Email" />
+
+// good
+<label htmlFor="email">Email</label>
+<input id="email" placeholder="name@example.com" />
+```
+
+### react-doctor/no-pointer-disabled-enabled-control
+
+Disallow `pointer-events: none` on controls that are still enabled and focusable. Severity: `warn`.
+
+```tsx
+// bad
+<button style={{ pointerEvents: "none" }}>Save</button>
+
+// good
+<button disabled>Save</button>
+```
+
+### react-doctor/no-presentation-role-conflict
+
+Disallow `role="presentation"` or `role="none"` on elements with ARIA attributes or interactivity. Severity: `warn`.
+
+```tsx
+// bad
+<img role="presentation" alt="Company logo" />
+
+// good
+<img role="presentation" alt="" />
+```
+
+### react-doctor/no-reduced-motion-content-removal
+
+Disallow hiding content entirely under `prefers-reduced-motion` instead of reducing its motion. Severity: `warn`.
+
+```tsx
+// bad
+<div className="motion-reduce:hidden animate-fade-in">Announcement</div>
+
+// good
+<div className="motion-reduce:animate-none animate-fade-in">Announcement</div>
+```
+
+### react-doctor/no-responsive-hidden-accessible-name
+
+Disallow hiding a control's only accessible name at some breakpoints. Severity: `warn`.
+
+```tsx
+// bad
+<button>
+  <TrashIcon />
+  <span className="hidden md:inline">Delete</span>
+</button>
+
+// good
+<button aria-label="Delete">
+  <TrashIcon />
+  <span className="hidden md:inline">Delete</span>
+</button>
+```
+
+### react-doctor/no-server-side-image-map
+
+Disallow server-side image maps. Severity: `warn`.
+
+```tsx
+// bad
+<a href="/map"><img src="/regions.png" ismap /></a>
+
+// good
+<img src="/regions.png" useMap="#regions" />
+```
+
+### react-doctor/no-skipped-heading-level
+
+Disallow skipping heading levels. Severity: `warn`.
+
+```tsx
+// bad
+<h1>Dashboard</h1>
+<h3>Recent activity</h3>
+
+// good
+<h1>Dashboard</h1>
+<h2>Recent activity</h2>
+```
+
+### react-doctor/no-small-form-control-text
+
+Disallow form control text smaller than a legible size. Severity: `warn`.
+
+```tsx
+// bad
+<input style={{ fontSize: "11px" }} />
+
+// good
+<input style={{ fontSize: "16px" }} />
+```
+
+### react-doctor/no-smooth-scroll-without-reduced-motion
+
+Disallow smooth scrolling without a `prefers-reduced-motion` gate. Severity: `warn`.
+
+```tsx
+// bad
+window.scrollTo({ top: 0, behavior: "smooth" });
+
+// good
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+```
+
+### react-doctor/no-tight-body-leading
+
+Disallow body text line height below a readable minimum. Severity: `warn`.
+
+```tsx
+// bad
+<p style={{ lineHeight: 1.1 }}>Long paragraph of body copy…</p>
+
+// good
+<p style={{ lineHeight: 1.5 }}>Long paragraph of body copy…</p>
+```
+
+### react-doctor/no-transitioned-composite-widget-state
+
+Disallow CSS transitions on composite widget state changes like selection or expansion. Severity: `warn`.
+
+```tsx
+// bad
+<li role="option" className="transition-all" aria-selected={isSelected}>…</li>
+
+// good
+<li role="option" aria-selected={isSelected}>…</li>
+```
+
+### react-doctor/no-transitioned-focus-ring
+
+Disallow transitioning the focus ring; focus indication must appear instantly. Severity: `warn`.
+
+```tsx
+// bad
+<button className="transition-all focus-visible:ring-2">Save</button>
+
+// good
+<button className="transition-colors focus-visible:ring-2">Save</button>
+```
+
+### react-doctor/no-undersized-icon-button
+
+Disallow icon-only buttons with hit targets smaller than the minimum size. Severity: `warn`.
+
+```tsx
+// bad
+<button aria-label="Close" style={{ width: 16, height: 16 }}><XIcon /></button>
+
+// good
+<button aria-label="Close" style={{ width: 44, height: 44 }}><XIcon /></button>
+```
+
+### react-doctor/no-ungated-tailwind-animation
+
+Require Tailwind `animate-*` classes to be gated with a `motion-reduce` variant. Severity: `warn`.
+
+```tsx
+// bad
+<div className="animate-bounce">New</div>
+
+// good
+<div className="animate-bounce motion-reduce:animate-none">New</div>
+```
+
+### react-doctor/no-uninformative-aria-label
+
+Disallow `aria-label` values that add no information, like "button" or "image". Severity: `warn`.
+
+```tsx
+// bad
+<button aria-label="button"><TrashIcon /></button>
+
+// good
+<button aria-label="Delete item"><TrashIcon /></button>
+```
+
+### react-doctor/radio-input-missing-name
+
+Require radio inputs to have a `name` so they form a group. Severity: `warn`.
+
+```tsx
+// bad
+<input type="radio" value="basic" />
+<input type="radio" value="pro" />
+
+// good
+<input type="radio" name="plan" value="basic" />
+<input type="radio" name="plan" value="pro" />
+```
+
+### react-doctor/role-button-requires-complete-keyboard-activation
+
+Require elements with `role="button"` to handle both Enter and Space activation. Severity: `warn`.
+
+```tsx
+// bad
+<div role="button" tabIndex={0} onClick={submit}>Submit</div>
+
+// good
+<div
+  role="button"
+  tabIndex={0}
+  onClick={submit}
+  onKeyDown={(e) => {
+    if (e.key === "Enter" || e.key === " ") submit();
+  }}
+>
+  Submit
+</div>
+```
+
+## React Doctor: Architecture
+
+### react-doctor/no-giant-component
+
+Disallow components that grow beyond a maintainable size. Severity: `warn`.
+
+```tsx
+// bad
+const Dashboard = () => {
+  // hundreds of lines of state, effects, and JSX in one component
+};
+
+// good
+const Dashboard = () => (
+  <>
+    <DashboardHeader />
+    <DashboardStats />
+    <DashboardFeed />
+  </>
+);
+```
+
+### react-doctor/no-legacy-class-lifecycles
+
+Disallow legacy class lifecycle methods like `componentWillMount` and `componentWillReceiveProps`. Severity: `error`.
+
+```tsx
+// bad
+class Panel extends React.Component {
+  componentWillReceiveProps(next) {
+    this.setState({ value: next.value });
+  }
+}
+
+// good
+const Panel = ({ value }) => <div>{value}</div>;
+```
+
+### react-doctor/no-legacy-context-api
+
+Disallow the legacy context API (`childContextTypes`, `getChildContext`, `contextTypes`). Severity: `error`.
+
+```tsx
+// bad
+class Provider extends React.Component {
+  getChildContext() {
+    return { theme: "dark" };
+  }
+}
+
+// good
+const ThemeContext = React.createContext("dark");
+<ThemeContext.Provider value="dark">{children}</ThemeContext.Provider>;
+```
+
+### react-doctor/no-many-boolean-props
+
+Disallow components that take many boolean props; use a variant prop instead. Severity: `warn`.
+
+```tsx
+// bad
+<Button primary large rounded outlined disabled />
+
+// good
+<Button variant="primary" size="large" shape="rounded" disabled />
+```
+
+### react-doctor/no-nested-component-definition
+
+Disallow defining a component inside another component's render. Severity: `error`.
+
+```tsx
+// bad
+const List = ({ items }) => {
+  const Row = ({ item }) => <li>{item.name}</li>;
+  return (
+    <ul>
+      {items.map((i) => (
+        <Row key={i.id} item={i} />
+      ))}
+    </ul>
+  );
+};
+
+// good
+const Row = ({ item }) => <li>{item.name}</li>;
+const List = ({ items }) => (
+  <ul>
+    {items.map((i) => (
+      <Row key={i.id} item={i} />
+    ))}
+  </ul>
+);
+```
+
+### react-doctor/no-react-dom-deprecated-apis
+
+Disallow deprecated ReactDOM APIs like `render` and `hydrate`. Severity: `warn`.
+
+```tsx
+// bad
+ReactDOM.render(<App />, document.getElementById("root"));
+
+// good
+createRoot(document.getElementById("root")).render(<App />);
+```
+
+### react-doctor/no-react19-deprecated-apis
+
+Disallow APIs removed or deprecated in React 19, like `defaultProps` on functions and string refs. Severity: `warn`.
+
+```tsx
+// bad
+const Badge = ({ label }) => <span>{label}</span>;
+Badge.defaultProps = { label: "New" };
+
+// good
+const Badge = ({ label = "New" }) => <span>{label}</span>;
+```
+
+### react-doctor/no-render-in-render
+
+Disallow calling a component as a plain function inside render. Severity: `warn`.
+
+```tsx
+// bad
+<div>{Header({ title })}</div>
+
+// good
+<div><Header title={title} /></div>
+```
+
+### react-doctor/no-render-prop-children
+
+Disallow passing a function as `children` when composition works. Severity: `warn`.
+
+```tsx
+// bad
+<Card>{() => <p>Content</p>}</Card>
+
+// good
+<Card><p>Content</p></Card>
+```
+
+### react-doctor/prefer-explicit-variants
+
+Prefer an explicit variant string prop over combinations of boolean flags. Severity: `warn`.
+
+```tsx
+// bad
+<Alert isError={!isWarning} isWarning={isWarning} />
+
+// good
+<Alert variant={isWarning ? "warning" : "error"} />
+```
+
+### react-doctor/prefer-module-scope-pure-function
+
+Prefer moving pure functions that use no component state to module scope. Severity: `warn`.
+
+```tsx
+// bad
+const Price = ({ cents }) => {
+  const format = (n) => `$${(n / 100).toFixed(2)}`;
+  return <span>{format(cents)}</span>;
+};
+
+// good
+const format = (n) => `$${(n / 100).toFixed(2)}`;
+const Price = ({ cents }) => <span>{format(cents)}</span>;
+```
+
+### react-doctor/prefer-module-scope-static-value
+
+Prefer moving static values that never change to module scope. Severity: `warn`.
+
+```tsx
+// bad
+const Menu = () => {
+  const items = ["Home", "About", "Contact"];
+  return <Nav items={items} />;
+};
+
+// good
+const ITEMS = ["Home", "About", "Contact"];
+const Menu = () => <Nav items={ITEMS} />;
+```
+
+## React Doctor: Correctness
+
+### react-doctor/html-no-invalid-paragraph-child
+
+Disallow block-level elements as children of `<p>`. Severity: `warn`.
+
+```tsx
+// bad
+<p>Summary <div>Details</div></p>
+
+// good
+<p>Summary</p>
+<div>Details</div>
+```
+
+### react-doctor/html-no-invalid-table-nesting
+
+Disallow invalid nesting inside tables, like a `<div>` directly in a `<table>`. Severity: `warn`.
+
+```tsx
+// bad
+<table><div>Row</div></table>
+
+// good
+<table><tbody><tr><td>Row</td></tr></tbody></table>
+```
+
+### react-doctor/html-no-nested-interactive
+
+Disallow nesting interactive elements inside other interactive elements. Severity: `warn`.
+
+```tsx
+// bad
+<button><a href="/docs">Docs</a></button>
+
+// good
+<a href="/docs">Docs</a>
+```
+
+### react-doctor/no-jsx-element-type
+
+Disallow `JSX.Element` as a prop or return type; use `ReactNode` or `ReactElement`. Severity: `error`.
+
+```ts
+// bad
+type Props = { icon: JSX.Element };
+
+// good
+type Props = { icon: ReactNode };
+```
+
+### react-doctor/no-polymorphic-children
+
+Disallow children whose type changes shape depending on props. Severity: `warn`.
+
+```tsx
+// bad
+<Button as="a">{isLink ? <a href="/docs">Docs</a> : "Docs"}</Button>;
+
+// good
+{
+  isLink ? (
+    <Button as="a" href="/docs">
+      Docs
+    </Button>
+  ) : (
+    <Button>Docs</Button>
+  );
+}
+```
+
+### react-doctor/no-prevent-default
+
+Disallow calling `preventDefault` where it breaks native behavior instead of using the proper alternative. Severity: `warn`.
+
+```tsx
+// bad
+<a href="/docs" onClick={(e) => { e.preventDefault(); navigate("/docs"); }}>Docs</a>
+
+// good
+<Link href="/docs">Docs</Link>
+```
+
+### react-doctor/no-random-key
+
+Disallow random values like `Math.random()` or `crypto.randomUUID()` as `key`. Severity: `error`.
+
+```tsx
+// bad
+{
+  items.map((item) => <Row key={Math.random()} item={item} />);
+}
+
+// good
+{
+  items.map((item) => <Row key={item.id} item={item} />);
+}
+```
+
+### react-doctor/no-uncontrolled-input
+
+Disallow inputs that flip between controlled and uncontrolled. Severity: `warn`.
+
+```tsx
+// bad
+<input value={value} />
+
+// good
+<input value={value ?? ""} onChange={(e) => setValue(e.target.value)} />
+```
+
+### react-doctor/rendering-conditional-render
+
+Require conditional rendering that cannot leak falsy values like `0` into the output. Severity: `warn`.
+
+```tsx
+// bad
+{
+  items.length && <List items={items} />;
+}
+
+// good
+{
+  items.length > 0 && <List items={items} />;
+}
+```
+
+### react-doctor/rendering-svg-precision
+
+Disallow excessive decimal precision in SVG path coordinates. Severity: `warn`.
+
+```tsx
+// bad
+<path d="M 12.000000381469727 3.9999998211860657 L 20.00000015 12.0000004" />
+
+// good
+<path d="M 12 4 L 20 12" />
+```
+
+## React Doctor: Design and UX
+
+### react-doctor/no-disabled-zoom
+
+Disallow disabling user zoom in the viewport meta tag. Severity: `error`.
+
+```tsx
+// bad
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+
+// good
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+```
+
+### react-doctor/no-gray-on-colored-background
+
+Disallow gray text on colored backgrounds. Severity: `warn`.
+
+```tsx
+// bad
+<div className="bg-blue-600 text-gray-400">Get started</div>
+
+// good
+<div className="bg-blue-600 text-blue-100">Get started</div>
+```
+
+### react-doctor/no-inline-bounce-easing
+
+Disallow inline bounce or elastic easing curves. Severity: `warn`.
+
+```tsx
+// bad
+<div style={{ transition: "transform 300ms cubic-bezier(0.68, -0.55, 0.27, 1.55)" }} />
+
+// good
+<div style={{ transition: "transform 300ms ease-out" }} />
+```
+
+### react-doctor/no-inline-exhaustive-style
+
+Disallow sprawling inline style objects that should be extracted. Severity: `warn`.
+
+```tsx
+// bad
+<div style={{ display: "flex", gap: 8, padding: 16, borderRadius: 8, background: "#fff", boxShadow: "0 1px 2px rgba(0,0,0,.1)", border: "1px solid #eee" }} />
+
+// good
+<div className="card" />
+```
+
+### react-doctor/no-layout-transition-inline
+
+Disallow inline transitions on layout properties like `width`, `height`, or `top`. Severity: `warn`.
+
+```tsx
+// bad
+<div style={{ transition: "width 200ms" }} />
+
+// good
+<div style={{ transition: "transform 200ms" }} />
+```
+
+### react-doctor/no-long-transition-duration
+
+Disallow transition durations long enough to feel sluggish. Severity: `warn`.
+
+```tsx
+// bad
+<div style={{ transition: "opacity 2000ms" }} />
+
+// good
+<div style={{ transition: "opacity 200ms" }} />
+```
+
+### react-doctor/no-outline-none
+
+Disallow removing the focus outline without providing a visible replacement. Severity: `warn`.
+
+```tsx
+// bad
+<button style={{ outline: "none" }}>Save</button>
+
+// good
+<button className="focus-visible:ring-2">Save</button>
+```
+
+### react-doctor/no-tiny-text
+
+Disallow text smaller than a legible minimum size. Severity: `warn`.
+
+```tsx
+// bad
+<span style={{ fontSize: "9px" }}>Terms apply</span>
+
+// good
+<span style={{ fontSize: "12px" }}>Terms apply</span>
+```
+
+## React Doctor: Bugs
+
+### react-doctor/class-component-missing-component-will-unmount-teardown
+
+Require class components that set up subscriptions or timers in `componentDidMount` to tear them down in `componentWillUnmount`. Severity: `warn`.
+
+```tsx
+// bad
+componentDidMount() {
+  window.addEventListener("resize", this.onResize);
+}
+
+// good
+componentDidMount() {
+  window.addEventListener("resize", this.onResize);
+}
+componentWillUnmount() {
+  window.removeEventListener("resize", this.onResize);
+}
+```
+
+### react-doctor/debounce-no-cleanup
+
+Require debounced functions created in effects or handlers to be cancelled on cleanup. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  const search = debounce(fetchResults, 300);
+  input.addEventListener("input", search);
+}, []);
+
+// good
+useEffect(() => {
+  const search = debounce(fetchResults, 300);
+  input.addEventListener("input", search);
+  return () => search.cancel();
+}, []);
+```
+
+### react-doctor/effect-listener-cleanup-mismatch
+
+Require effect cleanup to remove the same event type that was added. Severity: `error`.
+
+```tsx
+// bad
+useEffect(() => {
+  window.addEventListener("scroll", onScroll);
+  return () => window.removeEventListener("resize", onScroll);
+}, []);
+
+// good
+useEffect(() => {
+  window.addEventListener("scroll", onScroll);
+  return () => window.removeEventListener("scroll", onScroll);
+}, []);
+```
+
+### react-doctor/effect-listener-cleanup-reference-mismatch
+
+Require `removeEventListener` in cleanup to receive the same function reference passed to `addEventListener`. Severity: `error`.
+
+```tsx
+// bad
+useEffect(() => {
+  window.addEventListener("scroll", () => update());
+  return () => window.removeEventListener("scroll", () => update());
+}, []);
+
+// good
+useEffect(() => {
+  const onScroll = () => update();
+  window.addEventListener("scroll", onScroll);
+  return () => window.removeEventListener("scroll", onScroll);
+}, []);
+```
+
+### react-doctor/effect-observer-needs-disconnect
+
+Require observers created in effects (IntersectionObserver, ResizeObserver, MutationObserver) to be disconnected in cleanup. Severity: `error`.
+
+```tsx
+// bad
+useEffect(() => {
+  const observer = new ResizeObserver(onResize);
+  observer.observe(ref.current);
+}, []);
+
+// good
+useEffect(() => {
+  const observer = new ResizeObserver(onResize);
+  observer.observe(ref.current);
+  return () => observer.disconnect();
+}, []);
+```
+
+### react-doctor/effect-raf-loop-needs-cancel
+
+Require `requestAnimationFrame` loops started in effects to be cancelled in cleanup. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  const loop = () => {
+    draw();
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}, []);
+
+// good
+useEffect(() => {
+  let id: number;
+  const loop = () => {
+    draw();
+    id = requestAnimationFrame(loop);
+  };
+  id = requestAnimationFrame(loop);
+  return () => cancelAnimationFrame(id);
+}, []);
+```
+
+### react-doctor/effect-remove-listener-inline-handler
+
+Disallow passing an inline function to `removeEventListener`, which never matches the added handler. Severity: `error`.
+
+```tsx
+// bad
+useEffect(() => {
+  document.addEventListener("keydown", onKey);
+  return () => document.removeEventListener("keydown", (e) => onKey(e));
+}, []);
+
+// good
+useEffect(() => {
+  document.addEventListener("keydown", onKey);
+  return () => document.removeEventListener("keydown", onKey);
+}, []);
+```
+
+### react-doctor/form-control-requires-name
+
+Require form controls inside a `<form>` to have a `name` attribute so their values submit. Severity: `warn`.
+
+```tsx
+// bad
+<form>
+  <input type="email" />
+</form>
+
+// good
+<form>
+  <input type="email" name="email" />
+</form>
+```
+
+### react-doctor/hook-import-rename-loses-use-prefix
+
+Disallow renaming an imported hook to a name without the `use` prefix, which breaks the Rules of Hooks lint. Severity: `warn`.
+
+```ts
+// bad
+import { useAuth as auth } from "./auth";
+
+// good
+import { useAuth } from "./auth";
+```
+
+### react-doctor/html-label-has-single-control
+
+Require a `<label>` to wrap or reference exactly one form control. Severity: `warn`.
+
+```tsx
+// bad
+<label>
+  Name <input name="first" /> <input name="last" />
+</label>
+
+// good
+<label>
+  First name <input name="first" />
+</label>
+```
+
+### react-doctor/html-no-nested-form
+
+Disallow nesting a `<form>` inside another `<form>`. Severity: `warn`.
+
+```tsx
+// bad
+<form onSubmit={save}>
+  <form onSubmit={search}><input name="q" /></form>
+</form>
+
+// good
+<form onSubmit={save}>
+  <input name="q" />
+</form>
+```
+
+### react-doctor/jsx-numeric-and-leaked-render
+
+Disallow `{count && <X />}` conditional rendering with a numeric operand, which renders a literal `0`. Severity: `warn`.
+
+```tsx
+// bad
+{
+  items.length && <List items={items} />;
+}
+
+// good
+{
+  items.length > 0 && <List items={items} />;
+}
+```
+
+### react-doctor/nextjs-async-dynamic-api-not-awaited
+
+Require awaiting Next.js async dynamic APIs like `cookies()`, `headers()`, and `params`. Severity: `error`.
+
+```ts
+// bad
+const store = cookies();
+const theme = store.get("theme");
+
+// good
+const store = await cookies();
+const theme = store.get("theme");
+```
+
+### react-doctor/nextjs-metadata-url-consistency
+
+Require URLs in Next.js metadata to be consistent with `metadataBase` and each other. Severity: `warn`.
+
+```ts
+// bad
+export const metadata = {
+  metadataBase: new URL("https://example.com"),
+  openGraph: { url: "https://other-site.com/page" },
+};
+
+// good
+export const metadata = {
+  metadataBase: new URL("https://example.com"),
+  openGraph: { url: "/page" },
+};
+```
+
+### react-doctor/no-arithmetic-on-optional-chained-operand
+
+Disallow arithmetic on an optional-chained expression, which yields `NaN` when the chain is undefined. Severity: `warn`.
+
+```ts
+// bad
+const total = cart?.items.length * price;
+
+// good
+const total = (cart?.items.length ?? 0) * price;
+```
+
+### react-doctor/no-array-find-result-member-access-without-guard
+
+Disallow accessing members on an `Array.prototype.find` result without checking for `undefined`. Severity: `warn`.
+
+```ts
+// bad
+const name = users.find((u) => u.id === id).name;
+
+// good
+const user = users.find((u) => u.id === id);
+const name = user ? user.name : "";
+```
+
+### react-doctor/no-array-index-deref-without-bounds-or-empty-guard
+
+Disallow dereferencing an array index without a bounds or emptiness check. Severity: `warn`.
+
+```ts
+// bad
+const first = rows[0].id;
+
+// good
+const first = rows.length > 0 ? rows[0].id : null;
+```
+
+### react-doctor/no-async-effect-callback
+
+Disallow passing an async function directly to `useEffect`. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(async () => {
+  await loadData();
+}, []);
+
+// good
+useEffect(() => {
+  const run = async () => {
+    await loadData();
+  };
+  void run();
+}, []);
+```
+
+### react-doctor/no-async-event-handler-without-reentry-guard
+
+Require async event handlers to guard against re-entry while a previous invocation is still pending. Severity: `warn`.
+
+```tsx
+// bad
+const handleSubmit = async () => {
+  await api.save(form);
+};
+
+// good
+const handleSubmit = async () => {
+  if (saving) return;
+  setSaving(true);
+  try {
+    await api.save(form);
+  } finally {
+    setSaving(false);
+  }
+};
+```
+
+### react-doctor/no-boolean-toggle-without-functional-update
+
+Require boolean state toggles to use the functional updater form. Severity: `warn`.
+
+```tsx
+// bad
+setOpen(!open);
+
+// good
+setOpen((prev) => !prev);
+```
+
+### react-doctor/no-broken-image-source
+
+Disallow `img` sources that are empty strings or obviously invalid values. Severity: `warn`.
+
+```tsx
+// bad
+<img src="" alt="Avatar" />
+
+// good
+<img src={avatarUrl || fallbackAvatar} alt="Avatar" />
+```
+
+### react-doctor/no-call-component-as-function
+
+Disallow calling a component as a plain function instead of rendering it as JSX. Severity: `warn`.
+
+```tsx
+// bad
+return <div>{Header({ title })}</div>;
+
+// good
+return (
+  <div>
+    <Header title={title} />
+  </div>
+);
+```
+
+### react-doctor/no-clipped-overlay
+
+Disallow rendering overlays like dropdowns or tooltips inside containers with `overflow: hidden` that clip them. Severity: `warn`.
+
+```tsx
+// bad
+<div className="overflow-hidden">
+  <Tooltip content="Info" />
+</div>
+
+// good
+<div>
+  <Tooltip content="Info" />
+</div>
+```
+
+### react-doctor/no-collapse-request-error-to-empty-state
+
+Disallow collapsing a failed request into an empty-data state instead of surfacing the error. Severity: `warn`.
+
+```tsx
+// bad
+fetch("/api/items")
+  .then((r) => r.json())
+  .catch(() => setItems([]));
+
+// good
+fetch("/api/items")
+  .then((r) => r.json())
+  .then(setItems)
+  .catch(() => setError("Failed to load items"));
+```
+
+### react-doctor/no-collapsed-literal-or-chain-as-value
+
+Disallow `||` fallbacks that collapse meaningful falsy values like `0` or `""`. Severity: `warn`.
+
+```ts
+// bad
+const quantity = input.quantity || 1;
+
+// good
+const quantity = input.quantity ?? 1;
+```
+
+### react-doctor/no-controlled-input-value-without-state-update
+
+Disallow a controlled input `value` without an `onChange` handler that updates state. Severity: `warn`.
+
+```tsx
+// bad
+<input value={name} />
+
+// good
+<input value={name} onChange={(e) => setName(e.target.value)} />
+```
+
+### react-doctor/no-create-object-url-in-render
+
+Disallow calling `URL.createObjectURL` during render, which leaks a new blob URL every render. Severity: `warn`.
+
+```tsx
+// bad
+return <img src={URL.createObjectURL(file)} alt="Preview" />;
+
+// good
+const url = useMemo(() => URL.createObjectURL(file), [file]);
+useEffect(() => () => URL.revokeObjectURL(url), [url]);
+return <img src={url} alt="Preview" />;
+```
+
+### react-doctor/no-create-ref-in-function-component
+
+Disallow `createRef` in function components; use `useRef` instead. Severity: `warn`.
+
+```tsx
+// bad
+const inputRef = createRef<HTMLInputElement>();
+
+// good
+const inputRef = useRef<HTMLInputElement>(null);
+```
+
+### react-doctor/no-deprecated-keyboard-event-keycode-which
+
+Disallow the deprecated `keyCode` and `which` properties on keyboard events; use `key`. Severity: `warn`.
+
+```tsx
+// bad
+if (event.keyCode === 13) submit();
+
+// good
+if (event.key === "Enter") submit();
+```
+
+### react-doctor/no-effect-wrapper-discards-callback-cleanup-return
+
+Disallow effect wrappers that swallow the cleanup function returned by the wrapped callback. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  wrap(() => subscribe());
+}, []);
+
+// good
+useEffect(() => {
+  const unsubscribe = subscribe();
+  return unsubscribe;
+}, []);
+```
+
+### react-doctor/no-enter-submit-without-ime-composition-guard
+
+Require Enter-to-submit key handlers to ignore keydown events fired during IME composition. Severity: `warn`.
+
+```tsx
+// bad
+const handleKeyDown = (e: React.KeyboardEvent) => {
+  if (e.key === "Enter") submit();
+};
+
+// good
+const handleKeyDown = (e: React.KeyboardEvent) => {
+  if (e.key === "Enter" && !e.nativeEvent.isComposing) submit();
+};
+```
+
+### react-doctor/no-fetch-response-used-without-status-check
+
+Require checking `response.ok` or status before consuming a fetch response body. Severity: `warn`.
+
+```ts
+// bad
+const res = await fetch("/api/user");
+const user = await res.json();
+
+// good
+const res = await fetch("/api/user");
+if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+const user = await res.json();
+```
+
+### react-doctor/no-fill-map-element-as-key
+
+Disallow using the element of `Array(n).fill(x).map` as a React key, since every element is identical. Severity: `warn`.
+
+```tsx
+// bad
+{
+  Array(3)
+    .fill(0)
+    .map((n) => <Skeleton key={n} />);
+}
+
+// good
+{
+  Array.from({ length: 3 }, (_, i) => <Skeleton key={i} />);
+}
+```
+
+### react-doctor/no-fixed-inside-transformed-ancestor
+
+Disallow `position: fixed` elements inside a transformed ancestor, where fixed positioning silently breaks. Severity: `warn`.
+
+```tsx
+// bad
+<div style={{ transform: "translateX(10px)" }}>
+  <div style={{ position: "fixed", top: 0 }}>Banner</div>
+</div>
+
+// good
+<div style={{ transform: "translateX(10px)" }}>Content</div>
+<div style={{ position: "fixed", top: 0 }}>Banner</div>
+```
+
+### react-doctor/no-floating-then-in-jsx-handler
+
+Disallow floating `.then()` chains in JSX event handlers without error handling. Severity: `warn`.
+
+```tsx
+// bad
+<button onClick={() => save().then(refresh)}>Save</button>
+
+// good
+<button onClick={() => save().then(refresh).catch(showError)}>Save</button>
+```
+
+### react-doctor/no-hydration-branch-on-browser-global
+
+Disallow branching render output on browser globals like `window`, which causes hydration mismatches. Severity: `error`.
+
+```tsx
+// bad
+return typeof window !== "undefined" ? <Widget /> : null;
+
+// good
+const [mounted, setMounted] = useState(false);
+useEffect(() => setMounted(true), []);
+return mounted ? <Widget /> : null;
+```
+
+### react-doctor/no-impure-call-at-module-scope
+
+Disallow impure calls with side effects at module scope. Severity: `warn`.
+
+```ts
+// bad
+const sessionId = crypto.randomUUID();
+
+// good
+const getSessionId = () => crypto.randomUUID();
+```
+
+### react-doctor/no-impure-state-updater
+
+Disallow impure calls like `Date.now()` or `Math.random()` inside state updater functions. Severity: `error`.
+
+```tsx
+// bad
+setItems((prev) => [...prev, { id: Math.random() }]);
+
+// good
+const id = crypto.randomUUID();
+setItems((prev) => [...prev, { id }]);
+```
+
+### react-doctor/no-indeterminate-attribute
+
+Disallow setting `indeterminate` as a JSX attribute; it is a DOM property and must be set via a ref. Severity: `warn`.
+
+```tsx
+// bad
+<input type="checkbox" indeterminate />
+
+// good
+<input type="checkbox" ref={(el) => { if (el) el.indeterminate = true; }} />
+```
+
+### react-doctor/no-inert-sticky-position
+
+Disallow `position: sticky` on elements where it cannot work, such as inside `overflow: hidden` containers or without an offset. Severity: `warn`.
+
+```tsx
+// bad
+<div className="overflow-hidden">
+  <header style={{ position: "sticky" }}>Title</header>
+</div>
+
+// good
+<div>
+  <header style={{ position: "sticky", top: 0 }}>Title</header>
+</div>
+```
+
+### react-doctor/no-loading-flag-reset-outside-finally
+
+Require loading flags set before an async call to be reset in a `finally` block. Severity: `warn`.
+
+```ts
+// bad
+setLoading(true);
+await api.save(form);
+setLoading(false);
+
+// good
+setLoading(true);
+try {
+  await api.save(form);
+} finally {
+  setLoading(false);
+}
+```
+
+### react-doctor/no-locale-format-in-render
+
+Disallow locale-sensitive formatting calls in render without memoization or a stable formatter. Severity: `warn`.
+
+```tsx
+// bad
+return <span>{new Intl.NumberFormat("en-US").format(price)}</span>;
+
+// good
+const formatter = useMemo(() => new Intl.NumberFormat("en-US"), []);
+return <span>{formatter.format(price)}</span>;
+```
+
+### react-doctor/no-match-media-in-state-initializer
+
+Disallow calling `window.matchMedia` in a `useState` initializer, which breaks SSR and never updates. Severity: `warn`.
+
+```tsx
+// bad
+const [isDark] = useState(window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+// good
+const [isDark, setIsDark] = useState(false);
+useEffect(() => {
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  setIsDark(mq.matches);
+}, []);
+```
+
+### react-doctor/no-mixed-srcset-descriptors
+
+Disallow mixing width (`w`) and density (`x`) descriptors in a single `srcset`. Severity: `warn`.
+
+```tsx
+// bad
+<img srcSet="a.jpg 1x, b.jpg 800w" alt="" />
+
+// good
+<img srcSet="a.jpg 400w, b.jpg 800w" sizes="100vw" alt="" />
+```
+
+### react-doctor/no-mutate-queried-dom-node-in-component
+
+Disallow mutating DOM nodes obtained via document queries inside a component instead of using refs and state. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  document.querySelector(".title")!.textContent = title;
+}, [title]);
+
+// good
+return <h1 className="title">{title}</h1>;
+```
+
+### react-doctor/no-mutate-then-set-or-return-same-reference
+
+Disallow mutating an object or array and then setting or returning the same reference, which skips re-renders. Severity: `warn`.
+
+```tsx
+// bad
+items.push(newItem);
+setItems(items);
+
+// good
+setItems([...items, newItem]);
+```
+
+### react-doctor/no-mutating-array-method-on-prop-or-hook-result
+
+Disallow mutating array methods like `sort` or `reverse` on props or hook results. Severity: `warn`.
+
+```tsx
+// bad
+const sorted = props.items.sort(byName);
+
+// good
+const sorted = [...props.items].sort(byName);
+```
+
+### react-doctor/no-non-literal-selector-query-without-try-catch
+
+Require wrapping `querySelector` calls with non-literal selectors in try/catch, since invalid selectors throw. Severity: `warn`.
+
+```ts
+// bad
+const el = document.querySelector(userSelector);
+
+// good
+let el: Element | null = null;
+try {
+  el = document.querySelector(userSelector);
+} catch {
+  el = null;
+}
+```
+
+### react-doctor/no-non-null-assertion-on-maybe-undefined-result
+
+Disallow non-null assertions on results that can legitimately be undefined, such as `find` or map lookups. Severity: `warn`.
+
+```ts
+// bad
+const user = users.find((u) => u.id === id)!;
+
+// good
+const user = users.find((u) => u.id === id);
+if (!user) throw new Error(`User ${id} not found`);
+```
+
+### react-doctor/no-nondeterministic-id-value-in-render-body
+
+Disallow generating ids with `Math.random()` or `Date.now()` in the render body; use `useId` or a stable id. Severity: `warn`.
+
+```tsx
+// bad
+const id = `field-${Math.random()}`;
+return <input id={id} />;
+
+// good
+const id = useId();
+return <input id={id} />;
+```
+
+### react-doctor/no-nullish-coalescing-arithmetic-precedence
+
+Disallow mixing `??` with arithmetic operators without parentheses. Severity: `warn`.
+
+```ts
+// bad
+const total = base ?? 0 + tax;
+
+// good
+const total = (base ?? 0) + tax;
+```
+
+### react-doctor/no-object-keys-values-entries-on-maybe-undefined
+
+Disallow calling `Object.keys`, `Object.values`, or `Object.entries` on a value that may be undefined. Severity: `warn`.
+
+```ts
+// bad
+const keys = Object.keys(config?.options);
+
+// good
+const keys = Object.keys(config?.options ?? {});
+```
+
+### react-doctor/no-object-or-array-coerced-to-string-in-template-literal
+
+Disallow interpolating objects or arrays into template literals, which coerces to `[object Object]`. Severity: `warn`.
+
+```ts
+// bad
+const message = `Payload: ${payload}`;
+
+// good
+const message = `Payload: ${JSON.stringify(payload)}`;
+```
+
+### react-doctor/no-passive-request-owner-ref
+
+Require async requests in components to track an owner or abort ref so stale responses are ignored. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  fetchUser(id).then(setUser);
+}, [id]);
+
+// good
+useEffect(() => {
+  let active = true;
+  fetchUser(id).then((u) => {
+    if (active) setUser(u);
+  });
+  return () => {
+    active = false;
+  };
+}, [id]);
+```
+
+### react-doctor/no-predicate-function-reference-in-boolean-position
+
+Disallow using a predicate function reference in a boolean position instead of calling it. Severity: `warn`.
+
+```tsx
+// bad
+{
+  isAdmin && <AdminPanel />;
+}
+
+// good
+{
+  isAdmin() && <AdminPanel />;
+}
+```
+
+### react-doctor/no-promise-then-side-effect-in-effect-without-catch
+
+Require `.then()` chains with side effects inside effects to have a `.catch()`. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  loadItems().then(setItems);
+}, []);
+
+// good
+useEffect(() => {
+  loadItems()
+    .then(setItems)
+    .catch(() => setError("Failed to load"));
+}, []);
+```
+
+### react-doctor/no-prop-callback-in-render
+
+Disallow calling a callback prop during render instead of from an event or effect. Severity: `error`.
+
+```tsx
+// bad
+const Item = ({ onSelect }: Props) => {
+  onSelect();
+  return <li>Item</li>;
+};
+
+// good
+const Item = ({ onSelect }: Props) => {
+  return <li onClick={onSelect}>Item</li>;
+};
+```
+
+### react-doctor/no-ref-current-in-render
+
+Disallow reading or writing `ref.current` during render. Severity: `error`.
+
+```tsx
+// bad
+return <div>{widthRef.current}</div>;
+
+// good
+useEffect(() => {
+  setWidth(widthRef.current);
+}, []);
+return <div>{width}</div>;
+```
+
+### react-doctor/no-set-state-after-await-in-effect
+
+Disallow calling setState after an `await` in an effect without checking the effect is still mounted. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  (async () => {
+    const data = await load();
+    setData(data);
+  })();
+}, []);
+
+// good
+useEffect(() => {
+  let active = true;
+  (async () => {
+    const data = await load();
+    if (active) setData(data);
+  })();
+  return () => {
+    active = false;
+  };
+}, []);
+```
+
+### react-doctor/no-side-effect-in-state-updater-function
+
+Disallow side effects like setState calls or mutations inside a state updater function. Severity: `warn`.
+
+```tsx
+// bad
+setCount((prev) => {
+  logEvent("increment");
+  return prev + 1;
+});
+
+// good
+logEvent("increment");
+setCount((prev) => prev + 1);
+```
+
+### react-doctor/no-spread-props-over-defaults-clobbers-with-undefined
+
+Disallow spreading props after defaults when the spread can overwrite defaults with `undefined`. Severity: `warn`.
+
+```tsx
+// bad
+const config = { size: "md", ...props };
+
+// good
+const config = { size: props.size ?? "md" };
+```
+
+### react-doctor/no-stale-timer-ref
+
+Disallow timer refs that are overwritten without clearing the previous timer, leaking stale timers. Severity: `warn`.
+
+```tsx
+// bad
+timerRef.current = setTimeout(fire, 1000);
+
+// good
+if (timerRef.current) clearTimeout(timerRef.current);
+timerRef.current = setTimeout(fire, 1000);
+```
+
+### react-doctor/no-string-false-on-boolean-attribute
+
+Disallow passing the string `"false"` to a boolean attribute, where it is truthy. Severity: `warn`.
+
+```tsx
+// bad
+<input disabled="false" />
+
+// good
+<input disabled={false} />
+```
+
+### react-doctor/no-unescaped-dynamic-string-in-regexp
+
+Disallow building a RegExp from a dynamic string without escaping special characters. Severity: `warn`.
+
+```ts
+// bad
+const re = new RegExp(userInput);
+
+// good
+const re = new RegExp(escapeRegExp(userInput));
+```
+
+### react-doctor/no-unguarded-browser-global-at-module-scope
+
+Disallow accessing browser globals like `window` at module scope without an environment guard. Severity: `warn`.
+
+```ts
+// bad
+const width = window.innerWidth;
+
+// good
+const width = typeof window !== "undefined" ? window.innerWidth : 0;
+```
+
+### react-doctor/no-unguarded-browser-global-in-render-or-hook-init
+
+Disallow accessing browser globals during render or hook initialization without a guard. Severity: `warn`.
+
+```tsx
+// bad
+const [width, setWidth] = useState(window.innerWidth);
+
+// good
+const [width, setWidth] = useState(0);
+useEffect(() => setWidth(window.innerWidth), []);
+```
+
+### react-doctor/no-unguarded-numeric-input-parse
+
+Require guarding parsed numeric input against `NaN` before use. Severity: `warn`.
+
+```ts
+// bad
+const age = parseInt(input.value, 10);
+setAge(age);
+
+// good
+const age = parseInt(input.value, 10);
+if (!Number.isNaN(age)) setAge(age);
+```
+
+### react-doctor/no-unguarded-throwing-parse-call
+
+Require wrapping throwing parse calls like `new URL()` or `decodeURIComponent` in try/catch. Severity: `warn`.
+
+```ts
+// bad
+const url = new URL(input);
+
+// good
+let url: URL | null = null;
+try {
+  url = new URL(input);
+} catch {
+  url = null;
+}
+```
+
+### react-doctor/no-unowned-async-error-clear
+
+Disallow clearing a shared error state from an async callback that may no longer own it. Severity: `warn`.
+
+```tsx
+// bad
+const handleRetry = async () => {
+  await refetch();
+  setError(null);
+};
+
+// good
+const handleRetry = async () => {
+  const requestId = ++requestIdRef.current;
+  await refetch();
+  if (requestId === requestIdRef.current) setError(null);
+};
+```
+
+### react-doctor/no-unsafe-json-parse
+
+Require wrapping `JSON.parse` of untrusted input in try/catch or a safe parser. Severity: `warn`.
+
+```ts
+// bad
+const settings = JSON.parse(localStorage.getItem("settings")!);
+
+// good
+let settings = defaultSettings;
+try {
+  settings = JSON.parse(localStorage.getItem("settings") ?? "{}");
+} catch {}
+```
+
+### react-doctor/no-whole-object-default-losing-per-key-defaults
+
+Disallow defaulting a whole object with `??` or `||` in a way that drops per-key defaults when a partial object is provided. Severity: `warn`.
+
+```ts
+// bad
+const config = userConfig ?? { retries: 3, timeout: 5000 };
+
+// good
+const config = { retries: 3, timeout: 5000, ...userConfig };
+```
+
+### react-doctor/no-whole-object-dep-with-member-reads
+
+Disallow depending on a whole object in a deps array when the effect only reads specific members. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  track(user.id);
+}, [user]);
+
+// good
+useEffect(() => {
+  track(user.id);
+}, [user.id]);
+```
+
+### react-doctor/pointer-capture-needs-cancel-handler
+
+Require components using `setPointerCapture` to handle `pointercancel` or `lostpointercapture`. Severity: `warn`.
+
+```tsx
+// bad
+<div onPointerDown={(e) => e.currentTarget.setPointerCapture(e.pointerId)}
+     onPointerUp={endDrag} />
+
+// good
+<div onPointerDown={(e) => e.currentTarget.setPointerCapture(e.pointerId)}
+     onPointerUp={endDrag}
+     onPointerCancel={endDrag} />
+```
+
+### react-doctor/shadcn-tabs-trigger-requires-list
+
+Require shadcn `TabsTrigger` components to be wrapped in a `TabsList`. Severity: `warn`.
+
+```tsx
+// bad
+<Tabs>
+  <TabsTrigger value="a">A</TabsTrigger>
+</Tabs>
+
+// good
+<Tabs>
+  <TabsList>
+    <TabsTrigger value="a">A</TabsTrigger>
+  </TabsList>
+</Tabs>
+```
+
+### react-doctor/waapi-animation-in-render
+
+Disallow starting Web Animations API animations during render; start them in an effect. Severity: `error`.
+
+```tsx
+// bad
+ref.current?.animate(keyframes, options);
+return <div ref={ref} />;
+
+// good
+useEffect(() => {
+  const animation = ref.current?.animate(keyframes, options);
+  return () => animation?.cancel();
+}, []);
+```
+
+### react-doctor/web-animation-offsets-valid
+
+Require Web Animations keyframe offsets to be between 0 and 1 and monotonically increasing. Severity: `error`.
+
+```ts
+// bad
+el.animate(
+  [
+    { opacity: 0, offset: 0.8 },
+    { opacity: 1, offset: 0.2 },
+  ],
+  300,
+);
+
+// good
+el.animate(
+  [
+    { opacity: 0, offset: 0 },
+    { opacity: 1, offset: 1 },
+  ],
+  300,
+);
+```
+
+## React Doctor: Bundle Size
+
+### react-doctor/no-barrel-import
+
+Disallow importing from barrel files when a direct module path is available. Severity: `warn`.
+
+```ts
+// bad
+import { Button } from "@/components";
+
+// good
+import { Button } from "@/components/button";
+```
+
+### react-doctor/no-dynamic-import-path
+
+Disallow fully dynamic import paths that prevent bundler code splitting. Severity: `warn`.
+
+```ts
+// bad
+const mod = await import(modulePath);
+
+// good
+const mod = await import(`./widgets/${name}.tsx`);
+```
+
+### react-doctor/no-full-lodash-import
+
+Disallow importing all of lodash; import individual functions instead. Severity: `warn`.
+
+```ts
+// bad
+import _ from "lodash";
+const sorted = _.sortBy(items, "name");
+
+// good
+import sortBy from "lodash/sortBy";
+const sorted = sortBy(items, "name");
+```
+
+### react-doctor/no-moment
+
+Disallow the moment library; use a lighter alternative like date-fns or the Temporal/Intl APIs. Severity: `warn`.
+
+```ts
+// bad
+import moment from "moment";
+const label = moment(date).format("YYYY-MM-DD");
+
+// good
+import { format } from "date-fns";
+const label = format(date, "yyyy-MM-dd");
+```
+
+### react-doctor/no-undeferred-third-party
+
+Disallow loading third-party scripts eagerly instead of deferring them. Severity: `warn`.
+
+```tsx
+// bad
+<script src="https://widget.example.com/embed.js" />
+
+// good
+<Script src="https://widget.example.com/embed.js" strategy="lazyOnload" />
+```
+
+### react-doctor/prefer-dynamic-import
+
+Require dynamic imports for heavy components that are not needed on initial render. Severity: `warn`.
+
+```tsx
+// bad
+import ChartPanel from "./chart-panel";
+
+// good
+const ChartPanel = lazy(() => import("./chart-panel"));
+```
+
+### react-doctor/use-lazy-motion
+
+Require `LazyMotion` with `domAnimation` from framer-motion instead of the full `motion` import. Severity: `warn`.
+
+```tsx
+// bad
+import { motion } from "framer-motion";
+<motion.div animate={{ opacity: 1 }} />;
+
+// good
+import { LazyMotion, domAnimation, m } from "framer-motion";
+<LazyMotion features={domAnimation}>
+  <m.div animate={{ opacity: 1 }} />
+</LazyMotion>;
+```
+
+## React Doctor: Client APIs
+
+### react-doctor/client-localstorage-no-version
+
+Require localStorage payloads to include a schema version key so stale data can be migrated or discarded. Severity: `warn`.
+
+```ts
+// bad
+localStorage.setItem("settings", JSON.stringify({ theme }));
+
+// good
+localStorage.setItem("settings", JSON.stringify({ version: 1, theme }));
+```
+
+### react-doctor/client-passive-event-listeners
+
+Require passive listeners for scroll-blocking events like `touchstart` and `wheel`. Severity: `warn`.
+
+```ts
+// bad
+window.addEventListener("touchstart", onTouch);
+
+// good
+window.addEventListener("touchstart", onTouch, { passive: true });
+```
+
+## React Doctor: JavaScript Performance
+
+### react-doctor/async-await-in-loop
+
+Disallow awaiting inside a loop when the iterations are independent. Severity: `warn`.
+
+```ts
+// bad
+for (const id of ids) {
+  const user = await fetchUser(id);
+  users.push(user);
+}
+
+// good
+const users = await Promise.allSettled(ids.map((id) => fetchUser(id)));
+```
+
+### react-doctor/async-parallel
+
+Prefer running independent async operations in parallel instead of sequentially awaiting each one. Severity: `warn`.
+
+```ts
+// bad
+const user = await fetchUser();
+const posts = await fetchPosts();
+
+// good
+const [user, posts] = await Promise.all([fetchUser(), fetchPosts()]);
+```
+
+### react-doctor/js-async-reduce-without-awaited-acc
+
+Disallow async reducers that await the accumulator on every iteration, serializing the work. Severity: `warn`.
+
+```ts
+// bad
+const total = await items.reduce(async (accPromise, item) => {
+  const acc = await accPromise;
+  return acc + (await fetchPrice(item));
+}, Promise.resolve(0));
+
+// good
+const prices = await Promise.all(items.map((item) => fetchPrice(item)));
+const total = prices.reduce((acc, price) => acc + price, 0);
+```
+
+### react-doctor/js-batch-dom-css
+
+Prefer batching DOM style changes via a class or cssText instead of setting style properties one at a time. Severity: `warn`.
+
+```ts
+// bad
+el.style.width = "100px";
+el.style.height = "50px";
+el.style.opacity = "0.5";
+
+// good
+el.classList.add("card-collapsed");
+```
+
+### react-doctor/js-cache-property-access
+
+Prefer caching a repeatedly accessed property chain in a local variable inside loops. Severity: `warn`.
+
+```ts
+// bad
+for (let i = 0; i < arr.length; i++) {
+  process(config.settings.theme, arr[i]);
+}
+
+// good
+const theme = config.settings.theme;
+for (let i = 0; i < arr.length; i++) {
+  process(theme, arr[i]);
+}
+```
+
+### react-doctor/js-cache-storage
+
+Prefer caching localStorage/sessionStorage reads instead of re-reading the same key repeatedly. Severity: `warn`.
+
+```ts
+// bad
+for (const item of items) {
+  render(item, localStorage.getItem("theme"));
+}
+
+// good
+const theme = localStorage.getItem("theme");
+for (const item of items) {
+  render(item, theme);
+}
+```
+
+### react-doctor/js-combine-iterations
+
+Prefer combining chained array iterations into a single pass. Severity: `warn`.
+
+```ts
+// bad
+const names = users.filter((u) => u.active).map((u) => u.name);
+
+// good
+const names = [];
+for (const u of users) {
+  if (u.active) names.push(u.name);
+}
+```
+
+### react-doctor/js-early-exit
+
+Prefer early-exit methods like some/find/includes over full iterations that only need the first match. Severity: `warn`.
+
+```ts
+// bad
+const hasAdmin = users.filter((u) => u.role === "admin").length > 0;
+
+// good
+const hasAdmin = users.some((u) => u.role === "admin");
+```
+
+### react-doctor/js-flatmap-filter
+
+Prefer flatMap over chaining map and flat, or filter-then-map pairs that flatMap can express in one pass. Severity: `warn`.
+
+```ts
+// bad
+const tags = posts.map((p) => p.tags).flat();
+
+// good
+const tags = posts.flatMap((p) => p.tags);
+```
+
+### react-doctor/js-hoist-intl
+
+Prefer hoisting Intl formatter construction out of loops and render paths. Severity: `warn`.
+
+```ts
+// bad
+const labels = dates.map((d) => new Intl.DateTimeFormat("en-US").format(d));
+
+// good
+const formatter = new Intl.DateTimeFormat("en-US");
+const labels = dates.map((d) => formatter.format(d));
+```
+
+### react-doctor/js-hoist-regexp
+
+Prefer hoisting regular expression literals out of loops and frequently called functions. Severity: `warn`.
+
+```ts
+// bad
+const valid = emails.filter((e) => /^[^@]+@[^@]+$/.test(e));
+
+// good
+const EMAIL_RE = /^[^@]+@[^@]+$/;
+const valid = emails.filter((e) => EMAIL_RE.test(e));
+```
+
+### react-doctor/js-index-maps
+
+Prefer building a Map index instead of repeated array.find lookups in a loop. Severity: `warn`.
+
+```ts
+// bad
+const rows = orders.map((o) => users.find((u) => u.id === o.userId));
+
+// good
+const usersById = new Map(users.map((u) => [u.id, u]));
+const rows = orders.map((o) => usersById.get(o.userId));
+```
+
+### react-doctor/js-length-check-first
+
+Prefer checking cheap length conditions before running expensive comparisons. Severity: `warn`.
+
+```ts
+// bad
+if (a.join(",") === b.join(",")) sync(a, b);
+
+// good
+if (a.length === b.length && a.join(",") === b.join(",")) sync(a, b);
+```
+
+### react-doctor/js-min-max-loop
+
+Prefer a single loop to find min/max instead of spreading large arrays into Math.min/Math.max or sorting. Severity: `warn`.
+
+```ts
+// bad
+const max = Math.max(...values);
+
+// good
+let max = -Infinity;
+for (const v of values) {
+  if (v > max) max = v;
+}
+```
+
+### react-doctor/js-set-map-lookups
+
+Prefer Set/Map lookups over repeated array includes/indexOf membership checks. Severity: `warn`.
+
+```ts
+// bad
+const active = users.filter((u) => activeIds.includes(u.id));
+
+// good
+const activeIdSet = new Set(activeIds);
+const active = users.filter((u) => activeIdSet.has(u.id));
+```
+
+### react-doctor/js-tosorted-immutable
+
+Prefer toSorted()/toReversed() over copying an array just to mutate it with sort()/reverse(). Severity: `warn`.
+
+```ts
+// bad
+const sorted = [...items].sort((a, b) => a.rank - b.rank);
+
+// good
+const sorted = items.toSorted((a, b) => a.rank - b.rank);
+```
+
+## React Doctor: Maintainability
+
+### react-doctor/no-auto-scrolling-content
+
+Disallow content that scrolls automatically without user interaction. Severity: `warn`.
+
+```tsx
+// bad
+<marquee>Breaking news updates</marquee>
+
+// good
+<div className="overflow-x-auto">Breaking news updates</div>
+```
+
+### react-doctor/no-deprecated-tailwind-class
+
+Disallow Tailwind classes that were deprecated or renamed in newer versions. Severity: `warn`.
+
+```tsx
+// bad
+<div className="flex-shrink-0 flex-grow" />
+
+// good
+<div className="shrink-0 grow" />
+```
+
+### react-doctor/no-dynamic-tailwind-class-fragment
+
+Disallow building Tailwind class names from dynamic string fragments that the compiler cannot detect. Severity: `warn`.
+
+```tsx
+// bad
+<div className={`text-${color}-500`} />
+
+// good
+<div className={color === "red" ? "text-red-500" : "text-blue-500"} />
+```
+
+### react-doctor/no-excessive-font-families
+
+Disallow using more distinct font families than a coherent design needs. Severity: `warn`.
+
+```tsx
+// bad
+<p className="font-serif">
+  <span className="font-mono">a</span>
+  <span className="font-display">b</span>
+  <span className="font-body">c</span>
+</p>
+
+// good
+<p className="font-sans">
+  <code className="font-mono">a</code>
+</p>
+```
+
+### react-doctor/no-inline-hoc-on-component
+
+Disallow wrapping a component with a higher-order component inline in the module or render body. Severity: `warn`.
+
+```tsx
+// bad
+const Page = () => <Chart data={memo(ChartInner)} />;
+
+// good
+const MemoChartInner = memo(ChartInner);
+const Page = () => <Chart data={MemoChartInner} />;
+```
+
+### react-doctor/no-layout-shifting-interaction-state
+
+Disallow hover/focus/active styles that change element size and shift surrounding layout. Severity: `warn`.
+
+```tsx
+// bad
+<button className="border-0 hover:border-2">Save</button>
+
+// good
+<button className="border-2 border-transparent hover:border-blue-500">Save</button>
+```
+
+### react-doctor/no-mixed-icon-libraries
+
+Disallow mixing icons from multiple icon libraries in the same codebase. Severity: `warn`.
+
+```tsx
+// bad
+import { Check } from "lucide-react";
+import { FaTimes } from "react-icons/fa";
+
+// good
+import { Check, X } from "lucide-react";
+```
+
+### react-doctor/no-redundant-display-class
+
+Disallow display utility classes that restate the element's default or an already-applied display. Severity: `warn`.
+
+```tsx
+// bad
+<div className="block flex-col flex">Content</div>
+
+// good
+<div className="flex flex-col">Content</div>
+```
+
+### react-doctor/no-redundant-title-tooltip
+
+Disallow a title attribute that duplicates the element's visible text. Severity: `warn`.
+
+```tsx
+// bad
+<button title="Save changes">Save changes</button>
+
+// good
+<button>Save changes</button>
+```
+
+### react-doctor/no-svg-currentcolor-with-fill-class
+
+Disallow pairing an SVG that uses currentColor with a fill-\* utility class that does not affect it. Severity: `warn`.
+
+```tsx
+// bad
+<svg className="fill-red-500">
+  <path fill="currentColor" d="..." />
+</svg>
+
+// good
+<svg className="text-red-500">
+  <path fill="currentColor" d="..." />
+</svg>
+```
+
+### react-doctor/prefer-tabular-numeric-data
+
+Prefer tabular numbers for columns of numeric data so digits align. Severity: `warn`.
+
+```tsx
+// bad
+<td>{price.toFixed(2)}</td>
+
+// good
+<td className="tabular-nums">{price.toFixed(2)}</td>
+```
+
+### react-doctor/prefer-truncate-shorthand
+
+Prefer the truncate shorthand over spelling out overflow-hidden, text-ellipsis, and whitespace-nowrap. Severity: `warn`.
+
+```tsx
+// bad
+<p className="overflow-hidden text-ellipsis whitespace-nowrap">{title}</p>
+
+// good
+<p className="truncate">{title}</p>
+```
+
+### react-doctor/require-autoplay-video-poster
+
+Require a poster on autoplaying videos so a frame shows before playback starts. Severity: `warn`.
+
+```tsx
+// bad
+<video autoPlay muted loop src="/hero.mp4" />
+
+// good
+<video autoPlay muted loop src="/hero.mp4" poster="/hero-frame.jpg" />
+```
+
+## React Doctor: Runtime Performance
+
+### react-doctor/context-provider-value-from-unmemoized-local-literal
+
+Disallow passing a freshly created object literal as a context provider value without memoization. Severity: `warn`.
+
+```tsx
+// bad
+<ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
+
+// good
+const value = useMemo(() => ({ theme, setTheme }), [theme]);
+return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+```
+
+### react-doctor/no-create-object-url-without-revoke
+
+Disallow calling URL.createObjectURL without a matching URL.revokeObjectURL. Severity: `warn`.
+
+```tsx
+// bad
+const url = URL.createObjectURL(file);
+setPreview(url);
+
+// good
+const url = URL.createObjectURL(file);
+setPreview(url);
+return () => URL.revokeObjectURL(url);
+```
+
+### react-doctor/no-document-write
+
+Disallow document.write, which blocks parsing and can wipe the document. Severity: `warn`.
+
+```ts
+// bad
+document.write("<script src='/analytics.js'></script>");
+
+// good
+const script = document.createElement("script");
+script.src = "/analytics.js";
+document.head.append(script);
+```
+
+### react-doctor/no-eager-new-in-use-state-initializer
+
+Disallow constructing objects eagerly in useState calls; pass a lazy initializer instead. Severity: `warn`.
+
+```tsx
+// bad
+const [store, setStore] = useState(new DataStore(props.rows));
+
+// good
+const [store, setStore] = useState(() => new DataStore(props.rows));
+```
+
+### react-doctor/no-ease-in-motion
+
+Disallow ease-in timing on entrance animations; prefer ease-out so motion starts fast and settles. Severity: `warn`.
+
+```tsx
+// bad
+<div className="transition-opacity ease-in duration-200" />
+
+// good
+<div className="transition-opacity ease-out duration-200" />
+```
+
+### react-doctor/no-img-lazy-with-high-fetchpriority
+
+Disallow combining loading="lazy" with fetchPriority="high" on the same image. Severity: `warn`.
+
+```tsx
+// bad
+<img src="/hero.jpg" loading="lazy" fetchPriority="high" />
+
+// good
+<img src="/hero.jpg" fetchPriority="high" />
+```
+
+### react-doctor/no-img-without-dimensions
+
+Disallow images without explicit width and height, which causes layout shift. Severity: `warn`.
+
+```tsx
+// bad
+<img src="/banner.jpg" alt="Banner" />
+
+// good
+<img src="/banner.jpg" alt="Banner" width={1200} height={400} />
+```
+
+### react-doctor/no-json-parse-stringify-clone
+
+Disallow cloning objects via JSON.parse(JSON.stringify()); use structuredClone instead. Severity: `warn`.
+
+```ts
+// bad
+const copy = JSON.parse(JSON.stringify(state));
+
+// good
+const copy = structuredClone(state);
+```
+
+### react-doctor/no-spread-accumulator-in-reduce
+
+Disallow spreading the accumulator on every reduce iteration, which makes the reduction quadratic. Severity: `warn`.
+
+```ts
+// bad
+const byId = users.reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
+
+// good
+const byId = users.reduce((acc, u) => {
+  acc[u.id] = u;
+  return acc;
+}, {});
+```
+
+### react-doctor/no-srcset-without-sizes
+
+Disallow width-based srcSet on images without a sizes attribute. Severity: `warn`.
+
+```tsx
+// bad
+<img srcSet="/img-480.jpg 480w, /img-960.jpg 960w" src="/img-960.jpg" />
+
+// good
+<img srcSet="/img-480.jpg 480w, /img-960.jpg 960w" sizes="(max-width: 600px) 480px, 960px" src="/img-960.jpg" />
+```
+
+### react-doctor/no-sync-xhr
+
+Disallow synchronous XMLHttpRequest, which blocks the main thread. Severity: `warn`.
+
+```ts
+// bad
+const xhr = new XMLHttpRequest();
+xhr.open("GET", "/api/data", false);
+xhr.send();
+
+// good
+const res = await fetch("/api/data");
+```
+
+### react-doctor/no-tailwind-layout-transition
+
+Disallow Tailwind transitions on layout properties like width, height, or margin. Severity: `warn`.
+
+```tsx
+// bad
+<div className="transition-[width] hover:w-64" />
+
+// good
+<div className="transition-transform hover:scale-x-110" />
+```
+
+### react-doctor/no-unbounded-animation-frame-loop
+
+Disallow requestAnimationFrame loops that never stop or cancel. Severity: `warn`.
+
+```ts
+// bad
+const tick = () => {
+  update();
+  requestAnimationFrame(tick);
+};
+requestAnimationFrame(tick);
+
+// good
+let id = requestAnimationFrame(function tick() {
+  update();
+  if (running) id = requestAnimationFrame(tick);
+});
+return () => cancelAnimationFrame(id);
+```
+
+### react-doctor/no-unthrottled-scroll-mutation
+
+Disallow mutating the DOM directly in scroll handlers without throttling via requestAnimationFrame. Severity: `warn`.
+
+```ts
+// bad
+window.addEventListener("scroll", () => {
+  header.style.opacity = String(1 - window.scrollY / 300);
+});
+
+// good
+window.addEventListener("scroll", () => {
+  requestAnimationFrame(() => {
+    header.style.opacity = String(1 - window.scrollY / 300);
+  });
+});
+```
+
+### react-doctor/prefer-motion-transform-property
+
+Prefer animating dedicated transform properties over layout-affecting positional properties. Severity: `warn`.
+
+```tsx
+// bad
+<motion.div animate={{ left: 100, top: 50 }} />
+
+// good
+<motion.div animate={{ x: 100, y: 50 }} />
+```
+
+## React Doctor: React Performance
+
+### react-doctor/async-defer-await
+
+Prefer deferring an await below unrelated synchronous work so it does not block. Severity: `warn`.
+
+```ts
+// bad
+const data = await fetchData();
+const config = buildConfig();
+render(config, data);
+
+// good
+const dataPromise = fetchData();
+const config = buildConfig();
+render(config, await dataPromise);
+```
+
+### react-doctor/no-global-css-variable-animation
+
+Disallow animating CSS variables on :root, which forces the whole page to restyle every frame. Severity: `error`.
+
+```tsx
+// bad
+document.documentElement.style.setProperty("--x", `${mouseX}px`);
+
+// good
+cursorEl.style.transform = `translateX(${mouseX}px)`;
+```
+
+### react-doctor/no-inline-prop-on-memo-component
+
+Disallow inline object, array, or function props on memoized components, which defeat the memo. Severity: `warn`.
+
+```tsx
+// bad
+<MemoList items={items} onSelect={(id) => select(id)} />;
+
+// good
+const handleSelect = useCallback((id) => select(id), []);
+<MemoList items={items} onSelect={handleSelect} />;
+```
+
+### react-doctor/no-large-animated-blur
+
+Disallow animating large blur effects, which are expensive to composite. Severity: `warn`.
+
+```tsx
+// bad
+<div className="transition-all hover:blur-3xl" />
+
+// good
+<div className="transition-opacity hover:opacity-50" />
+```
+
+### react-doctor/no-layout-property-animation
+
+Disallow animating layout properties like width, height, top, or left; animate transform instead. Severity: `error`.
+
+```tsx
+// bad
+<div style={{ transition: "width 200ms" }} />
+
+// good
+<div style={{ transition: "transform 200ms" }} />
+```
+
+### react-doctor/no-permanent-will-change
+
+Disallow leaving will-change applied permanently instead of only around the animation. Severity: `warn`.
+
+```tsx
+// bad
+<div className="will-change-transform">{content}</div>
+
+// good
+<div className={isAnimating ? "will-change-transform" : ""}>{content}</div>
+```
+
+### react-doctor/no-scale-from-zero
+
+Disallow entrance animations that scale from zero; start from a value near one instead. Severity: `warn`.
+
+```tsx
+// bad
+<motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} />
+
+// good
+<motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} />
+```
+
+### react-doctor/no-transition-all
+
+Disallow transition-all; list the specific properties to transition. Severity: `warn`.
+
+```tsx
+// bad
+<button className="transition-all hover:bg-blue-600" />
+
+// good
+<button className="transition-colors hover:bg-blue-600" />
+```
+
+### react-doctor/no-usememo-simple-expression
+
+Disallow useMemo around trivial expressions that are cheaper than the memoization itself. Severity: `warn`.
+
+```tsx
+// bad
+const doubled = useMemo(() => count * 2, [count]);
+
+// good
+const doubled = count * 2;
+```
+
+### react-doctor/prefer-stable-empty-fallback
+
+Prefer a hoisted constant fallback over a fresh empty literal created on every render. Severity: `warn`.
+
+```tsx
+// bad
+const List = ({ items }) => <Rows items={items ?? []} />;
+
+// good
+const EMPTY_ITEMS = [];
+const List = ({ items }) => <Rows items={items ?? EMPTY_ITEMS} />;
+```
+
+### react-doctor/rendering-animate-svg-wrapper
+
+Prefer animating a wrapper element around an SVG instead of the SVG's internals. Severity: `warn`.
+
+```tsx
+// bad
+<svg className="animate-spin"><path d="..." /></svg>
+
+// good
+<div className="animate-spin"><svg><path d="..." /></svg></div>
+```
+
+### react-doctor/rendering-hoist-jsx
+
+Prefer hoisting static JSX out of the component body so it is not recreated each render. Severity: `warn`.
+
+```tsx
+// bad
+const Page = () => {
+  const footer = <Footer year={2026} />;
+  return <div>{footer}</div>;
+};
+
+// good
+const footer = <Footer year={2026} />;
+const Page = () => <div>{footer}</div>;
+```
+
+### react-doctor/rendering-hydration-mismatch-time
+
+Disallow rendering current-time values like Date.now() during render, which mismatch between server and client. Severity: `warn`.
+
+```tsx
+// bad
+const Clock = () => <span>{new Date().toLocaleTimeString()}</span>;
+
+// good
+const Clock = () => {
+  const [time, setTime] = useState("");
+  useEffect(() => setTime(new Date().toLocaleTimeString()), []);
+  return <span>{time}</span>;
+};
+```
+
+### react-doctor/rendering-hydration-no-flicker
+
+Disallow client-only state reads that flicker after hydration; resolve them before first paint. Severity: `warn`.
+
+```tsx
+// bad
+const [theme, setTheme] = useState("light");
+useEffect(() => setTheme(localStorage.getItem("theme") ?? "light"), []);
+
+// good
+<script
+  dangerouslySetInnerHTML={{
+    __html: "document.documentElement.dataset.theme = localStorage.getItem('theme') ?? 'light'",
+  }}
+/>;
+```
+
+### react-doctor/rendering-script-defer-async
+
+Prefer defer or async on script tags so they do not block parsing. Severity: `warn`.
+
+```tsx
+// bad
+<script src="/analytics.js" />
+
+// good
+<script src="/analytics.js" defer />
+```
+
+### react-doctor/rendering-usetransition-loading
+
+Prefer useTransition for pending state instead of manual loading flags around state updates. Severity: `warn`.
+
+```tsx
+// bad
+setLoading(true);
+setFilter(next);
+setLoading(false);
+
+// good
+const [isPending, startTransition] = useTransition();
+startTransition(() => setFilter(next));
+```
+
+### react-doctor/rerender-derived-state-from-hook
+
+Prefer deriving values during render instead of mirroring hook results into state with an effect. Severity: `warn`.
+
+```tsx
+// bad
+const [fullName, setFullName] = useState("");
+useEffect(() => setFullName(`${first} ${last}`), [first, last]);
+
+// good
+const fullName = `${first} ${last}`;
+```
+
+### react-doctor/rerender-memo-before-early-return
+
+Disallow calling useMemo/useCallback after a conditional early return. Severity: `warn`.
+
+```tsx
+// bad
+if (!data) return null;
+const rows = useMemo(() => sort(data), [data]);
+
+// good
+const rows = useMemo(() => sort(data ?? []), [data]);
+if (!data) return null;
+```
+
+### react-doctor/rerender-memo-with-default-value
+
+Disallow default parameter values that create a fresh object each render on memoized components. Severity: `warn`.
+
+```tsx
+// bad
+const List = memo(({ items = [] }) => <Rows items={items} />);
+
+// good
+const EMPTY_ITEMS = [];
+const List = memo(({ items = EMPTY_ITEMS }) => <Rows items={items} />);
+```
+
+### react-doctor/rerender-transitions-scroll
+
+Prefer marking scroll-driven state updates as transitions so they do not block urgent renders. Severity: `warn`.
+
+```tsx
+// bad
+const handleScroll = () => setScrollY(window.scrollY);
+
+// good
+const handleScroll = () => startTransition(() => setScrollY(window.scrollY));
+```
+
+## React Doctor: Next.js App Router
+
+### react-doctor/nextjs-error-boundary-missing-use-client
+
+Require the "use client" directive in error.tsx files. Severity: `error`.
+
+```tsx
+// bad
+export default function Error({ reset }) {
+  return <button onClick={reset}>Retry</button>;
+}
+
+// good
+("use client");
+export default function Error({ reset }) {
+  return <button onClick={reset}>Retry</button>;
+}
+```
+
+### react-doctor/nextjs-global-error-missing-html-body
+
+Require global-error.tsx to render its own html and body tags. Severity: `error`.
+
+```tsx
+// bad
+export default function GlobalError() {
+  return <h1>Something went wrong</h1>;
+}
+
+// good
+export default function GlobalError() {
+  return (
+    <html>
+      <body>
+        <h1>Something went wrong</h1>
+      </body>
+    </html>
+  );
+}
+```
+
+### react-doctor/nextjs-image-missing-sizes
+
+Require a sizes prop on next/image when using fill. Severity: `warn`.
+
+```tsx
+// bad
+<Image src="/hero.jpg" alt="Hero" fill />
+
+// good
+<Image src="/hero.jpg" alt="Hero" fill sizes="100vw" />
+```
+
+### react-doctor/nextjs-missing-metadata
+
+Require pages and layouts to export metadata or generateMetadata. Severity: `warn`.
+
+```tsx
+// bad
+export default function Page() {
+  return <main>Pricing</main>;
+}
+
+// good
+export const metadata = { title: "Pricing" };
+export default function Page() {
+  return <main>Pricing</main>;
+}
+```
+
+### react-doctor/nextjs-no-a-element
+
+Disallow plain anchor elements for internal navigation; use next/link. Severity: `warn`.
+
+```tsx
+// bad
+<a href="/dashboard">Dashboard</a>
+
+// good
+<Link href="/dashboard">Dashboard</Link>
+```
+
+### react-doctor/nextjs-no-client-fetch-for-server-data
+
+Disallow fetching server-renderable data in client effects; fetch in a Server Component instead. Severity: `warn`.
+
+```tsx
+// bad
+"use client";
+useEffect(() => {
+  fetch("/api/posts")
+    .then((r) => r.json())
+    .then(setPosts);
+}, []);
+
+// good
+export default async function Page() {
+  const posts = await getPosts();
+  return <PostList posts={posts} />;
+}
+```
+
+### react-doctor/nextjs-no-client-side-redirect
+
+Disallow auth redirects via router.push in a useEffect; redirect in middleware or on the server. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  if (!session) router.push("/login");
+}, [session]);
+
+// good
+if (!session) redirect("/login");
+```
+
+### react-doctor/nextjs-no-default-export-in-route-handler
+
+Disallow default exports in route handlers; export named HTTP methods. Severity: `error`.
+
+```ts
+// bad
+export default function handler(req) {
+  return Response.json({ ok: true });
+}
+
+// good
+export async function GET() {
+  return Response.json({ ok: true });
+}
+```
+
+### react-doctor/nextjs-no-edge-og-runtime
+
+Disallow forcing the edge runtime just for OG image generation; it works in the default runtime. Severity: `warn`.
+
+```ts
+// bad
+export const runtime = "edge";
+export async function GET() {
+  return new ImageResponse(<div>OG</div>);
+}
+
+// good
+export async function GET() {
+  return new ImageResponse(<div>OG</div>);
+}
+```
+
+### react-doctor/nextjs-no-font-link
+
+Disallow loading fonts via link tags; use next/font. Severity: `warn`.
+
+```tsx
+// bad
+<link href="https://fonts.googleapis.com/css2?family=Inter" rel="stylesheet" />;
+
+// good
+import { Inter } from "next/font/google";
+const inter = Inter({ subsets: ["latin"] });
+```
+
+### react-doctor/nextjs-no-head-import
+
+Disallow importing next/head in the App Router; use the Metadata API. Severity: `error`.
+
+```tsx
+// bad
+import Head from "next/head";
+<Head>
+  <title>Pricing</title>
+</Head>;
+
+// good
+export const metadata = { title: "Pricing" };
+```
+
+### react-doctor/nextjs-no-native-script
+
+Disallow native script tags; use next/script. Severity: `warn`.
+
+```tsx
+// bad
+<script src="https://example.com/widget.js" />
+
+// good
+<Script src="https://example.com/widget.js" strategy="lazyOnload" />
+```
+
+### react-doctor/nextjs-no-redirect-in-try-catch
+
+Disallow calling redirect() inside a try/catch, which swallows the internal throw it relies on. Severity: `warn`.
+
+```ts
+// bad
+try {
+  await save(data);
+  redirect("/done");
+} catch (e) {
+  log(e);
+}
+
+// good
+try {
+  await save(data);
+} catch (e) {
+  log(e);
+}
+redirect("/done");
+```
+
+### react-doctor/nextjs-no-script-in-head
+
+Disallow placing next/script inside a head element. Severity: `error`.
+
+```tsx
+// bad
+<head>
+  <Script src="/analytics.js" />
+</head>
+
+// good
+<body>
+  <Script src="/analytics.js" strategy="afterInteractive" />
+</body>
+```
+
+### react-doctor/nextjs-no-side-effect-in-get-handler
+
+Disallow mutations or other side effects in GET route handlers; use POST or a Server Action. Severity: `error`.
+
+```ts
+// bad
+export async function GET() {
+  await db.user.delete({ where: { id } });
+  return Response.json({ ok: true });
+}
+
+// good
+export async function POST() {
+  await db.user.delete({ where: { id } });
+  return Response.json({ ok: true });
+}
+```
+
+### react-doctor/nextjs-no-use-search-params-without-suspense
+
+Require a Suspense boundary around components that call useSearchParams. Severity: `warn`.
+
+```tsx
+// bad
+<SearchResults />
+
+// good
+<Suspense fallback={<Skeleton />}>
+  <SearchResults />
+</Suspense>
+```
+
+### react-doctor/nextjs-no-vercel-og-import
+
+Disallow importing from @vercel/og; use ImageResponse from next/og. Severity: `warn`.
+
+```ts
+// bad
+import { ImageResponse } from "@vercel/og";
+
+// good
+import { ImageResponse } from "next/og";
+```
+
+## React Doctor: Security
+
+### react-doctor/active-static-asset
+
+Disallow serving user-controlled files as active, script-capable content. Severity: `warn`.
+
+```ts
+// bad
+res.setHeader("Content-Type", "image/svg+xml");
+res.send(userUpload);
+
+// good
+res.setHeader("Content-Type", "application/octet-stream");
+res.setHeader("Content-Disposition", "attachment");
+res.send(userUpload);
+```
+
+### react-doctor/agent-tool-capability-risk
+
+Restrict AI agent tools to allowlisted capabilities instead of executing arbitrary input. Severity: `warn`.
+
+```ts
+// bad
+const shellTool = { name: "shell", execute: (input) => exec(input.command) };
+
+// good
+const shellTool = { name: "shell", execute: (input) => ALLOWED_COMMANDS[input.command]?.() };
+```
+
+### react-doctor/artifact-baas-authority-surface
+
+Disallow shipping backend-as-a-service admin authority such as service-role keys in client code. Severity: `warn`.
+
+```tsx
+// bad
+"use client";
+const supabase = createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+// good
+("use client");
+const supabase = createClient(url, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+```
+
+### react-doctor/artifact-env-leak
+
+Disallow inlining server environment variables into client build artifacts. Severity: `error`.
+
+```tsx
+// bad
+"use client";
+const apiKey = process.env.API_SECRET;
+
+// good
+// server route only
+const apiKey = process.env.API_SECRET;
+```
+
+### react-doctor/artifact-secret-leak
+
+Disallow secret values appearing in emitted build artifacts. Severity: `error`.
+
+```ts
+// bad
+const config = { apiKey: "sk_live_YOUR_API_TOKEN_HERE" };
+
+// good
+const config = { apiKey: process.env.STRIPE_SECRET_KEY };
+```
+
+### react-doctor/auth-token-in-web-storage
+
+Disallow storing authentication tokens in localStorage or sessionStorage. Severity: `warn`.
+
+```ts
+// bad
+localStorage.setItem("accessToken", token);
+
+// good
+// server sets an httpOnly cookie; the client never touches the token
+await fetch("/api/session", { method: "POST", credentials: "include" });
+```
+
+### react-doctor/build-pipeline-secret-boundary
+
+Disallow passing server secrets across the build pipeline boundary into bundled output. Severity: `warn`.
+
+```ts
+// bad
+define: { "process.env.API_SECRET": JSON.stringify(process.env.API_SECRET) }
+
+// good
+define: { "process.env.PUBLIC_API_URL": JSON.stringify(process.env.PUBLIC_API_URL) }
+```
+
+### react-doctor/clickjacking-redirect-risk
+
+Require frame protection and target validation on parameter-driven redirect endpoints. Severity: `warn`.
+
+```ts
+// bad
+app.get("/go", (req, res) => res.redirect(req.query.next));
+
+// good
+app.get("/go", (req, res) => {
+  res.setHeader("X-Frame-Options", "DENY");
+  res.redirect(toInternalPath(req.query.next));
+});
+```
+
+### react-doctor/command-execution-input-risk
+
+Disallow passing untrusted input into shell command execution. Severity: `error`.
+
+```ts
+// bad
+exec(`git clone ${req.query.repo}`);
+
+// good
+execFile("git", ["clone", validatedRepoUrl]);
+```
+
+### react-doctor/cors-cookie-trust-risk
+
+Disallow reflecting arbitrary origins in credentialed CORS responses. Severity: `warn`.
+
+```ts
+// bad
+res.setHeader("Access-Control-Allow-Origin", req.headers.origin);
+res.setHeader("Access-Control-Allow-Credentials", "true");
+
+// good
+if (ALLOWED_ORIGINS.has(req.headers.origin)) {
+  res.setHeader("Access-Control-Allow-Origin", req.headers.origin);
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+}
+```
+
+### react-doctor/dangerous-html-sink
+
+Disallow injecting untrusted data into raw HTML sinks. Severity: `warn`.
+
+```tsx
+// bad
+<div dangerouslySetInnerHTML={{ __html: userBio }} />
+
+// good
+<div>{userBio}</div>
+```
+
+### react-doctor/git-provider-url-injection-risk
+
+Disallow interpolating unvalidated input into git provider URLs and clone commands. Severity: `warn`.
+
+```ts
+// bad
+await exec(`git clone https://github.com/${req.query.repo}.git`);
+
+// good
+const [owner, name] = parseRepoSlug(req.query.repo);
+await execFile("git", ["clone", `https://github.com/${owner}/${name}.git`]);
+```
+
+### react-doctor/import-metadata-execution-risk
+
+Disallow dynamically importing module paths taken from untrusted metadata. Severity: `error`.
+
+```ts
+// bad
+const plugin = await import(manifest.pluginPath);
+
+// good
+const load = KNOWN_PLUGINS[manifest.pluginName];
+const plugin = load ? await load() : null;
+```
+
+### react-doctor/insecure-crypto-risk
+
+Disallow weak cryptographic primitives and non-cryptographic randomness for security-sensitive values. Severity: `warn`.
+
+```ts
+// bad
+const resetToken = Math.random().toString(36).slice(2);
+
+// good
+const resetToken = crypto.randomBytes(32).toString("hex");
+```
+
+### react-doctor/insecure-session-cookie
+
+Require httpOnly, secure, and sameSite attributes on session cookies. Severity: `warn`.
+
+```ts
+// bad
+res.cookie("session", sessionId);
+
+// good
+res.cookie("session", sessionId, { httpOnly: true, secure: true, sameSite: "lax" });
+```
+
+### react-doctor/jwt-insecure-verification
+
+Require verified JWT decoding with pinned algorithms instead of unverified decode. Severity: `error`.
+
+```ts
+// bad
+const payload = jwt.decode(token);
+
+// good
+const payload = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ["HS256"] });
+```
+
+### react-doctor/key-lifecycle-risk
+
+Disallow hardcoded or unrotatable cryptographic key material; load keys from a managed key store. Severity: `error`.
+
+```ts
+// bad
+const encryptionKey = "YOUR_STATIC_KEY_HERE";
+
+// good
+const encryptionKey = await kms.getKey(process.env.KMS_KEY_ID);
+```
+
+### react-doctor/local-rpc-native-bridge-risk
+
+Disallow exposing unrestricted native capabilities over local RPC bridges reachable by untrusted content. Severity: `warn`.
+
+```ts
+// bad
+ipcMain.handle("run", (_event, command) => exec(command));
+
+// good
+ipcMain.handle("run", (_event, action) => ALLOWED_ACTIONS[action]?.());
+```
+
+### react-doctor/mcp-tool-capability-risk
+
+Constrain MCP tool capabilities to validated, scoped operations. Severity: `warn`.
+
+```ts
+// bad
+server.tool("write_file", ({ path, content }) => fs.writeFile(path, content));
+
+// good
+server.tool("write_file", ({ path, content }) =>
+  fs.writeFile(resolveInside(WORKSPACE_DIR, path), content),
+);
+```
+
+### react-doctor/mdx-ssr-execution-risk
+
+Disallow evaluating untrusted MDX on the server, where it executes as code. Severity: `warn`.
+
+```tsx
+// bad
+const { default: Content } = await evaluate(userMdx, runtime);
+
+// good
+const html = await renderSanitizedMarkdown(userMarkdown);
+```
+
+### react-doctor/no-path-prefix-containment
+
+Disallow prefix string checks for path containment; resolve the path before comparing against the base directory. Severity: `warn`.
+
+```ts
+// bad
+if (requested.startsWith(UPLOADS_DIR)) return fs.readFile(requested);
+
+// good
+const resolved = path.resolve(UPLOADS_DIR, requested);
+if (resolved.startsWith(UPLOADS_DIR + path.sep)) return fs.readFile(resolved);
+```
+
+### react-doctor/no-secrets-in-client-code
+
+Disallow secret keys and credentials in client-delivered code. Severity: `warn`.
+
+```tsx
+// bad
+"use client";
+const OPENAI_KEY = "sk-YOUR_API_TOKEN_HERE";
+
+// good
+("use client");
+const res = await fetch("/api/ai", { method: "POST", body });
+```
+
+### react-doctor/nosql-injection-risk
+
+Disallow passing untrusted objects directly into NoSQL query operators. Severity: `warn`.
+
+```ts
+// bad
+await db.users.findOne({ username: req.body.username, password: req.body.password });
+
+// good
+await db.users.findOne({ username: String(req.body.username) });
+```
+
+### react-doctor/package-metadata-secret
+
+Disallow secrets embedded in package metadata such as package.json scripts. Severity: `warn`.
+
+```ts
+// bad
+{ "scripts": { "deploy": "NPM_TOKEN=YOUR_API_TOKEN_HERE npm publish" } }
+
+// good
+{ "scripts": { "deploy": "npm publish" } }
+```
+
+### react-doctor/path-traversal-risk
+
+Disallow building filesystem paths from untrusted input without normalization. Severity: `warn`.
+
+```ts
+// bad
+await fs.readFile(path.join(UPLOADS_DIR, req.query.name));
+
+// good
+await fs.readFile(path.join(UPLOADS_DIR, path.basename(req.query.name)));
+```
+
+### react-doctor/plugin-update-trust-risk
+
+Require integrity verification before loading remotely fetched plugin updates. Severity: `warn`.
+
+```ts
+// bad
+const code = await fetch(pluginUpdateUrl).then((r) => r.text());
+runPlugin(code);
+
+// good
+const pkg = await fetch(pluginUpdateUrl).then((r) => r.arrayBuffer());
+if (verifySignature(pkg, PUBLISHER_PUBLIC_KEY)) runPlugin(pkg);
+```
+
+### react-doctor/postmessage-origin-risk
+
+Require origin validation in postMessage handlers. Severity: `warn`.
+
+```ts
+// bad
+window.addEventListener("message", (e) => applyState(e.data));
+
+// good
+window.addEventListener("message", (e) => {
+  if (e.origin === "https://trusted.example.com") applyState(e.data);
+});
+```
+
+### react-doctor/public-debug-artifact
+
+Disallow shipping debug endpoints or artifacts in production builds. Severity: `warn`.
+
+```ts
+// bad
+app.get("/debug/state", (req, res) => res.json(internalState));
+
+// good
+if (process.env.NODE_ENV !== "production") {
+  app.get("/debug/state", (req, res) => res.json(internalState));
+}
+```
+
+### react-doctor/public-env-secret-name
+
+Disallow secret-sounding names under public environment variable prefixes. Severity: `warn`.
+
+```ts
+// bad
+const key = process.env.NEXT_PUBLIC_API_SECRET;
+
+// good
+const key = process.env.API_SECRET;
+```
+
+### react-doctor/raw-sql-injection-risk
+
+Disallow interpolating untrusted input into raw SQL strings; use parameterized queries. Severity: `warn`.
+
+```ts
+// bad
+await db.query(`SELECT * FROM users WHERE id = ${req.params.id}`);
+
+// good
+await db.query("SELECT * FROM users WHERE id = $1", [req.params.id]);
+```
+
+### react-doctor/react-markdown-unsanitized-raw-html
+
+Require sanitization when enabling raw HTML in react-markdown. Severity: `warn`.
+
+```tsx
+// bad
+<ReactMarkdown rehypePlugins={[rehypeRaw]}>{userContent}</ReactMarkdown>
+
+// good
+<ReactMarkdown rehypePlugins={[rehypeRaw, rehypeSanitize]}>{userContent}</ReactMarkdown>
+```
+
+### react-doctor/repository-secret-file
+
+Disallow committing secret-bearing files to the repository. Severity: `error`.
+
+```ts
+// bad
+// .env checked into git
+DATABASE_URL=postgres://admin:YOUR_PASSWORD_HERE@db.example.com/app
+
+// good
+// .gitignore
+.env
+```
+
+### react-doctor/request-body-mass-assignment
+
+Disallow writing the whole request body into a database record; pick allowed fields explicitly. Severity: `warn`.
+
+```ts
+// bad
+await db.user.update({ where: { id }, data: req.body });
+
+// good
+await db.user.update({ where: { id }, data: { name: req.body.name, bio: req.body.bio } });
+```
+
+### react-doctor/secret-in-fallback
+
+Disallow hardcoded secret fallbacks for missing environment variables. Severity: `error`.
+
+```ts
+// bad
+const secret = process.env.JWT_SECRET ?? "YOUR_JWT_SECRET_HERE";
+
+// good
+const secret = process.env.JWT_SECRET;
+if (!secret) throw new Error("JWT_SECRET is not set");
+```
+
+### react-doctor/svg-filter-clickjacking-risk
+
+Disallow rendering untrusted SVG markup inline, where filters can overlay and hijack clicks. Severity: `warn`.
+
+```tsx
+// bad
+<div dangerouslySetInnerHTML={{ __html: userSvg }} />
+
+// good
+<img src={sanitizedSvgUrl} alt="User graphic" />
+```
+
+### react-doctor/tenant-static-proxy-risk
+
+Disallow proxying tenant-controlled static content through the application's shared origin. Severity: `warn`.
+
+```ts
+// bad
+app.get("/t/:tenant/:asset", (req, res) => proxyTo(storageUrl(req.params), res));
+
+// good
+app.get("/t/:tenant/:asset", (req, res) =>
+  res.redirect(`https://${req.params.tenant}.usercontent.example.com/${req.params.asset}`),
+);
+```
+
+### react-doctor/unsafe-json-in-html
+
+Escape serialized JSON before embedding it in inline script HTML. Severity: `warn`.
+
+```tsx
+// bad
+<script dangerouslySetInnerHTML={{ __html: `window.__DATA__=${JSON.stringify(data)}` }} />;
+
+// good
+const safe = JSON.stringify(data).replace(/</g, "\\u003c");
+<script dangerouslySetInnerHTML={{ __html: `window.__DATA__=${safe}` }} />;
+```
+
+### react-doctor/untrusted-redirect-following
+
+Disallow silently following redirects when fetching untrusted URLs on the server. Severity: `warn`.
+
+```ts
+// bad
+const res = await fetch(userProvidedUrl);
+
+// good
+const res = await fetch(validatedUrl, { redirect: "error" });
+```
+
+### react-doctor/url-prefilled-privileged-action
+
+Disallow auto-executing privileged actions from URL parameters without explicit user confirmation. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  if (searchParams.get("action") === "delete") deleteAccount();
+}, []);
+
+// good
+{
+  searchParams.get("action") === "delete" && <ConfirmDeleteDialog onConfirm={deleteAccount} />;
+}
+```
+
+### react-doctor/webhook-signature-risk
+
+Require signature verification before processing webhook payloads. Severity: `warn`.
+
+```ts
+// bad
+app.post("/webhook", (req, res) => handleEvent(req.body));
+
+// good
+app.post("/webhook", (req, res) => {
+  const event = stripe.webhooks.constructEvent(
+    req.body,
+    req.headers["stripe-signature"],
+    WEBHOOK_SECRET,
+  );
+  handleEvent(event);
+});
+```
+
+### react-doctor/window-open-without-noopener
+
+Require noopener when opening external windows. Severity: `warn`.
+
+```ts
+// bad
+window.open(url, "_blank");
+
+// good
+window.open(url, "_blank", "noopener,noreferrer");
+```
+
+## React Doctor: Server Components and Server Code
+
+### react-doctor/server-after-nonblocking
+
+Run non-blocking side work with after() instead of awaiting it in the request path. Severity: `warn`.
+
+```ts
+// bad
+export async function POST(req: Request) {
+  await logAnalytics(req);
+  return Response.json({ ok: true });
+}
+
+// good
+export async function POST(req: Request) {
+  after(() => logAnalytics(req));
+  return Response.json({ ok: true });
+}
+```
+
+### react-doctor/server-auth-actions
+
+Require authorization checks inside server actions. Severity: `error`.
+
+```ts
+// bad
+"use server";
+export async function deletePost(id: string) {
+  await db.post.delete({ where: { id } });
+}
+
+// good
+("use server");
+export async function deletePost(id: string) {
+  const session = await auth();
+  if (!session) throw new Error("Unauthorized");
+  await db.post.delete({ where: { id } });
+}
+```
+
+### react-doctor/server-cache-with-object-literal
+
+Disallow object-literal arguments to cache()-wrapped functions since cache keys compare by identity. Severity: `warn`.
+
+```ts
+// bad
+const getUser = cache(async (opts: { id: string }) => db.user.find(opts.id));
+const user = await getUser({ id });
+
+// good
+const getUser = cache(async (id: string) => db.user.find(id));
+const user = await getUser(id);
+```
+
+### react-doctor/server-dedup-props
+
+Deduplicate data access with cache() instead of threading the same fetched object through many props. Severity: `warn`.
+
+```tsx
+// bad
+const user = await fetchUser(id);
+return (
+  <Layout user={user}>
+    <Profile user={user} />
+    <Sidebar user={user} />
+  </Layout>
+);
+
+// good
+const getUser = cache(fetchUser);
+// each server component awaits getUser(id) where it needs the data
+```
+
+### react-doctor/server-fetch-without-revalidate
+
+Require an explicit caching strategy on server fetch calls. Severity: `warn`.
+
+```ts
+// bad
+const res = await fetch("https://api.example.com/posts");
+
+// good
+const res = await fetch("https://api.example.com/posts", { next: { revalidate: 60 } });
+```
+
+### react-doctor/server-hoist-static-io
+
+Hoist request-independent IO to module scope instead of repeating it in every request handler. Severity: `warn`.
+
+```ts
+// bad
+export async function GET() {
+  const template = await fs.readFile("./template.html", "utf8");
+  return new Response(template);
+}
+
+// good
+const template = await fs.readFile("./template.html", "utf8");
+export async function GET() {
+  return new Response(template);
+}
+```
+
+### react-doctor/server-no-mutable-module-state
+
+Disallow mutable module-level state in server code shared across requests. Severity: `error`.
+
+```ts
+// bad
+let currentUser: User | null = null;
+export async function GET(req: Request) {
+  currentUser = await getUser(req);
+  return Response.json(currentUser);
+}
+
+// good
+export async function GET(req: Request) {
+  const currentUser = await getUser(req);
+  return Response.json(currentUser);
+}
+```
+
+### react-doctor/server-sequential-independent-await
+
+Run independent awaits in parallel instead of sequentially. Severity: `warn`.
+
+```ts
+// bad
+const user = await getUser(id);
+const posts = await getPosts(id);
+
+// good
+const [user, posts] = await Promise.all([getUser(id), getPosts(id)]);
+```
+
+## React Doctor: State and Effects
+
+### react-doctor/activity-wraps-effect-heavy-subtree
+
+Wrap effect-heavy offscreen subtrees in Activity instead of mounting and unmounting them. Severity: `warn`.
+
+```tsx
+// bad
+{
+  isOpen && <HeavyPanel />;
+}
+
+// good
+<Activity mode={isOpen ? "visible" : "hidden"}>
+  <HeavyPanel />
+</Activity>;
+```
+
+### react-doctor/advanced-event-handler-refs
+
+Keep the latest event handler in a ref so long-lived subscriptions do not resubscribe on every handler change. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  socket.on("message", onMessage);
+  return () => socket.off("message", onMessage);
+}, [onMessage]);
+
+// good
+const handlerRef = useRef(onMessage);
+handlerRef.current = onMessage;
+useEffect(() => {
+  const handler = (m) => handlerRef.current(m);
+  socket.on("message", handler);
+  return () => socket.off("message", handler);
+}, []);
+```
+
+### react-doctor/effect-needs-cleanup
+
+Require cleanup functions in effects that subscribe, listen, or start timers. Severity: `error`.
+
+```tsx
+// bad
+useEffect(() => {
+  window.addEventListener("resize", onResize);
+}, []);
+
+// good
+useEffect(() => {
+  window.addEventListener("resize", onResize);
+  return () => window.removeEventListener("resize", onResize);
+}, []);
+```
+
+### react-doctor/hooks-no-nan-in-deps
+
+Disallow possibly-NaN values in dependency arrays, since NaN never equals itself and retriggers the hook every render. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  draw(Number(input));
+}, [Number(input)]);
+
+// good
+const parsed = Number(input);
+const value = Number.isNaN(parsed) ? 0 : parsed;
+useEffect(() => {
+  draw(value);
+}, [value]);
+```
+
+### react-doctor/no-adjust-state-on-prop-change
+
+Disallow resetting state in an effect when a prop changes; adjust it during render instead. Severity: `error`.
+
+```tsx
+// bad
+useEffect(() => {
+  setSelection(null);
+}, [items]);
+
+// good
+const [prevItems, setPrevItems] = useState(items);
+if (items !== prevItems) {
+  setPrevItems(items);
+  setSelection(null);
+}
+```
+
+### react-doctor/no-cascading-set-state
+
+Disallow effects that copy computable values into state, causing cascading render passes. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  setTotal(items.length);
+}, [items]);
+useEffect(() => {
+  setIsEmpty(total === 0);
+}, [total]);
+
+// good
+const total = items.length;
+const isEmpty = total === 0;
+```
+
+### react-doctor/no-chain-state-updates
+
+Disallow chaining dependent setState calls when the follow-up value can be derived during render. Severity: `warn`.
+
+```tsx
+// bad
+const handleClick = () => {
+  setCount(count + 1);
+  setIsEven((count + 1) % 2 === 0);
+};
+
+// good
+const handleClick = () => setCount(count + 1);
+const isEven = count % 2 === 0;
+```
+
+### react-doctor/no-create-context-in-render
+
+Disallow creating contexts inside a component render. Severity: `error`.
+
+```tsx
+// bad
+function App() {
+  const ThemeContext = createContext("light");
+  return (
+    <ThemeContext value="dark">
+      <Page />
+    </ThemeContext>
+  );
+}
+
+// good
+const ThemeContext = createContext("light");
+function App() {
+  return (
+    <ThemeContext value="dark">
+      <Page />
+    </ThemeContext>
+  );
+}
+```
+
+### react-doctor/no-create-store-in-render
+
+Disallow creating stores inside a component render. Severity: `error`.
+
+```tsx
+// bad
+function App() {
+  const store = createStore(rootReducer);
+  return (
+    <Provider store={store}>
+      <Page />
+    </Provider>
+  );
+}
+
+// good
+const store = createStore(rootReducer);
+function App() {
+  return (
+    <Provider store={store}>
+      <Page />
+    </Provider>
+  );
+}
+```
+
+### react-doctor/no-derived-state
+
+Derive values during render instead of mirroring them into state. Severity: `warn`.
+
+```tsx
+// bad
+const [fullName, setFullName] = useState("");
+const handleFirstChange = (v) => {
+  setFirst(v);
+  setFullName(v + " " + last);
+};
+
+// good
+const fullName = first + " " + last;
+```
+
+### react-doctor/no-derived-state-effect
+
+Disallow syncing derived values into state with an effect; compute them during render. Severity: `warn`.
+
+```tsx
+// bad
+const [fullName, setFullName] = useState("");
+useEffect(() => {
+  setFullName(first + " " + last);
+}, [first, last]);
+
+// good
+const fullName = first + " " + last;
+```
+
+### react-doctor/no-derived-useState
+
+Disallow storing a computable value in useState; compute it during render. Severity: `warn`.
+
+```tsx
+// bad
+const [visibleTodos, setVisibleTodos] = useState(filterTodos(todos, filter));
+
+// good
+const visibleTodos = filterTodos(todos, filter);
+```
+
+### react-doctor/no-direct-state-mutation
+
+Disallow mutating state objects and arrays; create new values instead. Severity: `warn`.
+
+```tsx
+// bad
+items.push(newItem);
+setItems(items);
+
+// good
+setItems([...items, newItem]);
+```
+
+### react-doctor/no-effect-chain
+
+Disallow effect chains where each effect sets state that triggers the next; compute everything in the originating event. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  if (card) setGoldCount(goldCount + 1);
+}, [card]);
+useEffect(() => {
+  if (goldCount > 3) setRound(round + 1);
+}, [goldCount]);
+
+// good
+const handlePlaceCard = (nextCard) => {
+  setCard(nextCard);
+  setGoldCount((c) => c + 1);
+  if (goldCount + 1 > 3) setRound((r) => r + 1);
+};
+```
+
+### react-doctor/no-effect-event-handler
+
+Handle user-triggered logic in the event handler instead of reacting to state changes in an effect. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  if (product.isInCart) showNotification(`Added ${product.name}`);
+}, [product]);
+
+// good
+const handleBuy = () => {
+  addToCart(product);
+  showNotification(`Added ${product.name}`);
+};
+```
+
+### react-doctor/no-effect-event-in-deps
+
+Disallow useEffectEvent functions in dependency arrays. Severity: `error`.
+
+```tsx
+// bad
+const onTick = useEffectEvent(() => setCount(count + 1));
+useEffect(() => {
+  const id = setInterval(onTick, 1000);
+  return () => clearInterval(id);
+}, [onTick]);
+
+// good
+const onTick = useEffectEvent(() => setCount(count + 1));
+useEffect(() => {
+  const id = setInterval(onTick, 1000);
+  return () => clearInterval(id);
+}, []);
+```
+
+### react-doctor/no-effect-with-fresh-deps
+
+Disallow effect dependencies recreated on every render; move the value inside the effect or depend on its primitives. Severity: `error`.
+
+```tsx
+// bad
+const options = { serverUrl, roomId };
+useEffect(() => {
+  connect(options);
+}, [options]);
+
+// good
+useEffect(() => {
+  connect({ serverUrl, roomId });
+}, [serverUrl, roomId]);
+```
+
+### react-doctor/no-event-handler
+
+Attach event handlers with JSX props instead of adding DOM listeners in effects. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  buttonRef.current.addEventListener("click", handleClick);
+  return () => buttonRef.current?.removeEventListener("click", handleClick);
+}, []);
+
+// good
+<button onClick={handleClick}>Save</button>;
+```
+
+### react-doctor/no-event-trigger-state
+
+Disallow storing an event-occurred flag in state and reacting to it in an effect; handle the event directly. Severity: `warn`.
+
+```tsx
+// bad
+const [shouldSend, setShouldSend] = useState(false);
+useEffect(() => { if (shouldSend) sendMessage(text); }, [shouldSend]);
+<button onClick={() => setShouldSend(true)}>Send</button>
+
+// good
+<button onClick={() => sendMessage(text)}>Send</button>
+```
+
+### react-doctor/no-fetch-in-effect
+
+Disallow ad-hoc data fetching in effects; use a data-fetching library or framework loader. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  fetch(`/api/user/${id}`)
+    .then((r) => r.json())
+    .then(setUser);
+}, [id]);
+
+// good
+const { data: user } = useQuery({ queryKey: ["user", id], queryFn: () => fetchUser(id) });
+```
+
+### react-doctor/no-initialize-state
+
+Initialize state in useState instead of setting it from a mount effect. Severity: `warn`.
+
+```tsx
+// bad
+const [name, setName] = useState("");
+useEffect(() => {
+  setName(defaultName);
+}, []);
+
+// good
+const [name, setName] = useState(defaultName);
+```
+
+### react-doctor/no-mirror-prop-effect
+
+Disallow mirroring a prop into state with an effect; read the prop directly. Severity: `warn`.
+
+```tsx
+// bad
+const [color, setColor] = useState(propColor);
+useEffect(() => {
+  setColor(propColor);
+}, [propColor]);
+
+// good
+const color = propColor;
+```
+
+### react-doctor/no-mutable-in-deps
+
+Disallow mutable values such as ref.current in dependency arrays. Severity: `error`.
+
+```tsx
+// bad
+useEffect(() => {
+  observer.observe(ref.current);
+}, [ref.current]);
+
+// good
+useEffect(() => {
+  observer.observe(ref.current);
+}, []);
+```
+
+### react-doctor/no-mutating-reducer-state
+
+Disallow mutating state inside reducers; return new state objects. Severity: `error`.
+
+```ts
+// bad
+case "add":
+  state.items.push(action.item);
+  return state;
+
+// good
+case "add":
+  return { ...state, items: [...state.items, action.item] };
+```
+
+### react-doctor/no-pass-data-to-parent
+
+Disallow pushing fetched data up to the parent through effects; fetch in the parent and pass data down. Severity: `warn`.
+
+```tsx
+// bad
+function Child({ onFetched }) {
+  const data = useSomeAPI();
+  useEffect(() => {
+    onFetched(data);
+  }, [onFetched, data]);
+}
+
+// good
+function Parent() {
+  const data = useSomeAPI();
+  return <Child data={data} />;
+}
+```
+
+### react-doctor/no-pass-live-state-to-parent
+
+Disallow streaming a child's live state to the parent through an effect; lift the state up instead. Severity: `warn`.
+
+```tsx
+// bad
+function Child({ onValueChange }) {
+  const [value, setValue] = useState("");
+  useEffect(() => {
+    onValueChange(value);
+  }, [value]);
+}
+
+// good
+function Parent() {
+  const [value, setValue] = useState("");
+  return <Child value={value} onChange={setValue} />;
+}
+```
+
+### react-doctor/no-prop-callback-in-effect
+
+Disallow calling prop callbacks from effects; call them in the event that caused the change. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  onChange(isOn);
+}, [isOn, onChange]);
+
+// good
+const handleToggle = () => {
+  setIsOn(!isOn);
+  onChange(!isOn);
+};
+```
+
+### react-doctor/no-reset-all-state-on-prop-change
+
+Reset component state on identity change with a key instead of clearing every state in an effect. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  setComment("");
+  setDraft(null);
+}, [userId]);
+
+// good
+<Profile userId={userId} key={userId} />;
+```
+
+### react-doctor/no-self-updating-effect
+
+Disallow effects that set the same state they depend on, which loops forever. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  setCount(count + 1);
+}, [count]);
+
+// good
+useEffect(() => {
+  setCount((c) => c + 1);
+}, []);
+```
+
+### react-doctor/no-set-state-in-render
+
+Disallow calling setState during render; derive the value instead. Severity: `warn`.
+
+```tsx
+// bad
+function List({ items }) {
+  setCount(items.length);
+  return <ul>{items.map(renderItem)}</ul>;
+}
+
+// good
+const count = items.length;
+```
+
+### react-doctor/prefer-use-effect-event
+
+Wrap non-reactive effect logic in useEffectEvent so it reads fresh values without retriggering the effect. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  const conn = createConnection(roomId);
+  conn.on("connected", () => notify(theme));
+  return () => conn.disconnect();
+}, [roomId, theme]);
+
+// good
+const onConnected = useEffectEvent(() => notify(theme));
+useEffect(() => {
+  const conn = createConnection(roomId);
+  conn.on("connected", onConnected);
+  return () => conn.disconnect();
+}, [roomId]);
+```
+
+### react-doctor/prefer-use-sync-external-store
+
+Subscribe to external stores with useSyncExternalStore instead of useState plus effect listeners. Severity: `warn`.
+
+```tsx
+// bad
+const [online, setOnline] = useState(navigator.onLine);
+useEffect(() => {
+  const update = () => setOnline(navigator.onLine);
+  window.addEventListener("online", update);
+  return () => window.removeEventListener("online", update);
+}, []);
+
+// good
+const online = useSyncExternalStore(subscribeToOnline, () => navigator.onLine);
+```
+
+### react-doctor/prefer-useReducer
+
+Consolidate interdependent useState calls into a reducer. Severity: `warn`.
+
+```tsx
+// bad
+const [items, setItems] = useState([]);
+const [selected, setSelected] = useState(null);
+const [status, setStatus] = useState("idle");
+
+// good
+const [state, dispatch] = useReducer(listReducer, initialState);
+```
+
+### react-doctor/redux-useselector-inline-derivation
+
+Move expensive derivations out of inline useSelector callbacks into memoized selectors. Severity: `warn`.
+
+```tsx
+// bad
+const total = useSelector((s) => s.items.reduce((sum, i) => sum + i.price, 0));
+
+// good
+const selectTotal = createSelector([(s) => s.items], (items) =>
+  items.reduce((sum, i) => sum + i.price, 0),
+);
+const total = useSelector(selectTotal);
+```
+
+### react-doctor/redux-useselector-returns-new-collection
+
+Disallow useSelector callbacks that return a new collection on every call. Severity: `warn`.
+
+```tsx
+// bad
+const activeItems = useSelector((s) => s.items.filter((i) => i.active));
+
+// good
+const items = useSelector((s) => s.items);
+const activeItems = useMemo(() => items.filter((i) => i.active), [items]);
+```
+
+### react-doctor/rerender-defer-reads-hook
+
+Defer store reads to the point of use instead of subscribing the component to state it only needs inside handlers. Severity: `warn`.
+
+```tsx
+// bad
+const items = useStore((s) => s.items);
+const handleSave = () => save(items);
+
+// good
+const handleSave = () => save(useStore.getState().items);
+```
+
+### react-doctor/rerender-dependencies
+
+Disallow unstable inline objects, arrays, and functions in hook dependency arrays. Severity: `error`.
+
+```tsx
+// bad
+const handleSelect = (id) => onSelect(id);
+useEffect(() => {
+  register(handleSelect);
+}, [handleSelect]);
+
+// good
+const handleSelect = useCallback((id) => onSelect(id), [onSelect]);
+useEffect(() => {
+  register(handleSelect);
+}, [handleSelect]);
+```
+
+### react-doctor/rerender-functional-setstate
+
+Use functional setState updates when the next value depends on the previous one. Severity: `warn`.
+
+```tsx
+// bad
+setCount(count + 1);
+
+// good
+setCount((c) => c + 1);
+```
+
+### react-doctor/rerender-lazy-ref-init
+
+Initialize expensive ref values lazily instead of constructing them on every render. Severity: `warn`.
+
+```tsx
+// bad
+const playerRef = useRef(new VideoPlayer());
+
+// good
+const playerRef = useRef(null);
+if (playerRef.current === null) playerRef.current = new VideoPlayer();
+```
+
+### react-doctor/rerender-lazy-state-init
+
+Pass an initializer function to useState instead of computing the initial value on every render. Severity: `warn`.
+
+```tsx
+// bad
+const [todos, setTodos] = useState(loadTodos());
+
+// good
+const [todos, setTodos] = useState(() => loadTodos());
+```
+
+### react-doctor/rerender-state-only-in-handlers
+
+Use a ref for values that are only read and written inside event handlers. Severity: `warn`.
+
+```tsx
+// bad
+const [startX, setStartX] = useState(0);
+const handleDown = (e) => setStartX(e.clientX);
+const handleUp = (e) => report(e.clientX - startX);
+
+// good
+const startXRef = useRef(0);
+const handleDown = (e) => {
+  startXRef.current = e.clientX;
+};
+const handleUp = (e) => report(e.clientX - startXRef.current);
+```
+
+## React Doctor: TanStack Query
+
+### react-doctor/query-destructure-result
+
+Access fields off the useQuery result object instead of destructuring it. Severity: `error`.
+
+```tsx
+// bad
+const { data, isLoading } = useQuery({ queryKey: ["todos"], queryFn: fetchTodos });
+
+// good
+const query = useQuery({ queryKey: ["todos"], queryFn: fetchTodos });
+return query.isLoading ? <Spinner /> : <List items={query.data} />;
+```
+
+### react-doctor/query-mutation-missing-invalidation
+
+Invalidate affected queries after a successful mutation. Severity: `warn`.
+
+```tsx
+// bad
+useMutation({ mutationFn: addTodo });
+
+// good
+useMutation({
+  mutationFn: addTodo,
+  onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
+});
+```
+
+### react-doctor/query-no-query-in-effect
+
+Disallow triggering queries from effects; declare them with useQuery. Severity: `warn`.
+
+```tsx
+// bad
+useEffect(() => {
+  queryClient.fetchQuery({ queryKey: ["user", id], queryFn: () => fetchUser(id) });
+}, [id]);
+
+// good
+useQuery({ queryKey: ["user", id], queryFn: () => fetchUser(id) });
+```
+
+### react-doctor/query-no-rest-destructuring
+
+Disallow rest destructuring of query results, which subscribes the component to every field. Severity: `warn`.
+
+```tsx
+// bad
+const { data, ...rest } = useQuery({ queryKey: ["todos"], queryFn: fetchTodos });
+
+// good
+const { data, isLoading, isError } = useQuery({ queryKey: ["todos"], queryFn: fetchTodos });
+```
+
+### react-doctor/query-no-usequery-for-mutation
+
+Use useMutation for data-changing operations instead of useQuery. Severity: `warn`.
+
+```tsx
+// bad
+useQuery({ queryKey: ["deleteTodo", id], queryFn: () => deleteTodo(id) });
+
+// good
+const mutation = useMutation({ mutationFn: deleteTodo });
+mutation.mutate(id);
+```
+
+### react-doctor/query-no-void-query-fn
+
+Require query functions to return the fetched data. Severity: `warn`.
+
+```tsx
+// bad
+useQuery({
+  queryKey: ["todos"],
+  queryFn: async () => {
+    await fetch("/api/todos");
+  },
+});
+
+// good
+useQuery({ queryKey: ["todos"], queryFn: async () => (await fetch("/api/todos")).json() });
+```
+
+### react-doctor/query-stable-query-client
+
+Create the QueryClient once outside render instead of on every render. Severity: `warn`.
+
+```tsx
+// bad
+function App() {
+  const queryClient = new QueryClient();
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Todos />
+    </QueryClientProvider>
+  );
+}
+
+// good
+const queryClient = new QueryClient();
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Todos />
+    </QueryClientProvider>
+  );
+}
+```
+
+## React Doctor: Jotai
+
+### react-doctor/jotai-derived-atom-returns-fresh-object
+
+Disallow derived atoms that return a fresh object on every evaluation; use selectAtom with an equality function. Severity: `warn`.
+
+```ts
+// bad
+const activeItemsAtom = atom((get) => ({ items: get(itemsAtom).filter((i) => i.active) }));
+
+// good
+const activeItemsAtom = selectAtom(itemsAtom, (items) => items.filter((i) => i.active), deepEquals);
+```
+
+### react-doctor/jotai-select-atom-in-render-body
+
+Disallow calling selectAtom inside a component render; create the selected atom at module scope. Severity: `error`.
+
+```tsx
+// bad
+function Profile() {
+  const name = useAtomValue(selectAtom(userAtom, (u) => u.name));
+}
+
+// good
+const nameAtom = selectAtom(userAtom, (u) => u.name);
+function Profile() {
+  const name = useAtomValue(nameAtom);
+}
+```
+
+### react-doctor/jotai-tq-use-raw-query-atom
+
+Read data from the raw query atom result instead of wrapping it in a data-only derived atom. Severity: `warn`.
+
+```tsx
+// bad
+const todosAtom = atom((get) => get(todosQueryAtom).data);
+const todos = useAtomValue(todosAtom);
+
+// good
+const todosQuery = useAtomValue(todosQueryAtom);
+const todos = todosQuery.data;
+```
+
+## React Doctor: View Transitions
+
+### react-doctor/no-document-start-view-transition
+
+Use React's view transition integration instead of calling document.startViewTransition directly. Severity: `warn`.
+
+```tsx
+// bad
+document.startViewTransition(() => {
+  flushSync(() => setActiveTab(next));
+});
+
+// good
+startTransition(() => setActiveTab(next));
+```
+
+### react-doctor/no-flush-sync
+
+Disallow flushSync; it forces synchronous re-renders and defeats concurrent rendering. Severity: `warn`.
+
+```tsx
+// bad
+flushSync(() => setCount(count + 1));
+
+// good
+setCount(count + 1);
+```
+
+## React Doctor: Zod v4
+
+### react-doctor/zod-v4-no-deprecated-error-apis
+
+Disallow Zod v3 error parameters such as required_error and invalid_type_error; use the unified error parameter. Severity: `warn`.
+
+```ts
+// bad
+z.string({ required_error: "Name is required" });
+
+// good
+z.string({ error: "Name is required" });
+```
+
+### react-doctor/zod-v4-no-deprecated-error-customization
+
+Disallow deprecated per-check message and errorMap customization; use the error parameter. Severity: `warn`.
+
+```ts
+// bad
+z.string().min(5, { message: "Too short" });
+
+// good
+z.string().min(5, { error: "Too short" });
+```
+
+### react-doctor/zod-v4-no-deprecated-schema-apis
+
+Disallow deprecated Zod v3 schema APIs in favor of their v4 replacements. Severity: `warn`.
+
+```ts
+// bad
+const Schema = z.object({ name: z.string() }).strict();
+
+// good
+const Schema = z.strictObject({ name: z.string() });
+```
+
+### react-doctor/zod-v4-prefer-top-level-string-formats
+
+Use top-level string format schemas instead of string method chains. Severity: `warn`.
+
+```ts
+// bad
+const Email = z.string().email();
+
+// good
+const Email = z.email();
+```
