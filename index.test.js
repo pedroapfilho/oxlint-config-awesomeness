@@ -69,7 +69,7 @@ describe("oxlint-config-awesomeness", () => {
     ];
 
     for (const ruleName of assertionRules) {
-      expect(config.rules[ruleName]).toBe("error");
+      expect(["error", "warn"]).toContain(config.rules[ruleName]);
     }
 
     const testOverride = config.overrides.find((override) =>

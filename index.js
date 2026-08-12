@@ -618,10 +618,14 @@ export default defineConfig({
 
     // `x as unknown as T` launders any value into any type.
     "anti-slop/no-chained-type-assertions": "error",
-    // `...(cond ? {} : obj)` hides field omission; declare the property directly.
-    "anti-slop/no-conditional-empty-object-spread": "error",
-    // Annotating a known literal with a broad type discards what TS inferred.
-    "anti-slop/no-known-value-widening": "error",
+    // Warn, not error: `...(cond ? { key } : {})` is how an optional key is
+    // omitted in Next config objects and Better Auth options, where the
+    // alternative (build the object in separate statements) reads worse.
+    "anti-slop/no-conditional-empty-object-spread": "warn",
+    // Warn, not error: fires on `const X: Record<Union, string> = {...}` lookup
+    // tables and on named-shape return annotations, which are deliberate
+    // contracts here rather than laundered types. 76 sites across four repos.
+    "anti-slop/no-known-value-widening": "warn",
     // `object` on inputs accepts nearly everything; name the expected fields.
     "anti-slop/no-object-parameters": "error",
     // Flags every `typeof` unary, including the `typeof window` SSR guards the
@@ -637,8 +641,10 @@ export default defineConfig({
     "anti-slop/no-unknown-parameters": "warn",
     // `type X = unknown` hides the escape hatch behind a domain-sounding name.
     "anti-slop/no-unknown-type-aliases": "error",
-    // Dictionary values typed `unknown`/`any`/`object`/`{}` defeat lookups.
-    "anti-slop/no-unsafe-dictionary-type": "error",
+    // Warn, not error: `Record<string, unknown>` is the correct type at a real
+    // boundary (structured log context, a recursive deep-merge input), and the
+    // rule cannot tell those from a lazy escape hatch.
+    "anti-slop/no-unsafe-dictionary-type": "warn",
     // Widening a known value and asserting it back is a two-step type lie.
     "anti-slop/no-widen-then-assert": "error",
 
@@ -646,7 +652,12 @@ export default defineConfig({
 
     // Comments longer than 5 lines narrate instead of inform. Directive
     // comments (eslint-/oxlint-/@ts-) and license headers are exempt.
-    "awesomeness/no-novel-comments": "error",
+    //
+    // Warn, not error: length is a proxy for narration, and after a comment
+    // sweep the long survivors are the load-bearing ones (external-system
+    // behavior, e2e helper contracts). Blocking a build on prose is the wrong
+    // trade; the warning still surfaces every one of them.
+    "awesomeness/no-novel-comments": "warn",
 
     // React Doctor (react-doctor): original diagnostic rules at upstream severities
     // (warn = advisory, error = definite bug). Excluded on purpose: the ports of
