@@ -7,5 +7,13 @@
     "eslint-plugin-perfectionist",
     "eslint-plugin-react-hooks",
     "eslint-plugin-unused-imports"
+  ],
+  "overrides": [
+    {
+      "files": ["scripts/generate-entrypoints.mjs"],
+      "rules": {
+        "unresolved-imports": "off"
+      }
+    }
   ]
 }
