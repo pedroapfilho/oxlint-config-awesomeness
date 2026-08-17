@@ -2,6 +2,23 @@
    greppable file; splitting it into modules would obscure the rule inventory. */
 import { defineConfig } from "oxlint";
 
+const UNSAFE_ANY_OFF = {
+  "@typescript-eslint/no-unsafe-argument": "off",
+  "@typescript-eslint/no-unsafe-assignment": "off",
+  "@typescript-eslint/no-unsafe-call": "off",
+  "@typescript-eslint/no-unsafe-member-access": "off",
+  "@typescript-eslint/no-unsafe-return": "off",
+  "@typescript-eslint/no-unsafe-type-assertion": "off",
+};
+
+const ASSERTION_FAMILY_OFF = {
+  "anti-slop/no-chained-type-assertions": "off",
+  "anti-slop/no-known-value-widening": "off",
+  "anti-slop/no-unknown-type-aliases": "off",
+  "anti-slop/no-unsafe-dictionary-type": "off",
+  "anti-slop/no-widen-then-assert": "off",
+};
+
 export default defineConfig({
   // Bulk-enable oxlint categories as errors.
   // `restriction` is intentionally excluded — oxlint docs warn against enabling it as a whole
@@ -95,6 +112,8 @@ export default defineConfig({
         "**/__tests__/**",
       ],
       rules: {
+        ...UNSAFE_ANY_OFF,
+        ...ASSERTION_FAMILY_OFF,
         // Mocks are commonly typed `any` for speed.
         "@typescript-eslint/no-explicit-any": "off",
         // Fixtures chain `!` + `??` for narrowing.
@@ -103,24 +122,6 @@ export default defineConfig({
         "@typescript-eslint/no-non-null-assertion": "off",
         // `jest.mock` / `vi.mock` factories use `require()`.
         "@typescript-eslint/no-require-imports": "off",
-        // Mocks don't carry type info.
-        "@typescript-eslint/no-unsafe-argument": "off",
-        "@typescript-eslint/no-unsafe-assignment": "off",
-        "@typescript-eslint/no-unsafe-call": "off",
-        "@typescript-eslint/no-unsafe-member-access": "off",
-        "@typescript-eslint/no-unsafe-return": "off",
-        // Same rationale: casting mock/fixture data is routine in tests.
-        "@typescript-eslint/no-unsafe-type-assertion": "off",
-        // anti-slop's premise is "parse external data once at its boundary and
-        // carry the domain type from there." A test is the other side of that
-        // boundary: it asserts on whatever the system under test emitted, often
-        // an untyped document (an OpenAPI blob, a webhook body), and reaching
-        // into it with a cast or an index signature is the assertion, not slop.
-        "anti-slop/no-chained-type-assertions": "off",
-        "anti-slop/no-known-value-widening": "off",
-        "anti-slop/no-unknown-type-aliases": "off",
-        "anti-slop/no-unsafe-dictionary-type": "off",
-        "anti-slop/no-widen-then-assert": "off",
         // Legacy `var x = require(...)` still appears in older test setups.
         "@typescript-eslint/no-var-requires": "off",
         // Mock implementations may return bare promises without `async`.
@@ -129,9 +130,7 @@ export default defineConfig({
         "import/no-cycle": "off",
         // `describe`/`it` blocks legitimately exceed size limits.
         "max-lines": "off",
-        "max-lines-per-function": "off",
         "max-nested-callbacks": "off",
-        "max-statements": "off",
         // Empty test stubs are valid placeholders.
         "no-empty": "off",
         // Empty mock implementations are common.
@@ -181,8 +180,6 @@ export default defineConfig({
         "next.config.*",
       ],
       rules: {
-        // Tool configs are traditionally `export default {...}` with no name.
-        "import-x/no-anonymous-default-export": "off",
         // Config files branch on optional env vars (`if (process.env.CI)`);
         // spelling out the nullish/empty cases there is ceremony, not safety.
         "@typescript-eslint/strict-boolean-expressions": "off",
@@ -194,22 +191,8 @@ export default defineConfig({
     {
       files: ["**/e2e/**/fixtures/**", "**/e2e/**/*.ts"],
       rules: {
-        // E2E helpers parse untyped external payloads (webhooks, test inboxes);
-        // the unsafe-`any` family and assertion rules are mock-data noise here,
-        // matching the unit-test override above.
-        "@typescript-eslint/no-unsafe-argument": "off",
-        "@typescript-eslint/no-unsafe-assignment": "off",
-        "@typescript-eslint/no-unsafe-call": "off",
-        "@typescript-eslint/no-unsafe-member-access": "off",
-        "@typescript-eslint/no-unsafe-return": "off",
-        "@typescript-eslint/no-unsafe-type-assertion": "off",
-        // Matching the unit-test override: a harness asserting on what the app
-        // emitted sits on the far side of the parse boundary anti-slop guards.
-        "anti-slop/no-chained-type-assertions": "off",
-        "anti-slop/no-known-value-widening": "off",
-        "anti-slop/no-unknown-type-aliases": "off",
-        "anti-slop/no-unsafe-dictionary-type": "off",
-        "anti-slop/no-widen-then-assert": "off",
+        ...UNSAFE_ANY_OFF,
+        ...ASSERTION_FAMILY_OFF,
         // Harness code branches on optional env vars (`if (process.env.CI)`).
         "@typescript-eslint/strict-boolean-expressions": "off",
         // Playwright fixtures use hook-like names (`test.extend`) that trip the rule.

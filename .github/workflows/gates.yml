@@ -1,0 +1,37 @@
+name: Gates
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # The release workflow dispatches this on the version branch because GitHub
+  # holds its pull_request runs for approval.
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  gate:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: test
+            command: pnpm test
+          - name: lint
+            command: pnpm oxlint --format=github .
+          - name: format
+            command: pnpm run format:check
+          - name: fallow
+            command: pnpm fallow:dead
+          - name: readme
+            command: pnpm check:readme
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: ${{ matrix.command }}

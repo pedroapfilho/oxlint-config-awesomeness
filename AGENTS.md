@@ -2,9 +2,9 @@ Guidance for AI coding agents working in `oxlint-config-awesomeness`. `CLAUDE.md
 
 ## What This Repo Is
 
-`oxlint-config-awesomeness` is the shared oxlint configuration consumed by every managed repo in the fleet at `^3.0.2`. It exports a single default `OxlintConfig` object built with `defineConfig` — ~600 rules across 9 native plugins (typescript, import, react, unicorn, jsx-a11y, promise, nextjs, oxc, node) and five JS-bridge plugins (no-only-tests, perfectionist, unused-imports, react-hooks as react-hooks-js, and react-doctor).
+`oxlint-config-awesomeness` is the shared oxlint configuration for managed repositories. It exports a single default `OxlintConfig` object built with `defineConfig`.
 
-This is a **flat single-package repo** — no workspace, no `pnpm-workspace.yaml`, no `turbo.json`.
+This is a **flat single-package repo**.
 
 ## Zero-Behavior-Change Policy
 
@@ -19,16 +19,23 @@ Never reformat, lint-fix, or otherwise edit these four files. The `ignorePattern
 
 ## Scripts
 
-| Script                  | What it does                          |
-| ----------------------- | ------------------------------------- |
-| `pnpm lint`             | Run oxlint on this repo               |
-| `pnpm format`           | Format with oxfmt                     |
-| `pnpm format:check`     | Check formatting (CI)                 |
-| `pnpm test`             | Run vitest smoke tests                |
-| `pnpm fallow:dead`      | Dead-code scan (CI gate)              |
-| `pnpm changeset`        | Open a new changeset                  |
-| `pnpm version-packages` | Bump versions from pending changesets |
-| `pnpm release`          | Publish to npm via Changesets         |
+| Script                  | What it does                            |
+| ----------------------- | --------------------------------------- |
+| `pnpm lint`             | Run oxlint on this repo                 |
+| `pnpm format`           | Format with oxfmt                       |
+| `pnpm format:check`     | Check formatting (CI)                   |
+| `pnpm check:readme`     | Check README rule counts and severities |
+| `pnpm test`             | Run vitest smoke tests                  |
+| `pnpm test:coverage`    | Run tests with coverage                 |
+| `pnpm fallow`           | Run Fallow                              |
+| `pnpm fallow:dead`      | Dead-code scan (CI gate)                |
+| `pnpm fallow:dupes`     | Duplicate-code scan                     |
+| `pnpm fallow:health`    | Dependency health score                 |
+| `pnpm fallow:audit`     | Audit changes against main              |
+| `pnpm changeset`        | Open a new changeset                    |
+| `pnpm version-packages` | Bump versions from pending changesets   |
+| `pnpm release`          | Publish to npm via Changesets           |
+| `pnpm prepare`          | Install Git hooks                       |
 
 ## Release Flow
 
@@ -43,7 +50,7 @@ The old tag-push flow (`v*` tag → `pnpm publish`) has been replaced by this wo
 
 ## Consumed By
 
-Every repo in the fleet imports this config at `^3.0.2`. Bumping a major or minor version requires a Changeset entry so consuming repos can opt in via their pnpm update cycle.
+Managed repositories import this config through their pnpm update cycle. Major and minor changes require a Changeset entry.
 
 ## Conventions
 

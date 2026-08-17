@@ -6,7 +6,6 @@
     "eslint-plugin-no-only-tests",
     "eslint-plugin-perfectionist",
     "eslint-plugin-react-hooks",
-    "eslint-plugin-unused-imports",
-    "oxlint-plugin-react-doctor"
+    "eslint-plugin-unused-imports"
   ]
 }

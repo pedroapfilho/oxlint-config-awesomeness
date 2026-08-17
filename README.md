@@ -2,16 +2,19 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-**451 rules** across **16 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+**450 rules** across **16 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
 ```
-npm install -D oxlint-config-awesomeness eslint-plugin-no-only-tests eslint-plugin-perfectionist eslint-plugin-react-hooks eslint-plugin-unused-imports
+npm install -D oxlint-config-awesomeness eslint-plugin-no-only-tests eslint-plugin-perfectionist eslint-plugin-react-hooks eslint-plugin-unused-imports oxlint-plugin-react-doctor
 ```
 
 > [!NOTE]
-> Due to a limitation in Oxlint's configuration resolver, you have to directly install the JS plugins for now.
+> Oxlint resolves JS plugin specifiers from your project root, not from this
+> package, so the plugins have to be installed alongside it. They are declared as
+> peer dependencies: npm and pnpm install them for you, and Yarn will warn if any
+> are missing.
 
 ## Usage
 
@@ -8054,7 +8057,7 @@ const user = userSchema.parse(JSON.parse(raw));
 
 ### anti-slop/no-conditional-empty-object-spread
 
-Disallow spreading a conditional that falls back to an empty object to omit fields. Severity: `error`.
+Disallow spreading a conditional that falls back to an empty object to omit fields. Severity: `warn`.
 
 ```ts
 // bad
@@ -8066,7 +8069,7 @@ const payload = { id };
 
 ### anti-slop/no-known-value-widening
 
-Disallow annotating a known value with a broad type that discards what TypeScript already inferred. Severity: `error`.
+Disallow annotating a known value with a broad type that discards what TypeScript already inferred. Severity: `warn`.
 
 ```ts
 // bad
@@ -8141,7 +8144,7 @@ type Payload = { id: string; body: string };
 
 ### anti-slop/no-unsafe-dictionary-type
 
-Disallow dictionary value types that are `unknown`, `any`, `object`, or `{}`. Severity: `error`.
+Disallow dictionary value types that are `unknown`, `any`, `object`, or `{}`. Severity: `warn`.
 
 ```ts
 // bad
@@ -8171,7 +8174,7 @@ First-party rules that ship with this config.
 
 ### awesomeness/no-novel-comments
 
-Disallow block comments or contiguous runs of line comments longer than 5 lines. Directive comments (`eslint-`, `oxlint-`, `@ts-`, and similar) and license headers are exempt. Severity: `error`.
+Disallow block comments or contiguous runs of line comments longer than 5 lines. Directive comments (`eslint-`, `oxlint-`, `@ts-`, and similar) and license headers are exempt. Severity: `warn`.
 
 ```ts
 // bad

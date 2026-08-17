@@ -1,6 +1,7 @@
 import { definePlugin, defineRule } from "@oxlint/plugins";
 
-const DEFAULT_MAX_LINES = 5;
+const MAX_LINES = 5;
+const LICENSE_SCAN_LINES = 2;
 
 const EXEMPT_PATTERNS = [
   /^\s*eslint-/v,
@@ -17,64 +18,59 @@ const EXEMPT_PATTERNS = [
 ];
 
 const LICENSE_PATTERN =
-  /@license|@preserve|SPDX-License-Identifier|^\s*Copyright\b/v;
+  /@license|@preserve|SPDX-License-Identifier|^\s*\*?\s*Copyright\b/v;
 
 const isExempt = (comment) =>
   EXEMPT_PATTERNS.some((pattern) => pattern.test(comment.value));
 
-const isLicense = (comment) => LICENSE_PATTERN.test(comment.value);
+const proseLines = (comment) => comment.value.split("\n");
 
-const lineSpan = (comment) => comment.loc.end.line - comment.loc.start.line + 1;
+const startsLicenseHeader = (lines) =>
+  lines.slice(0, LICENSE_SCAN_LINES).some((line) => LICENSE_PATTERN.test(line));
+
+const groupRuns = (comments) => {
+  const runs = [];
+
+  for (const comment of comments) {
+    const currentRun = runs.at(-1);
+    const previous = currentRun?.at(-1);
+    const continuesRun =
+      previous !== undefined &&
+      previous.type === "Line" &&
+      comment.type === "Line" &&
+      comment.loc.start.line === previous.loc.end.line + 1;
+
+    if (continuesRun) {
+      currentRun.push(comment);
+    } else {
+      runs.push([comment]);
+    }
+  }
+
+  return runs;
+};
 
 const noNovelCommentsRule = defineRule({
   create(context) {
-    const maxLines = context.options?.[0]?.maxLines ?? DEFAULT_MAX_LINES;
-
-    const report = (comment, lines) => {
-      context.report({
-        data: { lines: String(lines), maxLines: String(maxLines) },
-        loc: comment.loc,
-        messageId: "novelComment",
-      });
-    };
-
     return {
       Program() {
         const comments = context.sourceCode
           .getAllComments()
-          .filter((comment) => comment.type !== "Shebang");
+          .filter(
+            (comment) => comment.type !== "Shebang" && !isExempt(comment),
+          );
 
-        let run = [];
-        const flushRun = () => {
-          if (run.length > maxLines && !run.some(isLicense)) {
-            report(run[0], run.length);
-          }
-          run = [];
-        };
+        for (const run of groupRuns(comments)) {
+          const lines = run.flatMap(proseLines);
 
-        for (const comment of comments) {
-          if (comment.type === "Block") {
-            flushRun();
-            if (isExempt(comment) || isLicense(comment)) {
-              continue;
-            }
-            const lines = lineSpan(comment);
-            if (lines > maxLines) {
-              report(comment, lines);
-            }
-            continue;
+          if (lines.length > MAX_LINES && !startsLicenseHeader(lines)) {
+            context.report({
+              data: { lines: String(lines.length), maxLines: String(MAX_LINES) },
+              loc: run[0].loc,
+              messageId: "novelComment",
+            });
           }
-          if (isExempt(comment)) {
-            flushRun();
-            continue;
-          }
-          const previous = run.at(-1);
-          if (previous && comment.loc.start.line !== previous.loc.end.line + 1) {
-            flushRun();
-          }
-          run.push(comment);
         }
-        flushRun();
       },
     };
   },

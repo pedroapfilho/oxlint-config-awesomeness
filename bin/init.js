@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { copyFileSync, existsSync } from "node:fs";
+import { constants, copyFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 
@@ -10,34 +10,55 @@ Scaffold oxlint.config.ts in the current directory.
   -h, --help   Show this help
 `;
 
-const { positionals, values } = parseArgs({
-  allowPositionals: true,
-  options: {
-    force: { short: "f", type: "boolean" },
-    help: { short: "h", type: "boolean" },
-  },
-});
+const fail = (message) => {
+  process.stderr.write(`${message}\n\n${HELP}`);
+  process.exit(1);
+};
 
-const command = positionals[0];
+const parseCliArgs = () => {
+  try {
+    return parseArgs({
+      allowPositionals: true,
+      options: {
+        force: { short: "f", type: "boolean" },
+        help: { short: "h", type: "boolean" },
+      },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return fail(message);
+  }
+};
 
-if (values.help || !command) {
+const { positionals, values } = parseCliArgs();
+
+if (values.help || positionals.length === 0) {
   process.stdout.write(HELP);
   process.exit(0);
 }
 
-if (command !== "init") {
-  process.stderr.write(`Unknown command: ${command}\n\n${HELP}`);
-  process.exit(1);
+if (positionals.length > 1 || positionals[0] !== "init") {
+  fail(`Unknown command: ${positionals.join(" ")}`);
 }
 
 const target = resolve("oxlint.config.ts");
 
-if (existsSync(target) && !values.force) {
-  process.stderr.write(
-    "oxlint.config.ts already exists. Re-run with --force.\n",
+try {
+  copyFileSync(
+    resolve(import.meta.dirname, "template.ts"),
+    target,
+    values.force ? 0 : constants.COPYFILE_EXCL,
   );
+} catch (error) {
+  if (error instanceof Error && "code" in error && error.code === "EEXIST") {
+    process.stderr.write(
+      "oxlint.config.ts already exists. Re-run with --force.\n",
+    );
+  } else {
+    const message = error instanceof Error ? error.message : String(error);
+    process.stderr.write(`Failed to create ${target}: ${message}\n`);
+  }
   process.exit(1);
 }
 
-copyFileSync(resolve(import.meta.dirname, "template.ts"), target);
 process.stdout.write(`Created ${target}\nNext: npx oxlint\n`);
