@@ -2,25 +2,26 @@ Guidance for AI coding agents working in `oxlint-config-awesomeness`. `CLAUDE.md
 
 ## What This Repo Is
 
-`oxlint-config-awesomeness` is the shared oxlint configuration for managed repositories. It exports a single default `OxlintConfig` object built with `defineConfig`.
+`oxlint-config-awesomeness` is the shared oxlint configuration for managed repositories. `src/index.ts` defines a single default `OxlintConfig` object. The build writes the package contract to `index.js` and `index.d.ts`.
 
 This is a **flat single-package repo**.
 
 ## Zero-Behavior-Change Policy
 
-For any infrastructure PR (tooling, CI, configs, release flow), the published files MUST remain byte-for-byte identical to their previous version:
+For infrastructure PRs that do not intentionally change the config source, the published runtime config MUST remain identical. `pnpm check:generated` must pass so generated entrypoints cannot drift from `src/index.ts`.
 
-- `index.js` — the exported config object
-- `index.d.ts` — the type declaration
-- `bin/init.js` — the CLI scaffolder
-- `bin/template.ts` — the config template it copies
+- `index.js` and `index.d.ts` are generated package entrypoints. Never edit them directly.
+- `bin/init.js` and `bin/template.ts` must remain byte-for-byte identical.
 
-Never reformat, lint-fix, or otherwise edit these four files. The `ignorePatterns` in `.oxfmtrc.json` and any lint overrides must exclude them explicitly.
+The `ignorePatterns` in `.oxfmtrc.json` must exclude generated entrypoints and CLI files explicitly.
 
 ## Scripts
 
 | Script                  | What it does                            |
 | ----------------------- | --------------------------------------- |
+| `pnpm build`            | Generate package entrypoints            |
+| `pnpm typecheck`        | Type-check the config source            |
+| `pnpm check:generated`  | Reject stale generated entrypoints      |
 | `pnpm lint`             | Run oxlint on this repo                 |
 | `pnpm format`           | Format with oxfmt                       |
 | `pnpm format:check`     | Check formatting (CI)                   |
@@ -55,7 +56,7 @@ Managed repositories import this config through their pnpm update cycle. Major a
 ## Conventions
 
 - Single `package.json` at root — no workspace
-- `index.js` is the published config; `index.d.ts` is its type shim
+- `src/index.ts` is the config source; `index.js` and `index.d.ts` are generated
 - `bin/init.js` scaffolds `oxlint.config.ts` in user repos via `npx oxlint-config-awesomeness init`
 - `bin/template.ts` is the file it copies
 - `index.test.js` is the smoke test — not in `files`, not published

@@ -41,6 +41,8 @@
     "access": "public"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json && node scripts/generate-entrypoints.mjs",
+    "check:generated": "tsc -p tsconfig.build.json && node scripts/generate-entrypoints.mjs --check",
     "lint": "oxlint .",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
@@ -55,7 +57,9 @@
     "fallow:dupes": "fallow dupes",
     "fallow:health": "fallow health --score",
     "fallow:audit": "fallow audit --base main",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prepack": "pnpm build",
+    "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@oxlint/plugins": "^1.78.0"
@@ -72,6 +76,7 @@
     "oxfmt": "^0.63.0",
     "oxlint": "^1.78.0",
     "oxlint-plugin-react-doctor": "^0.9.11",
+    "typescript": "^7.0.2",
     "vitest": "^4.1.10"
   },
   "peerDependencies": {

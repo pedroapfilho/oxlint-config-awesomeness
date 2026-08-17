@@ -1,3 +1,6 @@
+/* oxlint-disable max-lines -- the config source is deliberately one flat,
+   greppable file; splitting it into modules would obscure the rule inventory. */
+import type { OxlintConfig } from "oxlint";
 import { defineConfig } from "oxlint";
 
 const UNSAFE_ANY_OFF = {
@@ -7,15 +10,17 @@ const UNSAFE_ANY_OFF = {
   "@typescript-eslint/no-unsafe-member-access": "off",
   "@typescript-eslint/no-unsafe-return": "off",
   "@typescript-eslint/no-unsafe-type-assertion": "off",
-};
+} as const;
+
 const ASSERTION_FAMILY_OFF = {
   "anti-slop/no-chained-type-assertions": "off",
   "anti-slop/no-known-value-widening": "off",
   "anti-slop/no-unknown-type-aliases": "off",
   "anti-slop/no-unsafe-dictionary-type": "off",
   "anti-slop/no-widen-then-assert": "off",
-};
-const config = defineConfig({
+} as const;
+
+const config: OxlintConfig = defineConfig({
   // Bulk-enable oxlint categories as errors.
   // `restriction` is intentionally excluded — oxlint docs warn against enabling it as a whole
   // since those rules forbid valid language features. We cherry-pick restriction rules below.
@@ -205,13 +210,16 @@ const config = defineConfig({
   ],
   rules: {
     // TypeScript — custom options
+
     // Prefer `Array<T>` over `T[]` — generic form scales to complex element types
     // (`Array<() => void>` vs `(() => void)[]`) without extra parentheses.
     "@typescript-eslint/array-type": ["error", { default: "generic" }],
     // Force `type` over `interface` — `type` supports unions/intersections/mapped types
     // and can't be accidentally merged via declaration merging.
     "@typescript-eslint/consistent-type-definitions": ["error", "type"],
+
     // Core eslint — custom options
+
     // Prevent duplicate import statements but still allow separating type-only imports
     // from value imports (`import type { X } from 'x'; import { y } from 'x';`).
     "eslint/no-duplicate-imports": ["error", { allowSeparateTypeImports: true }],
@@ -223,7 +231,9 @@ const config = defineConfig({
     // demands comma-combined declarations. Pin to "never": one declaration per
     // variable, matching how the fleet already writes.
     "one-var": ["error", "never"],
+
     // Restriction — core eslint (cherry-picked from the 90 rules in `restriction`)
+
     // Always use braces — prevents the dangling-else bug and ambiguous single-line bodies.
     curly: "error",
     // Require a `default` case in switch — forces explicit handling of unknown values.
@@ -284,9 +294,11 @@ const config = defineConfig({
     "prefer-promise-reject-errors": "error",
     // Template literals > string concatenation — fewer escape/coercion bugs.
     "prefer-template": "error",
+
     // Restriction — TypeScript
     // Highest-leverage rules for AI-generated code: they block the escape hatches
     // (`any`, `!`, `require`) that AI reaches for when it can't figure out the right type.
+
     // `delete obj[dynamicKey]` is usually a type-lie — the key may not be optional.
     "@typescript-eslint/no-dynamic-delete": "error",
     // `{}` means "any non-nullish value" — almost never what people mean.
@@ -308,15 +320,19 @@ const config = defineConfig({
     "@typescript-eslint/promise-function-async": ["error", { checkArrowFunctions: false }],
     // `.catch((err) => ...)` — `err` should be `unknown`, not `any` (strict TS behavior).
     "@typescript-eslint/use-unknown-in-catch-callback-variable": "error",
+
     // Type-aware (tsgolint) tuning. These rules only run when the consuming
     // repo enables `options.typeAware`; configuring them here is a no-op otherwise.
+
     // Requires `Readonly<>` on virtually every object/array parameter and fights
     // React, Playwright, and Hono signatures. Upstream keeps it out of every preset.
     "@typescript-eslint/prefer-readonly-parameter-types": "off",
     // Fires on idiomatic destructuring of library hooks (`const { push } = useRouter()`)
     // because their types lack `this: void` annotations; false positives dominate.
     "@typescript-eslint/unbound-method": "off",
+
     // Restriction — React
+
     // `<button>` defaults to `type="submit"` — silently submits enclosing forms. Must be explicit.
     "react/button-has-type": "error",
     // Arrow components (`const X = () =>`) are the fleet standard; the rule's
@@ -336,10 +352,14 @@ const config = defineConfig({
     "react/no-multi-comp": "off",
     // Catches typos like `class=` or `tabindex=` in JSX.
     "react/no-unknown-property": "error",
+
     // Restriction — import graph
+
     // Circular imports produce `undefined` exports at runtime — a real-world crash source.
     "import/no-cycle": "error",
+
     // Restriction — unicorn (modern JS + anti-escape-hatch)
+
     // Blanket `// eslint-disable` without a rule name is the universal AI escape hatch.
     "unicorn/no-abusive-eslint-disable": "error",
     // Direct `document.cookie` access — use a cookie library for encoding/security.
@@ -352,7 +372,9 @@ const config = defineConfig({
     "unicorn/prefer-node-protocol": "error",
     // `Number.isNaN(x)` over `isNaN(x)` — the global coerces strings before checking.
     "unicorn/prefer-number-properties": "error",
+
     // Restriction — promise / node
+
     // Callback-style APIs: always handle the `err` argument.
     "node/handle-callback-err": "error",
     // `new require(...)` is meaningless — require is a function, not a constructor.
@@ -361,10 +383,14 @@ const config = defineConfig({
     "node/no-path-concat": "error",
     // Every promise chain must end with `.catch()` or `return` — unhandled rejections are silent bugs.
     "promise/catch-or-return": "error",
+
     // Restriction — a11y
+
     // "click here", "read more", "link" — ambiguous link text fails screen readers.
     "jsx-a11y/anchor-ambiguous-text": "error",
+
     // Disabled — incompatible with React 17+ JSX transform and common composition patterns
+
     // Three-way deadlock: `[v, setV]` trips `no-unused-vars` if setter unused;
     // `[v, _setV]` trips this rule's strict `[thing, setThing]` naming;
     // `[v]` trips this rule's "must destructure both" requirement.
@@ -380,7 +406,9 @@ const config = defineConfig({
     "react/no-array-index-key": "off",
     // React 17+ automatic JSX runtime — no import needed.
     "react/react-in-jsx-scope": "off",
+
     // Disabled — import rules that fight modern ESM / legitimate patterns
+
     // Mixing `import type` styles in one project is fine.
     "import/consistent-type-specifier-style": "off",
     // "Exports at end" is style preference, not correctness.
@@ -403,7 +431,9 @@ const config = defineConfig({
     "import/no-unassigned-import": "off",
     // Modern codebases prefer named exports; default exports are the exception.
     "import/prefer-default-export": "off",
+
     // Disabled — pedantic style preferences that fight day-to-day clarity
+
     // Block bodies are sometimes clearer (breakpoints, multi-statement arrows).
     "arrow-body-style": "off",
     // Capitalization of comments is noise.
@@ -436,7 +466,9 @@ const config = defineConfig({
     "parameter-properties": "off",
     // Destructuring isn't always clearer — `arr[0]` can be better than `const [first] = arr`.
     "prefer-destructuring": "off",
+
     // Disabled — unicorn rules that overreach into legitimate patterns
+
     // Over-prescribes a specific custom-error shape.
     "unicorn/custom-error-definition": "off",
     // Escape-case fights non-English strings and regex literals.
@@ -457,18 +489,23 @@ const config = defineConfig({
     "unicorn/no-zero-fractions": "off",
     // `window` and `self` are fine in clearly-browser code.
     "unicorn/prefer-global-this": "off",
+
     // Disabled — raw Promise constructors and callbacks stay idiomatic for adapters
+
     // `new Promise` is required when wrapping event emitters, streams, or callback APIs.
     "promise/avoid-new": "off",
     // `(resolve, reject)` is the idiomatic parameter naming.
     "promise/param-names": "off",
     // Event emitters and streams are callback-based and stay that way.
     "promise/prefer-await-to-callbacks": "off",
+
     // Style overrides — handled deterministically by perfectionist/oxfmt
     "sort-imports": "off",
     "sort-keys": "off",
     "sort-vars": "off",
+
     // Unicorn — filename-case
+
     // kebab-case matches the CLAUDE.md convention, with exceptions for:
     // - Next.js dynamic routes: `[slug].tsx`, `[...catchAll].tsx`
     // - Next.js special files: `_app.tsx`, `_document.tsx`
@@ -481,7 +518,9 @@ const config = defineConfig({
     ],
     // `null` is a legitimate, distinct value — don't force `undefined` everywhere.
     "unicorn/no-null": "off",
+
     // Perfectionist — deterministic sorting keeps diffs stable and review-friendly
+
     // Enums sorted by value make intent + ordering obvious; partitionByComment preserves groupings.
     "perfectionist/sort-enums": ["error", { partitionByComment: true, sortByValue: "always" }],
     // `class Foo extends A, B` — alphabetical for stable diffs.
@@ -492,8 +531,10 @@ const config = defineConfig({
     "perfectionist/sort-object-types": "error",
     // Object keys alphabetical; partitionByComment preserves intentional grouping.
     "perfectionist/sort-objects": ["error", { partitionByComment: true }],
+
     // React Compiler (react-hooks-js) — enforce the invariants the compiler needs
     // to safely auto-memoize your components.
+
     // Hooks can't be created inside components — they must be module-level.
     "react-hooks-js/component-hook-factories": "error",
     // Validates the plugin's own config shape.
@@ -524,20 +565,28 @@ const config = defineConfig({
     "react-hooks-js/unsupported-syntax": "error",
     // Enforces the modern `useMemo` shape the compiler expects.
     "react-hooks-js/use-memo": "error",
+
     // React hooks — the classic rules, still necessary even with the compiler
+
     // Dependency array must include every value referenced in the effect.
     "react-hooks/exhaustive-deps": "error",
     // Hooks only at the top level, only from React functions — never in conditions/loops.
     "react-hooks/rules-of-hooks": "error",
+
     // Testing
+
     // `.only()` in a test file skips every other test — must never land on main.
     "no-only-tests/no-only-tests": "error",
+
     // Unused imports
+
     // Dead imports bloat bundles and mislead readers — remove them.
     "unused-imports/no-unused-imports": "error",
+
     // Anti-slop (vendored, see anti-slop/index.js): reject patterns that fake
     // type evidence instead of establishing it, i.e. the assertion/widening
     // escape hatches AI-generated code reaches for beyond plain `any`.
+
     // `x as unknown as T` launders any value into any type.
     "anti-slop/no-chained-type-assertions": "error",
     // Warn, not error: `...(cond ? { key } : {})` is how an optional key is
@@ -569,7 +618,9 @@ const config = defineConfig({
     "anti-slop/no-unsafe-dictionary-type": "warn",
     // Widening a known value and asserting it back is a two-step type lie.
     "anti-slop/no-widen-then-assert": "error",
+
     // Awesomeness: first-party rules shipped with this config.
+
     // Comments longer than 5 lines narrate instead of inform. Directive
     // comments (eslint-/oxlint-/@ts-) and license headers are exempt.
     //
@@ -578,6 +629,7 @@ const config = defineConfig({
     // behavior, e2e helper contracts). Blocking a build on prose is the wrong
     // trade; the warning still surfaces every one of them.
     "awesomeness/no-novel-comments": "warn",
+
     // React Doctor (react-doctor): original diagnostic rules at upstream severities
     // (warn = advisory, error = definite bug). Excluded on purpose: the ports of
     // oxlint-native react/jsx-a11y/react-hooks rules already enabled above (or
@@ -592,6 +644,7 @@ const config = defineConfig({
     // ssr, i18n). Left off: rules gated on libraries no repo uses (ink, motion,
     // three/r3f, firebase, supabase, react-router), and the visual-taste bucket
     // described at the Maintainability group.
+
     // Accessibility: original checks, not the ports excluded above. These cover
     // ground the native jsx-a11y rules do not (Tailwind animation gating, control
     // sizing, landmark and heading structure, focus visibility).
@@ -645,6 +698,7 @@ const config = defineConfig({
     "react-doctor/no-uninformative-aria-label": "warn",
     "react-doctor/radio-input-missing-name": "warn",
     "react-doctor/role-button-requires-complete-keyboard-activation": "warn",
+
     // Architecture — component structure, module boundaries, export hygiene.
     "react-doctor/no-giant-component": "warn",
     "react-doctor/no-legacy-class-lifecycles": "error",
@@ -658,6 +712,7 @@ const config = defineConfig({
     "react-doctor/prefer-explicit-variants": "warn",
     "react-doctor/prefer-module-scope-pure-function": "warn",
     "react-doctor/prefer-module-scope-static-value": "warn",
+
     // Bugs: runtime defects with a concrete failure mode (hydration mismatches,
     // unguarded parses, effect and listener lifecycle, DOM structure).
     "react-doctor/class-component-missing-component-will-unmount-teardown": "warn",
@@ -740,6 +795,7 @@ const config = defineConfig({
     "react-doctor/shadcn-tabs-trigger-requires-list": "warn",
     "react-doctor/waapi-animation-in-render": "error",
     "react-doctor/web-animation-offsets-valid": "error",
+
     // Bundle size — heavy imports that bloat client bundles.
     "react-doctor/no-barrel-import": "warn",
     "react-doctor/no-dynamic-import-path": "warn",
@@ -748,9 +804,11 @@ const config = defineConfig({
     "react-doctor/no-undeferred-third-party": "warn",
     "react-doctor/prefer-dynamic-import": "warn",
     "react-doctor/use-lazy-motion": "warn",
+
     // Client/browser API usage.
     "react-doctor/client-localstorage-no-version": "warn",
     "react-doctor/client-passive-event-listeners": "warn",
+
     // Correctness — invalid HTML/DOM structure React will render broken.
     "react-doctor/html-no-invalid-paragraph-child": "warn",
     "react-doctor/html-no-invalid-table-nesting": "warn",
@@ -762,6 +820,7 @@ const config = defineConfig({
     "react-doctor/no-uncontrolled-input": "warn",
     "react-doctor/rendering-conditional-render": "warn",
     "react-doctor/rendering-svg-precision": "warn",
+
     // Design/UX — visual anti-patterns (focus rings, contrast, transitions).
     "react-doctor/no-disabled-zoom": "error",
     "react-doctor/no-gray-on-colored-background": "warn",
@@ -771,10 +830,12 @@ const config = defineConfig({
     "react-doctor/no-long-transition-duration": "warn",
     "react-doctor/no-outline-none": "warn",
     "react-doctor/no-tiny-text": "warn",
+
     // Jotai — no-ops in repos that do not use it.
     "react-doctor/jotai-derived-atom-returns-fresh-object": "warn",
     "react-doctor/jotai-select-atom-in-render-body": "error",
     "react-doctor/jotai-tq-use-raw-query-atom": "warn",
+
     // JS performance — micro-patterns with measurable render cost.
     "react-doctor/async-await-in-loop": "warn",
     "react-doctor/async-parallel": "warn",
@@ -792,6 +853,7 @@ const config = defineConfig({
     "react-doctor/js-min-max-loop": "warn",
     "react-doctor/js-set-map-lookups": "warn",
     "react-doctor/js-tosorted-immutable": "warn",
+
     // Maintainability: the mechanically-checkable subset. The rest of this bucket
     // upstream is visual-taste detection (decorative orbs, hero eyebrow chips,
     // uniform feature-card grids); those are design calls, not lint findings.
@@ -808,6 +870,7 @@ const config = defineConfig({
     "react-doctor/prefer-tabular-numeric-data": "warn",
     "react-doctor/prefer-truncate-shorthand": "warn",
     "react-doctor/require-autoplay-video-poster": "warn",
+
     // Runtime performance: DOM, media and animation cost.
     "react-doctor/context-provider-value-from-unmemoized-local-literal": "warn",
     "react-doctor/no-create-object-url-without-revoke": "warn",
@@ -824,6 +887,7 @@ const config = defineConfig({
     "react-doctor/no-unbounded-animation-frame-loop": "warn",
     "react-doctor/no-unthrottled-scroll-mutation": "warn",
     "react-doctor/prefer-motion-transform-property": "warn",
+
     // Next.js App Router — RSC/route-handler/metadata pitfalls beyond the native nextjs plugin.
     "react-doctor/nextjs-error-boundary-missing-use-client": "error",
     "react-doctor/nextjs-global-error-missing-html-body": "error",
@@ -842,6 +906,7 @@ const config = defineConfig({
     "react-doctor/nextjs-no-side-effect-in-get-handler": "error",
     "react-doctor/nextjs-no-use-search-params-without-suspense": "warn",
     "react-doctor/nextjs-no-vercel-og-import": "warn",
+
     // React performance — re-render and memoization diagnostics.
     "react-doctor/async-defer-await": "warn",
     "react-doctor/no-global-css-variable-animation": "error",
@@ -863,6 +928,7 @@ const config = defineConfig({
     "react-doctor/rerender-memo-before-early-return": "warn",
     "react-doctor/rerender-memo-with-default-value": "warn",
     "react-doctor/rerender-transitions-scroll": "warn",
+
     // Security.
     "react-doctor/active-static-asset": "warn",
     "react-doctor/agent-tool-capability-risk": "warn",
@@ -905,6 +971,7 @@ const config = defineConfig({
     "react-doctor/url-prefilled-privileged-action": "warn",
     "react-doctor/webhook-signature-risk": "warn",
     "react-doctor/window-open-without-noopener": "warn",
+
     // Server Components / server code.
     "react-doctor/server-after-nonblocking": "warn",
     "react-doctor/server-auth-actions": "error",
@@ -914,6 +981,7 @@ const config = defineConfig({
     "react-doctor/server-hoist-static-io": "warn",
     "react-doctor/server-no-mutable-module-state": "error",
     "react-doctor/server-sequential-independent-await": "warn",
+
     // State and effects — the 'You Might Not Need an Effect' family and friends.
     "react-doctor/activity-wraps-effect-heavy-subtree": "warn",
     "react-doctor/advanced-event-handler-refs": "warn",
@@ -956,6 +1024,7 @@ const config = defineConfig({
     "react-doctor/rerender-lazy-ref-init": "warn",
     "react-doctor/rerender-lazy-state-init": "warn",
     "react-doctor/rerender-state-only-in-handlers": "warn",
+
     // TanStack Query.
     "react-doctor/query-destructure-result": "error",
     "react-doctor/query-mutation-missing-invalidation": "warn",
@@ -964,9 +1033,11 @@ const config = defineConfig({
     "react-doctor/query-no-usequery-for-mutation": "warn",
     "react-doctor/query-no-void-query-fn": "warn",
     "react-doctor/query-stable-query-client": "warn",
+
     // View Transitions API.
     "react-doctor/no-document-start-view-transition": "warn",
     "react-doctor/no-flush-sync": "warn",
+
     // Zod v4 — deprecated API usage.
     "react-doctor/zod-v4-no-deprecated-error-apis": "warn",
     "react-doctor/zod-v4-no-deprecated-error-customization": "warn",
@@ -974,4 +1045,5 @@ const config = defineConfig({
     "react-doctor/zod-v4-prefer-top-level-string-formats": "warn",
   },
 });
+
 export default config;

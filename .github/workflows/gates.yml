@@ -26,6 +26,10 @@ jobs:
             command: pnpm fallow:dead
           - name: readme
             command: pnpm check:readme
+          - name: typecheck
+            command: pnpm typecheck
+          - name: generated
+            command: pnpm check:generated
     steps:
       - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v6

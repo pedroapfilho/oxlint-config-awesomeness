@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": true,
+    "rootDir": "src",
+    "strict": true,
+    "target": "ES2024",
+    "verbatimModuleSyntax": true
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import awesomenessPlugin from "./awesomeness/index.js";
+import sourceConfig from "./src/index.ts";
 
 import config from "./index.js";
 
@@ -165,6 +166,10 @@ describe("oxlint-config-awesomeness", () => {
   it("exports a non-null object", () => {
     expect(config).not.toBeNull();
     expect(typeof config).toBe("object");
+  });
+
+  it("matches the TypeScript source at runtime", () => {
+    expect(config).toEqual(sourceConfig);
   });
 
   it("registers the vendored anti-slop plugin and all 10 of its rules", async () => {

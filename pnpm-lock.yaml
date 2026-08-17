@@ -45,6 +45,9 @@ importers:
       oxlint-plugin-react-doctor:
         specifier: ^0.9.11
         version: 0.9.11
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
       vitest:
         specifier: ^4.1.10
         version: 4.1.10(vite@8.0.16(yaml@2.9.0))

@@ -8,11 +8,12 @@ export default defineConfig({
   ignorePatterns: ["anti-slop/index.js"],
   overrides: [
     {
-      files: ["index.js"],
+      files: ["index.js", "src/index.ts"],
       rules: {
         // The rule inventory is documentation-dense by design; its long
         // section comments are the point of the file.
         "awesomeness/no-novel-comments": "off",
+        "max-lines": "off",
       },
     },
   ],
