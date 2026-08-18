@@ -1,5 +1,12 @@
 # oxlint-config-awesomeness
 
+## 3.5.0
+
+### Minor Changes
+
+- da97d2c: Fix comment license detection and init safety, declare JS plugins as peers, consolidate CI and README checks, and generate the package entrypoints from a type-checked TypeScript source.
+- cddabfc: Update the vendored anti-slop plugin and enforce its five new generic rules.
+
 ## 3.4.2
 
 ### Patch Changes
