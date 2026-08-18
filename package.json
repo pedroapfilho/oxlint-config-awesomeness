@@ -1,6 +1,6 @@
 {
   "name": "oxlint-config-awesomeness",
-  "version": "3.5.1",
+  "version": "4.0.0",
   "description": "Oxlint config with sensible defaults.",
   "keywords": [
     "autofix",
