@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import antiSlopPlugin from "./anti-slop/index.js";
 import awesomenessPlugin from "./awesomeness/index.js";
 import sourceConfig from "./src/index.ts";
 
@@ -75,6 +76,20 @@ const antiSlopRulesIn = (override) =>
   Object.keys(override.rules)
     .filter((rule) => rule.startsWith("anti-slop/"))
     .toSorted();
+
+const runForbiddenIdentifier = (parent) => {
+  const reports = [];
+  const identifier = { name: "shape", parent, type: "Identifier" };
+  if (parent !== null) {
+    parent.property = identifier;
+  }
+  const visitors = antiSlopPlugin.rules["no-shape-in-symbol-names"].create({
+    report: (report) => reports.push(report),
+  });
+  const runIdentifier = visitors.Identifier;
+  runIdentifier(identifier);
+  return reports;
+};
 
 describe("awesomeness/no-novel-comments", () => {
   it.each([
@@ -225,5 +240,22 @@ describe("anti-slop assertion family", () => {
     expect(testOverride.rules[rule]).toBe("off");
     expect(e2eOverride.rules[rule]).toBe("off");
     expect(["error", "warn"]).toContain(config.rules[rule]);
+  });
+});
+
+describe("anti-slop/no-shape-in-symbol-names", () => {
+  it("ignores a non-computed member property", () => {
+    expect(
+      runForbiddenIdentifier({
+        computed: false,
+        object: { name: "schema", type: "Identifier" },
+        property: null,
+        type: "MemberExpression",
+      }),
+    ).toHaveLength(0);
+  });
+
+  it("reports an owned identifier", () => {
+    expect(runForbiddenIdentifier({ type: "VariableDeclarator" })).toHaveLength(1);
   });
 });
