@@ -1,5 +1,11 @@
 # oxlint-config-awesomeness
 
+## 3.5.1
+
+### Patch Changes
+
+- 7d00fd1: Ignore non-computed member properties in `no-shape-in-symbol-names` so external APIs remain compatible with Oxlint's dot-notation rule.
+
 ## 3.5.0
 
 ### Minor Changes
