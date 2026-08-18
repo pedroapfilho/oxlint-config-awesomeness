@@ -1,8 +1,10 @@
+import type { Comment } from "@oxlint/plugins";
 import { definePlugin, defineRule } from "@oxlint/plugins";
 
 const MAX_LINES = 5;
 const LICENSE_SCAN_LINES = 2;
-const EXEMPT_PATTERNS = [
+
+const EXEMPT_PATTERNS: ReadonlyArray<RegExp> = [
   /^\s*eslint-/v,
   /^\s*oxlint-/v,
   /^\s*@ts-/v,
@@ -15,13 +17,20 @@ const EXEMPT_PATTERNS = [
   /^\s*\/\s*<reference/v,
   /^!/v,
 ];
+
 const LICENSE_PATTERN = /@license|@preserve|SPDX-License-Identifier|^\s*\*?\s*Copyright\b/v;
-const isExempt = (comment) => EXEMPT_PATTERNS.some((pattern) => pattern.test(comment.value));
-const proseLines = (comment) => comment.value.split("\n");
-const startsLicenseHeader = (lines) =>
+
+const isExempt = (comment: Comment): boolean =>
+  EXEMPT_PATTERNS.some((pattern) => pattern.test(comment.value));
+
+const proseLines = (comment: Comment): Array<string> => comment.value.split("\n");
+
+const startsLicenseHeader = (lines: ReadonlyArray<string>): boolean =>
   lines.slice(0, LICENSE_SCAN_LINES).some((line) => LICENSE_PATTERN.test(line));
-const groupRuns = (comments) => {
-  const runs = [];
+
+const groupRuns = (comments: ReadonlyArray<Comment>): Array<Array<Comment>> => {
+  const runs: Array<Array<Comment>> = [];
+
   for (const comment of comments) {
     const currentRun = runs.at(-1);
     const previous = currentRun?.at(-1);
@@ -31,14 +40,17 @@ const groupRuns = (comments) => {
       previous.type === "Line" &&
       comment.type === "Line" &&
       comment.loc.start.line === previous.loc.end.line + 1;
+
     if (continuesRun) {
       currentRun.push(comment);
     } else {
       runs.push([comment]);
     }
   }
+
   return runs;
 };
+
 const noNovelCommentsRule = defineRule({
   create(context) {
     return {
@@ -46,8 +58,10 @@ const noNovelCommentsRule = defineRule({
         const comments = context.sourceCode
           .getAllComments()
           .filter((comment) => comment.type !== "Shebang" && !isExempt(comment));
+
         for (const run of groupRuns(comments)) {
           const lines = run.flatMap(proseLines);
+
           if (lines.length > MAX_LINES && !startsLicenseHeader(lines)) {
             context.report({
               data: { lines: String(lines.length), maxLines: String(MAX_LINES) },
@@ -71,10 +85,12 @@ const noNovelCommentsRule = defineRule({
     type: "suggestion",
   },
 });
+
 const awesomenessPlugin = definePlugin({
   meta: { name: "awesomeness" },
   rules: {
     "no-novel-comments": noNovelCommentsRule,
   },
 });
+
 export default awesomenessPlugin;
