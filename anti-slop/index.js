@@ -915,6 +915,9 @@ var noForbiddenTermInSymbolNamesRule = defineRule9({
   },
   createOnce(context) {
     const reportForbiddenSymbolName = (node) => {
+      if (node.parent.type === "MemberExpression" && node.parent.property === node && !node.parent.computed) {
+        return;
+      }
       if (!containsForbiddenSymbolName(node.name)) return;
       context.report({
         node,
