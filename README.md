@@ -2,7 +2,7 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-**450 rules** across **16 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+**455 rules** across **16 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
@@ -127,15 +127,15 @@ Plus JS plugins: **perfectionist** (sorting), **react-hooks** + **React Compiler
 
 The config includes smart overrides so strict rules don't create noise in files that need flexibility:
 
-| Files                                  | Relaxed Rules                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `*.test.*`, `*.spec.*`, `__tests__/**` | `no-explicit-any`, `no-non-null-assertion` (+ asserted-nullish variant), `no-require-imports`, `no-var-requires`, `promise-function-async`, all `no-unsafe-*`, `import/no-cycle`, `max-lines`, `max-lines-per-function`, `max-nested-callbacks`, `max-statements`, `no-empty`, `no-empty-function`, `no-use-before-define`, the `anti-slop` assertion family (`no-chained-type-assertions`, `no-known-value-widening`, `no-unknown-type-aliases`, `no-unsafe-dictionary-type`, `no-widen-then-assert`) |
-| `*.stories.tsx`                        | `no-console`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `**/seed.ts`, `**/migrate.ts`          | `no-console`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `**/bin/**`, `scripts/**`              | `no-console`, `unicorn/no-process-exit`                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `*.config.ts`, `next.config.*`, etc.   | `max-lines`, `no-anonymous-default-export`                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `**/e2e/**`                            | `rules-of-hooks`, all `no-unsafe-*`, the `anti-slop` assertion family, `strict-boolean-expressions`                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `*.ts`, `*.tsx` (all TypeScript)       | Rules handled natively by the TS compiler (`no-undef`, `no-redeclare`, etc.)                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Files                                  | Relaxed Rules                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `*.test.*`, `*.spec.*`, `__tests__/**` | `no-explicit-any`, `no-non-null-assertion` (+ asserted-nullish variant), `no-require-imports`, `no-var-requires`, `promise-function-async`, all `no-unsafe-*`, `import/no-cycle`, `max-lines`, `max-lines-per-function`, `max-nested-callbacks`, `max-statements`, `no-empty`, `no-empty-function`, `no-use-before-define`, the `anti-slop` assertion family (`no-chained-type-assertions`, `no-known-value-widening`, `no-unknown-type-aliases`, `no-unsafe-dictionary-type`, `no-widen-then-assert`, `require-safety-comment-for-type-assertion`) |
+| `*.stories.tsx`                        | `no-console`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `**/seed.ts`, `**/migrate.ts`          | `no-console`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `**/bin/**`, `scripts/**`              | `no-console`, `unicorn/no-process-exit`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `*.config.ts`, `next.config.*`, etc.   | `max-lines`, `no-anonymous-default-export`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `**/e2e/**`                            | `rules-of-hooks`, all `no-unsafe-*`, the `anti-slop` assertion family, `strict-boolean-expressions`                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `*.ts`, `*.tsx` (all TypeScript)       | Rules handled natively by the TS compiler (`no-undef`, `no-redeclare`, etc.)                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 
 ## Cherry-Picked Restriction Rules
 
@@ -8079,6 +8079,22 @@ const mode: string = "dark";
 const mode = "dark";
 ```
 
+### anti-slop/no-module-mocking
+
+Disallow Vitest and Jest module mocks in favor of explicit dependency seams. Severity: `error`.
+
+Rejected:
+
+```ts
+vi.mock("./user-store");
+```
+
+Preferred:
+
+```ts
+const service = createUserService({ store: fakeUserStore });
+```
+
 ### anti-slop/no-object-parameters
 
 Disallow the broad `object` type on function parameters. Severity: `error`.
@@ -8089,6 +8105,38 @@ const track = (event: object) => send(event);
 
 // good
 const track = (event: AnalyticsEvent) => send(event);
+```
+
+### anti-slop/no-reflect-apply
+
+Disallow `Reflect.apply` in favor of typed function calls. Severity: `error`.
+
+Rejected:
+
+```ts
+const value = Reflect.apply(operation, owner, args);
+```
+
+Preferred:
+
+```ts
+const value = operation.call(owner, ...args);
+```
+
+### anti-slop/no-reflect-get
+
+Disallow `Reflect.get` in favor of typed property access or boundary parsing. Severity: `error`.
+
+Rejected:
+
+```ts
+const value = Reflect.get(owner, key);
+```
+
+Preferred:
+
+```ts
+const value = owner[key];
 ```
 
 ### anti-slop/no-runtime-typeof
@@ -8130,6 +8178,22 @@ const handle = (value: unknown) => process(value);
 const handle = (value: Payload) => process(value);
 ```
 
+### anti-slop/no-unknown-returns
+
+Disallow functions whose contracts return `unknown` or `Promise<unknown>`. Severity: `error`.
+
+Rejected:
+
+```ts
+const loadUser = (): unknown => input;
+```
+
+Preferred:
+
+```ts
+const loadUser = (): User => userSchema.parse(input);
+```
+
 ### anti-slop/no-unknown-type-aliases
 
 Disallow type aliases that only rename `unknown`. Severity: `error`.
@@ -8166,6 +8230,23 @@ use(status as "active");
 // good
 const status = "active";
 use(status);
+```
+
+### anti-slop/require-safety-comment-for-type-assertion
+
+Require every non-const type assertion to document the checked invariant that makes it safe. Severity: `error`.
+
+Rejected:
+
+```ts
+const userId = value as UserId;
+```
+
+Preferred:
+
+```ts
+// SAFETY: parseUserId validated the identifier before branding it.
+const userId = value as UserId;
 ```
 
 ## Awesomeness Rules
