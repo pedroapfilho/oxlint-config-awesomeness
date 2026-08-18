@@ -14,6 +14,7 @@ const ASSERTION_FAMILY_OFF = {
   "anti-slop/no-unknown-type-aliases": "off",
   "anti-slop/no-unsafe-dictionary-type": "off",
   "anti-slop/no-widen-then-assert": "off",
+  "anti-slop/require-safety-comment-for-type-assertion": "off",
 };
 const config = defineConfig({
   // Bulk-enable oxlint categories as errors.
@@ -548,8 +549,11 @@ const config = defineConfig({
     // tables and on named-shape return annotations, which are deliberate
     // contracts here rather than laundered types. 76 sites across four repos.
     "anti-slop/no-known-value-widening": "warn",
+    "anti-slop/no-module-mocking": "error",
     // `object` on inputs accepts nearly everything; name the expected fields.
     "anti-slop/no-object-parameters": "error",
+    "anti-slop/no-reflect-apply": "error",
+    "anti-slop/no-reflect-get": "error",
     // Flags every `typeof` unary, including the `typeof window` SSR guards the
     // react-doctor browser-global rules steer toward and ordinary
     // `typeof x === "string"` narrowing. Off until upstream scopes it.
@@ -561,6 +565,7 @@ const config = defineConfig({
     // catch callbacks to `(err: unknown)`, which this rule then flags; upstream
     // only exempts parameters named `cause`.
     "anti-slop/no-unknown-parameters": "warn",
+    "anti-slop/no-unknown-returns": "error",
     // `type X = unknown` hides the escape hatch behind a domain-sounding name.
     "anti-slop/no-unknown-type-aliases": "error",
     // Warn, not error: `Record<string, unknown>` is the correct type at a real
@@ -569,6 +574,7 @@ const config = defineConfig({
     "anti-slop/no-unsafe-dictionary-type": "warn",
     // Widening a known value and asserting it back is a two-step type lie.
     "anti-slop/no-widen-then-assert": "error",
+    "anti-slop/require-safety-comment-for-type-assertion": "error",
     // Awesomeness: first-party rules shipped with this config.
     // Comments longer than 5 lines narrate instead of inform. Directive
     // comments (eslint-/oxlint-/@ts-) and license headers are exempt.
