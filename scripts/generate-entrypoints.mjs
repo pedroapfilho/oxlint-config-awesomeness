@@ -11,6 +11,11 @@ const GENERATED_FILES = [
     target: new URL("../index.js", import.meta.url),
   },
   {
+    formatName: "generated.js",
+    source: new URL("../dist/awesomeness.js", import.meta.url),
+    target: new URL("../awesomeness/index.js", import.meta.url),
+  },
+  {
     formatName: "generated.d.ts",
     source: new URL("../dist/index.d.ts", import.meta.url),
     target: new URL("../index.d.ts", import.meta.url),
