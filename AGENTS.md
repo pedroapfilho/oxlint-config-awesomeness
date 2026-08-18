@@ -10,8 +10,8 @@ This is a **flat single-package repo**.
 
 For infrastructure PRs that do not intentionally change the config source, the published runtime config MUST remain identical. `pnpm check:generated` must pass so generated entrypoints cannot drift from `src/index.ts`.
 
-- `index.js`, `index.d.ts`, and `awesomeness/index.js` are generated package entrypoints. Never edit them directly; edit `src/index.ts` and `src/awesomeness.ts` instead.
-- `bin/init.js` and `bin/template.ts` must remain byte-for-byte identical.
+- `index.js`, `index.d.ts`, `awesomeness/index.js`, and `bin/init.js` are generated package entrypoints. Never edit them directly; edit `src/index.ts`, `src/awesomeness.ts`, and `src/init.ts` instead.
+- `bin/template.ts` must remain byte-for-byte identical.
 
 The `ignorePatterns` in `.oxfmtrc.json` must exclude generated entrypoints and CLI files explicitly.
 
@@ -58,7 +58,7 @@ Managed repositories import this config through their pnpm update cycle. Major a
 - Single `package.json` at root — no workspace
 - `src/index.ts` is the config source; `index.js` and `index.d.ts` are generated
 - `src/awesomeness.ts` is the first-party plugin source; `awesomeness/index.js` is generated. It must ship as JS because oxlint loads plugins with a plain `import()` and Node refuses to type-strip files under `node_modules`
-- `bin/init.js` scaffolds `oxlint.config.ts` in user repos via `npx oxlint-config-awesomeness init`
+- `src/init.ts` is the CLI source; `bin/init.js` is generated. It scaffolds `oxlint.config.ts` in user repos via `npx oxlint-config-awesomeness init`
 - `bin/template.ts` is the file it copies
 - `index.test.js` is the smoke test — not in `files`, not published
 - Lint/format/test/fallow run in CI; release is managed by Changesets action

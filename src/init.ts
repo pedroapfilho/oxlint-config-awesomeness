@@ -9,11 +9,15 @@ Scaffold oxlint.config.ts in the current directory.
   -f, --force  Overwrite an existing oxlint.config.ts
   -h, --help   Show this help
 `;
-const fail = (message) => {
+
+const fail = (message: string): never => {
   process.stderr.write(`${message}\n\n${HELP}`);
   process.exit(1);
 };
-const messageOf = (error) => (error instanceof Error ? error.message : String(error));
+
+const messageOf = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
+
 const parseCliArgs = () => {
   try {
     return parseArgs({
@@ -27,15 +31,20 @@ const parseCliArgs = () => {
     return fail(messageOf(error));
   }
 };
+
 const { positionals, values } = parseCliArgs();
+
 if (values.help === true || positionals.length === 0) {
   process.stdout.write(HELP);
   process.exit(0);
 }
+
 if (positionals.length > 1 || positionals[0] !== "init") {
   fail(`Unknown command: ${positionals.join(" ")}`);
 }
+
 const target = resolve("oxlint.config.ts");
+
 try {
   copyFileSync(
     resolve(import.meta.dirname, "template.ts"),
@@ -50,4 +59,5 @@ try {
   }
   process.exit(1);
 }
+
 process.stdout.write(`Created ${target}\nNext: npx oxlint\n`);

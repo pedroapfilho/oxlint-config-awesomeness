@@ -6,6 +6,7 @@
     "rootDir": "src",
     "strict": true,
     "target": "ES2024",
+    "types": ["node"],
     "verbatimModuleSyntax": true
   },
   "include": ["src/**/*.ts"]

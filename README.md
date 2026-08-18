@@ -16,6 +16,22 @@ npm install -D oxlint-config-awesomeness eslint-plugin-no-only-tests eslint-plug
 > peer dependencies: npm and pnpm install them for you, and Yarn will warn if any
 > are missing.
 
+> [!TIP]
+> `eslint-plugin-perfectionist` pulls in `@typescript-eslint/utils`, which still
+> caps TypeScript at `<6.1.0` and has no release allowing 7 yet. Since this config
+> requires TypeScript 7, that range can never be satisfied and pnpm reports an
+> unmet peer. Installs still succeed; only `strict-peer-dependencies` repos fail.
+> To silence it, add to your `pnpm-workspace.yaml`:
+>
+> ```yaml
+> peerDependencyRules:
+>   allowedVersions:
+>     "@typescript-eslint/utils>typescript": "7"
+>     "@typescript-eslint/typescript-estree>typescript": "7"
+>     "@typescript-eslint/project-service>typescript": "7"
+>     "@typescript-eslint/tsconfig-utils>typescript": "7"
+> ```
+
 ### Type-aware linting
 
 This config sets `options.typeAware`, which turns on the 59 typescript-eslint rules that need a type checker (`no-floating-promises`, `no-misused-promises`, `no-unnecessary-condition`, and the rest). Those rules run through `oxlint-tsgolint`, which is why it is in the install line above.
