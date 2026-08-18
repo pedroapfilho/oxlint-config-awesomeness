@@ -168,6 +168,10 @@ const config = defineConfig({
         // `describe`/`it` blocks legitimately exceed size limits.
         "max-lines": "off",
         "max-nested-callbacks": "off",
+        // Fixtures read files from disk; sync fs keeps setup readable.
+        "node/no-sync": "off",
+        // Throwaway matching in assertions does not need the `v` flag.
+        "require-unicode-regexp": "off",
         // Empty test stubs are valid placeholders.
         "no-empty": "off",
         // Empty mock implementations are common.
@@ -194,11 +198,16 @@ const config = defineConfig({
     },
     // CLI entry points — `process.exit` and console output are the whole point.
     {
-      files: ["**/bin/**", "scripts/**"],
+      files: ["**/bin/**", "scripts/**", "tools/**"],
       rules: {
+        ...ASSERTION_FAMILY_OFF,
         "no-console": "off",
         // One-shot CLI tools run sequentially; sync fs is the simpler, correct choice.
         "node/no-sync": "off",
+        // One-shot scripts parse their own local JSON output; a schema at that
+        // boundary is ceremony when the producer is the same script.
+        "@typescript-eslint/no-unsafe-type-assertion": "off",
+        "require-unicode-regexp": "off",
         "unicorn/no-process-exit": "off",
       },
     },
@@ -222,6 +231,10 @@ const config = defineConfig({
         "@typescript-eslint/strict-boolean-expressions": "off",
         // Big configs (webpack, next) routinely exceed 400 lines.
         "max-lines": "off",
+        // Build config reads files at startup; sync fs is correct there.
+        "node/no-sync": "off",
+        // Throwaway matching in build config does not need the `v` flag.
+        "require-unicode-regexp": "off",
       },
     },
     // Playwright/Cypress E2E fixtures — test harness code, not React components.
@@ -466,6 +479,12 @@ const config = defineConfig({
     "max-lines-per-function": "off",
     // Too blunt — modern async code has many statements by design.
     "max-statements": "off",
+    // Off: the rule assumes loop bodies are independent and should be
+    // parallelised, but the dominant patterns here are inherently sequential:
+    // cursor pagination, rate-limited fan-out, and retry backoff. Measured
+    // across the fleet it was suppressed 105 times and disabled outright in 6
+    // repos. `react-doctor/async-await-in-loop` still warns on the rest.
+    "no-await-in-loop": "off",
     // `continue` is often clearer than extra nesting.
     "no-continue": "off",
     // Explicit types on simple assignments is a style choice, not an error.
