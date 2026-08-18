@@ -16,5 +16,14 @@ export default defineConfig({
         "max-lines": "off",
       },
     },
+    {
+      // The CLI source lives in src/ so the build can emit it, but it is CLI
+      // code: the shipped `**/bin/**` override does not reach it here.
+      files: ["src/init.ts"],
+      rules: {
+        "anti-slop/no-unknown-parameters": "off",
+        "node/no-sync": "off",
+      },
+    },
   ],
 });
