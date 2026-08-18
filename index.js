@@ -386,13 +386,6 @@ const config = defineConfig({
     ],
     // Raw HTML insertion in JSX is an XSS vector — require a deliberate opt-out.
     "react/no-danger": "error",
-    // Off: the two dominant shapes in these codebases both put several
-    // components in one file on purpose. shadcn primitives ship as families
-    // (`card.tsx` exports Card, CardHeader, CardTitle, CardContent, ...) and
-    // splitting them permanently forks the file from upstream; form shells keep
-    // their single-use field components colocated so each form stays readable
-    // on its own. Enforcing one-per-file trades both for import ceremony.
-    "react/no-multi-comp": "off",
     // Catches typos like `class=` or `tabindex=` in JSX.
     "react/no-unknown-property": "error",
     // Restriction — import graph
@@ -705,6 +698,11 @@ const config = defineConfig({
     "react-doctor/no-invalid-progress-range": "error",
     "react-doctor/no-invisible-focus-control": "warn",
     "react-doctor/no-low-contrast-inline-style": "warn",
+    // Supersedes the native `react/no-multi-comp`, which flagged any file with
+    // more than one component and so hit every shadcn primitive family. This one
+    // only fires when the extra components are not exported, meaning they are
+    // secondary components hiding in a file rather than a published family.
+    "react-doctor/no-multi-component-file": "warn",
     "react-doctor/no-multiple-main-landmarks": "warn",
     "react-doctor/no-multiple-unlabeled-navigation-landmarks": "warn",
     "react-doctor/no-nonresizable-textarea": "warn",

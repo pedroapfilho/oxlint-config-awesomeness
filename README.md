@@ -2,7 +2,7 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-**453 rules** across **15 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+**454 rules** across **15 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
@@ -4486,19 +4486,6 @@ if (this.isMounted()) {
 // Use an AbortController or cleanup in useEffect
 ```
 
-### react/no-multi-comp
-
-Enforce a single component per file.
-
-```tsx
-// bad
-const A = () => <div />;
-const B = () => <div />;
-
-// good
-// a.tsx: const A = () => <div />;
-```
-
 ### react/no-namespace
 
 Disallow React namespace syntax (e.g., `<Foo:Bar />`).
@@ -8632,6 +8619,21 @@ Disallow inline styles with insufficient text contrast. Severity: `warn`.
 
 // good
 <p style={{ color: "#444444", background: "#ffffff" }}>Notice</p>
+```
+
+### react-doctor/no-multi-component-file
+
+Disallow files that declare several components where the extras are not exported. Supersedes the native `react/no-multi-comp`, which flagged any file with more than one component and so hit every shadcn primitive family. This one leaves exported families alone and fires only on secondary components hiding in a file. Severity: `warn`.
+
+```tsx
+// bad
+const PanelHeader = () => <div />;
+const PanelBody = () => <div />;
+export const Panel = { Body: PanelBody, Header: PanelHeader };
+
+// good
+export const PanelHeader = () => <div />;
+export const PanelBody = () => <div />;
 ```
 
 ### react-doctor/no-multiple-main-landmarks
