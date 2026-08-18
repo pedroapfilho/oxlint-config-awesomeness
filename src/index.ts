@@ -21,6 +21,25 @@ const ASSERTION_FAMILY_OFF = {
   "anti-slop/require-safety-comment-for-type-assertion": "off",
 } as const;
 
+// Test components are throwaway probes that capture render state into outer
+// variables. They are never compiled for production, so the compiler's
+// invariants do not apply to them.
+const REACT_COMPILER_OFF = {
+  "react/error-boundaries": "off",
+  "react/globals": "off",
+  "react/immutability": "off",
+  "react/incompatible-library": "off",
+  "react/preserve-manual-memoization": "off",
+  "react/purity": "off",
+  "react/refs": "off",
+  "react/set-state-in-effect": "off",
+  "react/set-state-in-render": "off",
+  "react/static-components": "off",
+  "react/unsupported-syntax": "off",
+  "react/use-memo": "off",
+  "react/void-use-memo": "off",
+} as const;
+
 const config: OxlintConfig = defineConfig({
   // Bulk-enable oxlint categories as errors.
   // `restriction` is intentionally excluded — oxlint docs warn against enabling it as a whole
@@ -48,9 +67,6 @@ const config: OxlintConfig = defineConfig({
     "eslint-plugin-no-only-tests",
     "eslint-plugin-perfectionist",
     "eslint-plugin-unused-imports",
-    // React Compiler's own lint rules — stricter than classic react-hooks;
-    // enforce the purity/memoization/gating invariants the compiler needs.
-    { name: "react-hooks-js", specifier: "eslint-plugin-react-hooks" },
     // React Doctor diagnostics (security, perf, correctness, RSC, TanStack Query).
     { name: "react-doctor", specifier: "oxlint-plugin-react-doctor" },
     // Anti-slop: rejects low-evidence TypeScript patterns. Vendored into this
@@ -60,6 +76,19 @@ const config: OxlintConfig = defineConfig({
     // First-party rules that ship with this config (awesomeness/index.js).
     { name: "awesomeness", specifier: "oxlint-config-awesomeness/awesomeness" },
   ],
+  // Type-aware linting via tsgolint (stable since oxlint-tsgolint v7). Turns on
+  // the 59 typescript-eslint rules that need a type checker; the `@typescript-eslint`
+  // entries below stop being no-ops. Requires `oxlint-tsgolint` installed.
+  //
+  // `typeCheck` routes TypeScript compiler diagnostics through the linter too, so
+  // one oxlint run reports type errors and lint errors in one format. That single
+  // stream is the point: it is what automated fixers consume. It also reuses the
+  // program tsgolint already built, which is cheaper than a second `tsc` process.
+  // Requires TypeScript 7, since tsgolint carries its own TypeScript 7 checker.
+  options: {
+    typeAware: true,
+    typeCheck: true,
+  },
   overrides: [
     // TypeScript files — turn off rules the TS compiler already enforces via its type system.
     // Running them again would be pure overhead and occasionally produce false positives.
@@ -106,12 +135,28 @@ const config: OxlintConfig = defineConfig({
         "prefer-spread": "error",
       },
     },
+    // JavaScript files: type-aware rules see no types here. A `.js` file outside
+    // the tsconfig program resolves every expression to `any`, so the rules that
+    // report on `any` fire on every line. Rules needing a known type (such as
+    // no-floating-promises) simply stay quiet, which is the correct outcome.
+    {
+      files: ["**/*.js", "**/*.jsx", "**/*.mjs", "**/*.cjs"],
+      rules: {
+        ...UNSAFE_ANY_OFF,
+        // Needs a resolved return type to tell void from value.
+        "@typescript-eslint/no-confusing-void-expression": "off",
+        // Every condition is `any` without types.
+        "@typescript-eslint/strict-boolean-expressions": "off",
+        "@typescript-eslint/strict-void-return": "off",
+      },
+    },
     // Test files — relax strict rules that generate noise in mocks, fixtures, describe blocks.
     {
       files: ["**/*.test.*", "**/*.spec.*", "**/__tests__/**"],
       rules: {
         ...UNSAFE_ANY_OFF,
         ...ASSERTION_FAMILY_OFF,
+        ...REACT_COMPILER_OFF,
         // Mocks are commonly typed `any` for speed.
         "@typescript-eslint/no-explicit-any": "off",
         // Fixtures chain `!` + `??` for narrowing.
@@ -191,6 +236,7 @@ const config: OxlintConfig = defineConfig({
       rules: {
         ...UNSAFE_ANY_OFF,
         ...ASSERTION_FAMILY_OFF,
+        ...REACT_COMPILER_OFF,
         // Harness code branches on optional env vars (`if (process.env.CI)`).
         "@typescript-eslint/strict-boolean-expressions": "off",
         // Playwright fixtures use hook-like names (`test.extend`) that trip the rule.
@@ -399,7 +445,7 @@ const config: OxlintConfig = defineConfig({
     "react/hook-use-state": "off",
     // JSX depth is constrained by composition, not by a magic number.
     "react/jsx-max-depth": "off",
-    // React Compiler (`react-hooks-js`) handles memoization — no need to pre-extract context values.
+    // React Compiler handles memoization, so pre-extracting context values is moot.
     "react/jsx-no-constructed-context-values": "off",
     // Prop spreading is a valid composition pattern with proper types.
     "react/jsx-props-no-spreading": "off",
@@ -533,39 +579,51 @@ const config: OxlintConfig = defineConfig({
     // Object keys alphabetical; partitionByComment preserves intentional grouping.
     "perfectionist/sort-objects": ["error", { partitionByComment: true }],
 
-    // React Compiler (react-hooks-js) — enforce the invariants the compiler needs
-    // to safely auto-memoize your components.
+    // React Compiler: oxlint's native port of the compiler's validation passes
+    // (oxlint 1.79+). Replaces the eslint-plugin-react-hooks JS plugin, so the
+    // same passes run without a JS bridge and consumers drop a peer dependency.
+    // `config` and `gating` have no native port (oxlint fixes those options),
+    // and `component-hook-factories` was not ported.
 
-    // Hooks can't be created inside components — they must be module-level.
-    "react-hooks-js/component-hook-factories": "error",
-    // Validates the plugin's own config shape.
-    "react-hooks-js/config": "error",
+    // Off: oxlint files the next five under enabled categories, but React ships
+    // them off in its own presets and each misfires on non-React code. Measured
+    // against the fleet: `capitalized-calls` flags schema factories
+    // (`onSubmit: SignUpWizardSchema(t)`), `hooks` flags agent DSLs whose
+    // functions are named `use*`, and `exhaustive-effect-dependencies` repeats
+    // `react-hooks/exhaustive-deps` with worse messages.
+    "react/capitalized-calls": "off",
+    "react/exhaustive-effect-dependencies": "off",
+    "react/hooks": "off",
+    "react/memo-dependencies": "off",
+    "react/no-deriving-state-in-effects": "off",
+
     // Error boundaries have specific invariants the compiler respects.
-    "react-hooks-js/error-boundaries": "error",
-    // Feature-flag gating must be consistent so the compiler can reason about it.
-    "react-hooks-js/gating": "error",
-    // No global mutation during render — breaks compiler's purity assumptions.
-    "react-hooks-js/globals": "error",
-    // Don't mutate props or state — compiler assumes immutability.
-    "react-hooks-js/immutability": "error",
+    "react/error-boundaries": "error",
+    // No global mutation during render; breaks the compiler's purity assumptions.
+    "react/globals": "error",
+    // Don't mutate props or state; the compiler assumes immutability.
+    "react/immutability": "error",
     // Flags libraries the compiler can't safely optimize around.
-    "react-hooks-js/incompatible-library": "error",
-    // If you wrote `useMemo`/`useCallback`, keep them — the compiler preserves your intent.
-    "react-hooks-js/preserve-manual-memoization": "error",
-    // Render must be pure — no side effects, no I/O, no randomness.
-    "react-hooks-js/purity": "error",
+    "react/incompatible-library": "error",
+    // If you wrote `useMemo`/`useCallback`, keep them; the compiler preserves your intent.
+    "react/preserve-manual-memoization": "error",
+    // Render must be pure: no side effects, no I/O, no randomness.
+    "react/purity": "error",
     // Refs belong in effects and handlers, not render.
-    "react-hooks-js/refs": "error",
+    "react/refs": "error",
     // Setting state inside an effect must be carefully guarded.
-    "react-hooks-js/set-state-in-effect": "error",
-    // Never set state during render — infinite loop.
-    "react-hooks-js/set-state-in-render": "error",
+    "react/set-state-in-effect": "error",
+    // Never set state during render; it loops forever.
+    "react/set-state-in-render": "error",
     // Prefer static component definitions over dynamic factories.
-    "react-hooks-js/static-components": "error",
+    "react/static-components": "error",
     // Syntax (decorators, specific private-field patterns) the compiler can't analyze.
-    "react-hooks-js/unsupported-syntax": "error",
+    // Lives in the `restriction` category, so it needs enabling by name.
+    "react/unsupported-syntax": "error",
     // Enforces the modern `useMemo` shape the compiler expects.
-    "react-hooks-js/use-memo": "error",
+    "react/use-memo": "error",
+    // A `useMemo` callback that returns nothing is always a mistake.
+    "react/void-use-memo": "error",
 
     // React hooks — the classic rules, still necessary even with the compiler
 
@@ -642,7 +700,7 @@ const config: OxlintConfig = defineConfig({
     // deliberately disabled, like no-array-index-key), the six rules the native
     // nextjs plugin already covers, no-eval (core eslint rule is on), and
     // react-compiler-no-manual-memoization (contradicts
-    // react-hooks-js/preserve-manual-memoization).
+    // react/preserve-manual-memoization).
     //
     // The plugin grew 337 -> 787 rules between 0.5 and 0.9 with nothing removed or
     // renamed. Of the 450 additions, the ones enabled below are those whose

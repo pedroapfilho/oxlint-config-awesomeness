@@ -217,7 +217,7 @@ describe("oxlint-config-awesomeness", () => {
     // Any key change here is a breaking contract change for consumers.
     const keys = Object.keys(config).toSorted();
     expect(keys).toEqual(
-      ["categories", "env", "jsPlugins", "overrides", "plugins", "rules"].toSorted(),
+      ["categories", "env", "jsPlugins", "options", "overrides", "plugins", "rules"].toSorted(),
     );
   });
 });
@@ -257,5 +257,17 @@ describe("anti-slop/no-shape-in-symbol-names", () => {
 
   it("reports an owned identifier", () => {
     expect(runForbiddenIdentifier({ type: "VariableDeclarator" })).toHaveLength(1);
+  });
+});
+
+describe("type-aware linting", () => {
+  it("enables tsgolint rules and compiler diagnostics for consumers", () => {
+    expect(config.options).toEqual({ typeAware: true, typeCheck: true });
+  });
+
+  it("silences type-dependent rules on JavaScript, where every type is `any`", () => {
+    const jsOverride = findOverride("**/*.js");
+    expect(jsOverride.rules["@typescript-eslint/no-unsafe-call"]).toBe("off");
+    expect(jsOverride.rules["@typescript-eslint/strict-boolean-expressions"]).toBe("off");
   });
 });

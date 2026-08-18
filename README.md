@@ -2,12 +2,12 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-**455 rules** across **16 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+**453 rules** across **15 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
 ```
-npm install -D oxlint-config-awesomeness eslint-plugin-no-only-tests eslint-plugin-perfectionist eslint-plugin-react-hooks eslint-plugin-unused-imports oxlint-plugin-react-doctor
+npm install -D oxlint-config-awesomeness eslint-plugin-no-only-tests eslint-plugin-perfectionist eslint-plugin-unused-imports oxlint-plugin-react-doctor oxlint-tsgolint
 ```
 
 > [!NOTE]
@@ -15,6 +15,39 @@ npm install -D oxlint-config-awesomeness eslint-plugin-no-only-tests eslint-plug
 > package, so the plugins have to be installed alongside it. They are declared as
 > peer dependencies: npm and pnpm install them for you, and Yarn will warn if any
 > are missing.
+
+### Type-aware linting
+
+This config sets `options.typeAware`, which turns on the 59 typescript-eslint rules that need a type checker (`no-floating-promises`, `no-misused-promises`, `no-unnecessary-condition`, and the rest). Those rules run through `oxlint-tsgolint`, which is why it is in the install line above.
+
+`oxlint-tsgolint` is only an _optional_ peer of oxlint itself, so if it is missing you do not get an error: type-aware rules are skipped silently and your lint still exits zero. If you want to confirm they are running, add a floating promise to a file and check that `typescript(no-floating-promises)` fires.
+
+tsgolint is pinned to a TypeScript release. The `7.x` line targets TypeScript 7, matching the `typescript` version this config is built against, and its version scheme encodes that: `7.0.2001` is patch 1 against TypeScript 7.0.2. TypeScript 7 is therefore a peer dependency: tsgolint carries its own TypeScript 7 checker, so a repo still on TypeScript 6 would be linted by a different compiler than the one that builds it.
+
+### Replacing `tsc --noEmit`
+
+oxlint can report TypeScript compiler diagnostics directly via `options.typeCheck`, which raises the question of whether a separate `tsc --noEmit` step is still needed. On a whole-project run the two agree: the same errors, the same TypeScript error codes, at the same positions.
+
+Three things to know before dropping the `tsc` step:
+
+- oxlint calls `typeCheck` **experimental** in its own configuration schema.
+- Type diagnostics follow the files being linted. `oxlint .` covers the same ground as `tsc`, but a targeted run (lint-staged, or linting one package) only type-checks what it lints, whereas `tsc` always checks the whole program.
+- `tsc` is still required wherever it emits, such as building declaration files. Only the `--noEmit` check is a candidate for removal.
+
+`typeCheck` is on by default here. The reason is the single diagnostic stream: one oxlint run reports type errors and lint errors in one format, which is what automated fixers consume, and it reuses the program tsgolint already built instead of starting a second `tsc` process.
+
+tsgolint carries its own TypeScript 7 checker, which is why TypeScript 7 is a peer dependency. On a repo still on TypeScript 6 this surfaces the TypeScript 7 upgrade work early rather than reporting anything false: checked against a TypeScript 6 codebase whose own `tsc` exits clean, the diagnostics oxlint reported were reproduced exactly, same codes and same positions, by running real TypeScript 7 `tsc` over the same files.
+
+To opt out, set it back in your own `oxlint.config.ts`:
+
+```ts
+export default defineConfig({
+  extends: [config],
+  options: { typeCheck: false },
+});
+```
+
+Type-aware rules only see types for files inside your tsconfig program. Plain `.js`, `.jsx`, `.mjs`, and `.cjs` files are usually outside it, where every expression resolves to `any` and the `no-unsafe-*` family would fire on every line, so this config turns those rules off for JavaScript. `typeCheck` is left off as well, since it reports TypeScript compiler diagnostics through the linter and every repo here already runs `tsc` separately.
 
 ## Usage
 
@@ -4729,243 +4762,137 @@ Disallow children on void DOM elements.
 
 ## React Compiler Rules
 
-### react-hooks-js/component-hook-factories
+oxlint's native port of the React Compiler validation passes (oxlint 1.79+). These replace the `eslint-plugin-react-hooks` JS plugin: same passes, no JS bridge, and one less peer dependency to install.
 
-Enforce that component hook factory functions follow compiler rules.
+Severities follow React's own presets. Five rules that oxlint files under enabled categories are turned off here because React ships them off and each misfires on non-React code: `react/capitalized-calls` flags schema factories, `react/hooks` flags agent DSLs whose functions are named `use*`, `react/exhaustive-effect-dependencies` duplicates `react-hooks/exhaustive-deps`, plus `react/memo-dependencies` and `react/no-deriving-state-in-effects`. The whole family is also off in test files, where throwaway probe components legitimately capture render state into outer variables.
+
+`config` and `gating` have no native port (oxlint uses fixed compiler options), and `component-hook-factories` was not ported.
+
+### react/error-boundaries
+
+Enforce the error boundary invariants the compiler relies on. Severity: `error`.
+
+### react/globals
+
+Disallow reassigning variables declared outside a component or hook during render. Severity: `error`.
 
 ```tsx
 // bad
-const useCustom = createHook(() => {
-  let x = 0;
-  x = 1;
-  return x;
-});
+let cached = null;
+const Row = ({ item }) => {
+  cached = item;
+  return <li>{item.name}</li>;
+};
 
 // good
-const useCustom = createHook(() => {
-  const [x, setX] = useState(0);
-  return x;
-});
+const Row = ({ item }) => <li>{item.name}</li>;
 ```
 
-### react-hooks-js/config
+### react/immutability
 
-Validate React Compiler configuration.
+Disallow mutating props or state; the compiler assumes both are immutable. Severity: `error`.
 
 ```tsx
 // bad
-// Invalid compiler options
-
-// good
-// Valid compiler configuration in babel/next config
-```
-
-### react-hooks-js/error-boundaries
-
-Enforce correct error boundary patterns for the compiler.
-
-```tsx
-// bad
-class ErrorBoundary extends Component {
-  state = {};
-}
-
-// good
-class ErrorBoundary extends Component {
-  state = { hasError: false };
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-}
-```
-
-### react-hooks-js/gating
-
-Enforce gating patterns are compatible with the compiler.
-
-```tsx
-// bad
-if (__DEV__) {
-  useDebugHook();
-}
-
-// good
-useDebugHook(__DEV__);
-```
-
-### react-hooks-js/globals
-
-Enforce that global references are compatible with the compiler.
-
-```tsx
-// bad
-function Comp() {
-  return <div>{window.x}</div>;
-}
-
-// good
-function Comp() {
-  const x = useSyncExternalStore(subscribe, getSnapshot);
-  return <div>{x}</div>;
-}
-```
-
-### react-hooks-js/immutability
-
-Enforce immutable data patterns required by the compiler.
-
-```tsx
-// bad
-function Comp({ items }) {
+const List = ({ items }) => {
   items.sort();
-  return <List items={items} />;
-}
+  return (
+    <ul>
+      {items.map((i) => (
+        <li key={i.id}>{i.name}</li>
+      ))}
+    </ul>
+  );
+};
 
 // good
-function Comp({ items }) {
-  const sorted = [...items].sort();
-  return <List items={sorted} />;
-}
+const List = ({ items }) => {
+  const sorted = items.toSorted();
+  return (
+    <ul>
+      {sorted.map((i) => (
+        <li key={i.id}>{i.name}</li>
+      ))}
+    </ul>
+  );
+};
 ```
 
-### react-hooks-js/incompatible-library
+### react/incompatible-library
 
-Flag usage of libraries incompatible with the React Compiler.
+Flag libraries the compiler cannot safely optimize around. Severity: `error`.
+
+### react/preserve-manual-memoization
+
+Keep hand-written `useMemo` and `useCallback` intact; the compiler preserves that intent. Severity: `error`.
+
+### react/purity
+
+Require render to be pure: no side effects, no I/O, no randomness. Severity: `error`.
 
 ```tsx
 // bad
-import { observer } from "mobx-react";
+const Stamp = () => <time>{Date.now()}</time>;
 
 // good
-// Use compiler-compatible state management
+const Stamp = ({ now }: { now: number }) => <time>{now}</time>;
 ```
 
-### react-hooks-js/preserve-manual-memoization
+### react/refs
 
-Preserve existing `useMemo`/`useCallback` usage for the compiler.
+Disallow reading or writing a ref during render. Severity: `error`.
 
 ```tsx
 // bad
-const value = useMemo(() => compute(a), []);
+const show = isLoading && elapsed === epochRef.current;
 
 // good
-const value = useMemo(() => compute(a), [a]);
+useEffect(() => {
+  setShow(isLoading && elapsed === epochRef.current);
+}, [isLoading, elapsed]);
 ```
 
-### react-hooks-js/purity
+### react/set-state-in-effect
 
-Enforce that components and hooks are pure functions.
-
-```tsx
-// bad
-let count = 0;
-function Comp() {
-  count += 1;
-  return <div>{count}</div>;
-}
-
-// good
-function Comp() {
-  const [count, setCount] = useState(0);
-  return <div>{count}</div>;
-}
-```
-
-### react-hooks-js/refs
-
-Enforce correct ref patterns for the compiler.
-
-```tsx
-// bad
-function Comp() {
-  const ref = useRef(null);
-  return <div>{ref.current}</div>;
-}
-
-// good
-function Comp() {
-  const ref = useRef<HTMLDivElement>(null);
-  return <div ref={ref} />;
-}
-```
-
-### react-hooks-js/set-state-in-effect
-
-Enforce correct `setState` usage inside effects.
+Disallow calling setState synchronously in an effect body; it causes cascading renders. Severity: `error`.
 
 ```tsx
 // bad
 useEffect(() => {
-  setCount(count + 1);
-}, [count]);
+  setCount(Number(id));
+}, [id]);
 
 // good
-useEffect(() => {
-  setCount((prev) => prev + 1);
-}, []);
+const count = Number(id);
 ```
 
-### react-hooks-js/set-state-in-render
+### react/set-state-in-render
 
-Disallow `setState` during render.
+Disallow setting state during render. Severity: `error`.
+
+### react/static-components
+
+Prefer static component definitions over components created dynamically at render time. Severity: `error`.
 
 ```tsx
 // bad
-function Comp() {
-  const [x, setX] = useState(0);
-  setX(1);
-  return <div />;
-}
+const Page = () => {
+  const Row = ({ item }) => <li>{item.name}</li>;
+  return <Row item={item} />;
+};
 
 // good
-function Comp() {
-  const [x, setX] = useState(0);
-  useEffect(() => {
-    setX(1);
-  }, []);
-  return <div />;
-}
+const Row = ({ item }) => <li>{item.name}</li>;
+const Page = () => <Row item={item} />;
 ```
 
-### react-hooks-js/static-components
+### react/unsupported-syntax
 
-Enforce that static components are defined outside of render.
+Flag syntax the compiler cannot analyze, such as decorators. In oxlint's `restriction` category, so it is enabled by name. Severity: `error`.
 
-```tsx
-// bad
-function Parent() {
-  const Header = () => <h1>Title</h1>;
-  return <Header />;
-}
+### react/use-memo
 
-// good
-const Header = () => <h1>Title</h1>;
-function Parent() {
-  return <Header />;
-}
-```
-
-### react-hooks-js/unsupported-syntax
-
-Flag syntax patterns not yet supported by the React Compiler.
-
-```tsx
-// bad
-function Comp() {
-  with (obj) {
-    return <div />;
-  }
-}
-
-// good
-function Comp() {
-  return <div>{obj.value}</div>;
-}
-```
-
-### react-hooks-js/use-memo
-
-Enforce correct `useMemo` usage for the compiler.
+Enforce the `useMemo` shape the compiler expects. Severity: `error`.
 
 ```tsx
 // bad
@@ -4973,6 +4900,22 @@ const value = useMemo(() => expensive(a, b), [a]);
 
 // good
 const value = useMemo(() => expensive(a, b), [a, b]);
+```
+
+### react/void-use-memo
+
+Disallow a `useMemo` callback that returns nothing. Severity: `error`.
+
+```tsx
+// bad
+useMemo(() => {
+  track(id);
+}, [id]);
+
+// good
+useEffect(() => {
+  track(id);
+}, [id]);
 ```
 
 ## Unicorn Rules
