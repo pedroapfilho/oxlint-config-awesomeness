@@ -53,7 +53,4 @@ jobs:
         if: steps.changesets.outputs.pullRequestNumber
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          for workflow in test lint format fallow; do
-            gh workflow run "${workflow}.yml" --ref changeset-release/main
-          done
+        run: gh workflow run gates.yml --ref changeset-release/main

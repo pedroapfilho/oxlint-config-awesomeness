@@ -11,6 +11,10 @@ importers:
       '@oxlint/plugins':
         specifier: ^1.78.0
         version: 1.78.0
+    devDependencies:
+      '@changesets/cli':
+        specifier: ^3.0.0
+        version: 3.0.0
       eslint-plugin-no-only-tests:
         specifier: ^3.4.0
         version: 3.4.0
@@ -23,13 +27,6 @@ importers:
       eslint-plugin-unused-imports:
         specifier: ~4.4.1
         version: 4.4.1(eslint@9.39.2)
-      oxlint-plugin-react-doctor:
-        specifier: ^0.9.11
-        version: 0.9.11
-    devDependencies:
-      '@changesets/cli':
-        specifier: ^3.0.0
-        version: 3.0.0
       fallow:
         specifier: ^3.14.0
         version: 3.14.0
@@ -45,6 +42,12 @@ importers:
       oxlint:
         specifier: ^1.78.0
         version: 1.78.0
+      oxlint-plugin-react-doctor:
+        specifier: ^0.9.11
+        version: 0.9.11
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
       vitest:
         specifier: ^4.1.10
         version: 4.1.10(vite@8.0.16(yaml@2.9.0))
