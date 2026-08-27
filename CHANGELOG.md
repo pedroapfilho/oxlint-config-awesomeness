@@ -1,5 +1,11 @@
 # oxlint-config-awesomeness
 
+## 4.3.0
+
+### Minor Changes
+
+- a1fca52: Turn off `one-var`. The rule ships in the `style` category we bulk-enable, so it is now pinned to `"off"` rather than removed, which would restore the upstream `"always"` default.
+
 ## 4.2.0
 
 ### Minor Changes
