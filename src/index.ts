@@ -287,10 +287,10 @@ const config: OxlintConfig = defineConfig({
     "eslint/require-unicode-regexp": ["error", { requireFlag: "v" }],
     // Block `@nocommit` markers from reaching main — a hard stop for WIP code.
     "no-warning-comments": ["error", { terms: ["@nocommit"] }],
-    // New in oxlint 1.78 under `style`, where its upstream default ("always")
-    // demands comma-combined declarations. Pin to "never": one declaration per
-    // variable, matching how the fleet already writes.
-    "one-var": ["error", "never"],
+    // Lives in `style`, which we bulk-enable, so it needs an explicit "off" —
+    // deleting this line would restore the upstream default ("always"), which
+    // demands comma-combined declarations.
+    "one-var": "off",
 
     // Restriction — core eslint (cherry-picked from the 90 rules in `restriction`)
 

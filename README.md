@@ -2,7 +2,7 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-**454 rules** across **15 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+**453 rules** across **15 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
@@ -2305,20 +2305,6 @@ with (obj) {
 
 // good
 obj.foo = 1;
-```
-
-### one-var
-
-Require one declaration per variable; never comma-combine declarations.
-
-```js
-// bad
-const a = 1,
-  b = 2;
-
-// good
-const a = 1;
-const b = 2;
 ```
 
 ### operator-assignment
