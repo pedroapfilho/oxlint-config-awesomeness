@@ -64,6 +64,7 @@ const config: OxlintConfig = defineConfig({
   },
   // JS-plugin bridge for ESLint plugins oxlint doesn't yet implement natively.
   jsPlugins: [
+    "@nkzw/eslint-plugin",
     "eslint-plugin-no-only-tests",
     "eslint-plugin-perfectionist",
     "eslint-plugin-unused-imports",
@@ -283,6 +284,9 @@ const config: OxlintConfig = defineConfig({
     // Prevent duplicate import statements but still allow separating type-only imports
     // from value imports (`import type { X } from 'x'; import { y } from 'x';`).
     "eslint/no-duplicate-imports": ["error", { allowSeparateTypeImports: true }],
+    // `_`-prefixed names are the convention for deliberately unused bindings
+    // (ignored destructure slots, unused callback params).
+    "no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
     // Require the `v` flag on regex literals — opts into Unicode-aware matching with set notation.
     "eslint/require-unicode-regexp": ["error", { requireFlag: "v" }],
     // Block `@nocommit` markers from reaching main — a hard stop for WIP code.
@@ -408,6 +412,10 @@ const config: OxlintConfig = defineConfig({
 
     // Restriction — import graph
 
+    // Duplicate named exports and re-exports of names that don't exist — invalid
+    // module shapes that only surface at import time. Nursery-classified in
+    // oxlint, so no bulk-enabled category covers it; enabled here by name.
+    "import/export": "error",
     // Circular imports produce `undefined` exports at runtime — a real-world crash source.
     "import/no-cycle": "error",
 
@@ -417,6 +425,8 @@ const config: OxlintConfig = defineConfig({
     "unicorn/no-abusive-eslint-disable": "error",
     // Direct `document.cookie` access — use a cookie library for encoding/security.
     "unicorn/no-document-cookie": "error",
+    // A bare number in `.flat(2)` hides intent — use a named constant or `Infinity`.
+    "unicorn/no-magic-array-flat-depth": "error",
     // `process.exit()` skips `finally` blocks and async flushes. CLI override above handles CLIs.
     "unicorn/no-process-exit": "error",
     // `Math.trunc(x)` over `x | 0` — clearer intent, correct for numbers outside Int32 range.
@@ -584,6 +594,9 @@ const config: OxlintConfig = defineConfig({
     "perfectionist/sort-enums": ["error", { partitionByComment: true, sortByValue: "always" }],
     // `class Foo extends A, B` — alphabetical for stable diffs.
     "perfectionist/sort-heritage-clauses": "error",
+    // Interfaces are banned by consistent-type-definitions, but `.d.ts` and
+    // declaration-merging files still carry them — keep those sorted too.
+    "perfectionist/sort-interfaces": "error",
     // JSX prop order is a huge diff-noise source — sort it.
     "perfectionist/sort-jsx-props": "error",
     // Type fields sorted alphabetically for scannability.
@@ -643,6 +656,16 @@ const config: OxlintConfig = defineConfig({
     "react-hooks/exhaustive-deps": "error",
     // Hooks only at the top level, only from React functions — never in conditions/loops.
     "react-hooks/rules-of-hooks": "error",
+
+    // @nkzw — only require-use-effect-arguments from the plugin's three rules.
+    // ensure-relay-types is Relay-specific (unused in the fleet) and no-instanceof
+    // conflicts with the `err instanceof Error` narrowing our unknown-first
+    // catch-handling rules push toward.
+
+    // `useEffect(fn)` with no deps array runs after every render — always an
+    // explicit choice, never an omission. exhaustive-deps validates the array's
+    // contents but cannot require its presence.
+    "@nkzw/require-use-effect-arguments": "error",
 
     // Testing
 

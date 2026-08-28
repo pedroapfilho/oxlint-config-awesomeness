@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @generated from src/init.ts — do not edit. Regenerate with `pnpm build`.
 import { constants, copyFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";

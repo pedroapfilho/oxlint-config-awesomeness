@@ -1,3 +1,4 @@
+// @generated from src/awesomeness.ts — do not edit. Regenerate with `pnpm build`.
 import { definePlugin, defineRule } from "@oxlint/plugins";
 
 const MAX_LINES = 5;
