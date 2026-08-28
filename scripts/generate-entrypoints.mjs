@@ -7,28 +7,40 @@ const CHECK_ONLY = process.argv.includes("--check");
 const GENERATED_FILES = [
   {
     formatName: "generated.js",
+    origin: "src/index.ts",
     source: new URL("../dist/index.js", import.meta.url),
     target: new URL("../index.js", import.meta.url),
   },
   {
     formatName: "generated.js",
+    origin: "src/awesomeness.ts",
     source: new URL("../dist/awesomeness.js", import.meta.url),
     target: new URL("../awesomeness/index.js", import.meta.url),
   },
   {
     formatName: "generated.js",
+    origin: "src/init.ts",
     source: new URL("../dist/init.js", import.meta.url),
     target: new URL("../bin/init.js", import.meta.url),
   },
   {
     formatName: "generated.d.ts",
+    origin: "src/index.ts",
     source: new URL("../dist/index.d.ts", import.meta.url),
     target: new URL("../index.d.ts", import.meta.url),
   },
 ];
 
-const formatGeneratedFile = async ({ formatName, source, target }, options) => {
-  const emitted = await readFile(source, "utf8");
+const bannerFor = (origin) =>
+  `// @generated from ${origin} — do not edit. Regenerate with \`pnpm build\`.\n`;
+
+const withBanner = (emitted, origin) =>
+  emitted.startsWith("#!")
+    ? emitted.replace(/^(?<shebang>#![^\n]*\n)/v, `$<shebang>${bannerFor(origin)}`)
+    : bannerFor(origin) + emitted;
+
+const formatGeneratedFile = async ({ formatName, origin, source, target }, options) => {
+  const emitted = withBanner(await readFile(source, "utf8"), origin);
   const input = emitted.replace(
     /(?<importStatement>import[^\n]+;\n)(?=(?:const|declare)\b)/v,
     "$<importStatement>\n",

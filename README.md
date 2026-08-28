@@ -2,7 +2,7 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-**453 rules** across **15 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+**458 rules** across **15 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
@@ -7954,6 +7954,22 @@ Sort members of object type annotations alphabetically.
 Sort object keys alphabetically, with partition-by-comment support.
 
 ## Other JS Plugin Rules
+
+### @nkzw/require-use-effect-arguments
+
+Require an explicit dependency array on `useEffect`. Omitting it runs the effect after every render — always a deliberate choice, never an omission; `react-hooks/exhaustive-deps` validates the array's contents but cannot require its presence.
+
+```tsx
+// bad
+useEffect(() => {
+  subscribe(id);
+});
+
+// good
+useEffect(() => {
+  subscribe(id);
+}, [id]);
+```
 
 ### react-hooks/exhaustive-deps
 

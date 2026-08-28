@@ -1,0 +1,6 @@
+# Generated package entrypoints — built from src/ by `pnpm build`.
+# Collapses their diffs on GitHub and excludes them from language stats.
+/index.js linguist-generated=true
+/index.d.ts linguist-generated=true
+/awesomeness/index.js linguist-generated=true
+/bin/init.js linguist-generated=true
