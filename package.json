@@ -15,34 +15,31 @@
     "url": "git+https://github.com/pedroapfilho/oxlint-config-awesomeness.git"
   },
   "bin": {
-    "oxlint-config-awesomeness": "./bin/init.js"
+    "oxlint-config-awesomeness": "./dist/init.js"
   },
   "files": [
-    "index.js",
-    "index.d.ts",
-    "bin/init.js",
+    "dist",
     "bin/template.ts",
-    "anti-slop",
-    "awesomeness"
+    "anti-slop"
   ],
   "type": "module",
   "sideEffects": false,
-  "main": "index.js",
+  "main": "./dist/index.js",
   "exports": {
     ".": {
-      "types": "./index.d.ts",
-      "default": "./index.js"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./anti-slop": "./anti-slop/index.js",
-    "./awesomeness": "./awesomeness/index.js",
+    "./awesomeness": "./dist/awesomeness.js",
     "./package.json": "./package.json"
   },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && node scripts/generate-entrypoints.mjs",
-    "check:generated": "tsc -p tsconfig.build.json && node scripts/generate-entrypoints.mjs --check",
+    "build": "tsc -p tsconfig.build.json",
+    "check:generated": "node scripts/check-generated.mjs",
     "lint": "oxlint .",
     "format": "oxfmt",
     "format:check": "oxfmt --check",

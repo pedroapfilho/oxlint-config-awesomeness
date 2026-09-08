@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 
-import config from "../index.js";
+import config from "oxlint-config-awesomeness";
 
 const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
 
@@ -10,9 +10,11 @@ const configuredSeverities = new Map(
   Object.entries(config.rules).map(([ruleName, setting]) => [ruleName, severityOf(setting)]),
 );
 
-const enabledRules = [...configuredSeverities]
+const enabledRules = configuredSeverities
+  .entries()
   .filter(([, severity]) => severity !== "off")
-  .map(([ruleName]) => ruleName);
+  .map(([ruleName]) => ruleName)
+  .toArray();
 
 const failures = [];
 const headlineCount = /\*\*(?<ruleCount>\d+) rules\*\*/v.exec(readme)?.groups?.ruleCount;

@@ -9,9 +9,10 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
+import packageJson from "oxlint-config-awesomeness/package.json" with { type: "json" };
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-const INIT = resolve(import.meta.dirname, "init.js");
+const INIT = resolve(import.meta.dirname, "..", packageJson.bin[packageJson.name]);
 const TEMPLATE = readFileSync(resolve(import.meta.dirname, "template.ts"), "utf8");
 
 let cwd;
@@ -34,7 +35,7 @@ afterEach(() => {
   rmSync(cwd, { force: true, recursive: true });
 });
 
-describe("bin/init.js", () => {
+describe("init CLI", () => {
   it("scaffolds the template verbatim", () => {
     const { code, stdout } = run("init");
 

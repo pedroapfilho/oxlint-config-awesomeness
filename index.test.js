@@ -1,10 +1,9 @@
+import config from "oxlint-config-awesomeness";
+import antiSlopPlugin from "oxlint-config-awesomeness/anti-slop";
+import awesomenessPlugin from "oxlint-config-awesomeness/awesomeness";
 import { describe, expect, it } from "vitest";
 
-import antiSlopPlugin from "./anti-slop/index.js";
-import awesomenessPlugin from "./awesomeness/index.js";
 import sourceConfig from "./src/index.ts";
-
-import config from "./index.js";
 
 const createLineComment = (value, line) => ({
   loc: {
@@ -187,15 +186,15 @@ describe("oxlint-config-awesomeness", () => {
     expect(config).toEqual(sourceConfig);
   });
 
-  it("registers the vendored anti-slop plugin and all 15 of its rules", async () => {
+  it("registers the vendored anti-slop plugin and all 17 of its rules", async () => {
     expect(config.jsPlugins).toContainEqual({
       name: "anti-slop",
       specifier: "oxlint-config-awesomeness/anti-slop",
     });
 
-    const { default: plugin } = await import("./anti-slop/index.js");
+    const { default: plugin } = await import("oxlint-config-awesomeness/anti-slop");
     const ruleNames = Object.keys(plugin.rules).toSorted();
-    expect(ruleNames).toHaveLength(15);
+    expect(ruleNames).toHaveLength(17);
     for (const ruleName of ruleNames) {
       expect(config.rules).toHaveProperty(`anti-slop/${ruleName}`);
     }
@@ -207,7 +206,7 @@ describe("oxlint-config-awesomeness", () => {
       specifier: "oxlint-config-awesomeness/awesomeness",
     });
 
-    const { default: plugin } = await import("./awesomeness/index.js");
+    const { default: plugin } = await import("oxlint-config-awesomeness/awesomeness");
     for (const ruleName of Object.keys(plugin.rules)) {
       expect(config.rules).toHaveProperty(`awesomeness/${ruleName}`);
     }

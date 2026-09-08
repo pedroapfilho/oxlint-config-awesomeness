@@ -47,7 +47,7 @@ const target = resolve("oxlint.config.ts");
 
 try {
   copyFileSync(
-    resolve(import.meta.dirname, "template.ts"),
+    resolve(import.meta.dirname, "../bin/template.ts"),
     target,
     values.force === true ? 0 : constants.COPYFILE_EXCL,
   );

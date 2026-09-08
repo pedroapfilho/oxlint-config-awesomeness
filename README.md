@@ -2,7 +2,7 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-**458 rules** across **15 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+**460 rules** across **15 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
@@ -7991,6 +7991,18 @@ Automatically remove import statements that are not referenced anywhere in the f
 
 Vendored from [dmmulroy/anti-slop](https://github.com/dmmulroy/anti-slop) (MIT) until upstream publishes to npm. These reject patterns that fake type evidence instead of establishing it: the assertion and widening escape hatches AI-generated code reaches for beyond plain `any`.
 
+### anti-slop/no-array-filter-map
+
+Disallow adjacent `.filter().map()` calls on known arrays to avoid an intermediate array and a second traversal. Severity: `error`.
+
+```ts
+// bad
+const result = items.filter(isActive).map(toRow);
+
+// good
+const result = items.values().filter(isActive).map(toRow).toArray();
+```
+
 ### anti-slop/no-chained-type-assertions
 
 Disallow chained type assertions that launder a value into an unrelated type. Severity: `error`.
@@ -8053,6 +8065,21 @@ const track = (event: object) => send(event);
 
 // good
 const track = (event: AnalyticsEvent) => send(event);
+```
+
+### anti-slop/no-reduce-accumulator-copy
+
+Disallow copying the accumulator inside a `reduce` callback to avoid quadratic work as it grows. Severity: `error`.
+
+```ts
+// bad
+const byId = rows.reduce((acc, row) => Object.assign({}, acc, { [row.id]: row }), {});
+
+// good
+const byId = rows.reduce((acc, row) => {
+  acc[row.id] = row;
+  return acc;
+}, {});
 ```
 
 ### anti-slop/no-reflect-apply
@@ -13362,3 +13389,18 @@ const Email = z.string().email();
 // good
 const Email = z.email();
 ```
+
+## Development
+
+Build after installing dependencies and after changing `src/`:
+
+```sh
+pnpm install
+pnpm build
+pnpm test
+pnpm lint
+```
+
+TypeScript emits the config, first-party plugin, CLI, and declarations into `dist/`. This directory is gitignored and included in the npm package; public imports resolve there through `package.json` exports. The CLI copies the tracked `bin/template.ts`, and the vendored `anti-slop/index.js` stays committed.
+
+CI and the pre-commit hook build before checking, and `prepack` builds before packing or publishing. `pnpm check:generated` compares `dist/` with a fresh temporary build to catch stale local outputs.
