@@ -629,6 +629,10 @@ const config = defineConfig({
     // Anti-slop (vendored, see anti-slop/index.js): reject patterns that fake
     // type evidence instead of establishing it, i.e. the assertion/widening
     // escape hatches AI-generated code reaches for beyond plain `any`.
+    // Eager `.filter().map()` walks the array twice and allocates the middle
+    // one; iterator helpers (`.values().filter().map().toArray()`) or a single
+    // `flatMap` do it in one pass.
+    "anti-slop/no-array-filter-map": "error",
     // `x as unknown as T` launders any value into any type.
     "anti-slop/no-chained-type-assertions": "error",
     // Warn, not error: `...(cond ? { key } : {})` is how an optional key is
@@ -642,6 +646,9 @@ const config = defineConfig({
     "anti-slop/no-module-mocking": "error",
     // `object` on inputs accepts nearly everything; name the expected fields.
     "anti-slop/no-object-parameters": "error",
+    // Copying the accumulator on every `reduce` iteration is quadratic; pairs
+    // with the native `oxc/no-accumulating-spread`, which covers the spread form.
+    "anti-slop/no-reduce-accumulator-copy": "error",
     "anti-slop/no-reflect-apply": "error",
     "anti-slop/no-reflect-get": "error",
     // Flags every `typeof` unary, including the `typeof window` SSR guards the
