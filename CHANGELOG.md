@@ -1,5 +1,15 @@
 # oxlint-config-awesomeness
 
+## 4.5.0
+
+### Minor Changes
+
+- 7ceb564: Update the vendored anti-slop plugin to upstream `95a56e5` and enable its two new rules, `no-array-filter-map` and `no-reduce-accumulator-copy`, as errors. Existing rules pick up upstream's tightened diagnostics and alias resolution; the local member-property exemption in `no-shape-in-symbol-names` is now upstream and was dropped from the bundle.
+
+### Patch Changes
+
+- 7ceb564: Publish the config, first-party plugin, type declarations, and CLI from an untracked `dist/` directory instead of committing generated entrypoints. Public imports and CLI behavior stay the same; the package builds before packing and CI builds before running checks.
+
 ## 4.4.0
 
 ### Minor Changes
