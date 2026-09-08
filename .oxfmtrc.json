@@ -30,9 +30,6 @@
     "node_modules/**",
     "coverage/**",
     "pnpm-lock.yaml",
-    "index.js",
-    "index.d.ts",
-    "awesomeness/index.js",
     "bin/**",
     "anti-slop/**"
   ]

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 
-import config from "../index.js";
+import config from "oxlint-config-awesomeness";
 
 const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
 

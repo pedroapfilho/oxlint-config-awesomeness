@@ -13389,3 +13389,18 @@ const Email = z.string().email();
 // good
 const Email = z.email();
 ```
+
+## Development
+
+Build after installing dependencies and after changing `src/`:
+
+```sh
+pnpm install
+pnpm build
+pnpm test
+pnpm lint
+```
+
+TypeScript emits the config, first-party plugin, CLI, and declarations into `dist/`. This directory is gitignored and included in the npm package; public imports resolve there through `package.json` exports. The CLI copies the tracked `bin/template.ts`, and the vendored `anti-slop/index.js` stays committed.
+
+CI and the pre-commit hook build before checking, and `prepack` builds before packing or publishing. `pnpm check:generated` compares `dist/` with a fresh temporary build to catch stale local outputs.

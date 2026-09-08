@@ -74,7 +74,7 @@ const config: OxlintConfig = defineConfig({
     // package (anti-slop/index.js) because upstream is source-distributed and
     // not on npm yet; the specifier resolves via this package's exports map.
     { name: "anti-slop", specifier: "oxlint-config-awesomeness/anti-slop" },
-    // First-party rules that ship with this config (awesomeness/index.js).
+    // First-party rules that ship with this config (dist/awesomeness.js).
     { name: "awesomeness", specifier: "oxlint-config-awesomeness/awesomeness" },
   ],
   // Type-aware linting via tsgolint (stable since oxlint-tsgolint v7). Turns on
