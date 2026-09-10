@@ -9,7 +9,7 @@ concurrency: release-${{ github.ref }}
 permissions:
   contents: write # push the version commit and git tags
   pull-requests: write # open/update the "Version Packages" PR
-  id-token: write # npm publish provenance
+  id-token: write # OIDC exchange for npm trusted publishing
   actions: write # dispatch the gate workflows onto the version branch
 
 jobs:
@@ -28,21 +28,15 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - uses: changesets/action@v1
+      - uses: changesets/action@8488615a623b1b9c987934bb89eae8af6a946ac1 # v2.1.1
         id: changesets
         with:
-          version: pnpm version-packages
-          publish: pnpm release
-          commit: "chore: version packages"
-          title: "chore: version packages"
+          version-script: pnpm version-packages
+          publish-script: pnpm release
+          commit-message: "chore: version packages"
+          pr-title: "chore: version packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # actions/setup-node generates an .npmrc that reads NODE_AUTH_TOKEN — must match.
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          # changesets/action reads NPM_TOKEN from the env; without it, it falls back
-          # to OIDC trusted publishing (not configured for this package) and fails E404.
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
 
       # The version PR is authored by GITHUB_TOKEN, so its pull_request runs are
       # created in `action_required` and never execute: without this the PR would
