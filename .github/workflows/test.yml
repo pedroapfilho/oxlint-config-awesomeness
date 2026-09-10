@@ -23,4 +23,6 @@ jobs:
         with:
           runtime: node@24
           cache: true
+      # bin/init.test.js spawns the CLI at dist/init.js.
+      - run: pnpm build
       - run: pnpm test
