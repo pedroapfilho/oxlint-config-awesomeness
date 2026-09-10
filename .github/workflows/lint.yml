@@ -1,0 +1,62 @@
+name: Lint
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Dispatched by release.yml for the changeset-release/main PR, whose
+  # pull_request runs are parked unexecuted behind an approval gate.
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  oxlint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      format: ${{ steps.format.outcome }}
+      fallow: ${{ steps.fallow.outcome }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
+        with:
+          runtime: node@24
+          cache: true
+      # oxlint.config.ts imports this package through its own exports, which
+      # resolve to dist.
+      - run: pnpm build
+      - name: Check formatting
+        id: format
+        continue-on-error: true
+        run: pnpm format:check
+      - name: Check dead code
+        id: fallow
+        continue-on-error: true
+        run: pnpm fallow:dead
+      - run: pnpm check:generated
+      - run: pnpm check:readme
+      - run: pnpm oxlint --format=github .
+  oxfmt:
+    needs: oxlint
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Report formatting result
+        env:
+          RESULT: ${{ needs.oxlint.outputs.format }}
+        run: test "$RESULT" = success
+  dead-code:
+    needs: oxlint
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Report dead-code result
+        env:
+          RESULT: ${{ needs.oxlint.outputs.fallow }}
+        run: test "$RESULT" = success

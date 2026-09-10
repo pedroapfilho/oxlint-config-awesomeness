@@ -1,10 +1,28 @@
+# deps
 node_modules/
+
+# build
 dist/
+build/
+*.tsbuildinfo
+
+# test
 coverage/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# tooling
 .fallow/
 *.log
+
+# editor / os
 .DS_Store
 .vscode/
 .idea/
+
+# claude code local
 .claude/
 agents
