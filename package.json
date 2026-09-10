@@ -80,7 +80,7 @@
     "oxlint-plugin-react-doctor": "^0.9.13",
     "oxlint-tsgolint": "^7.0.2001",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.10"
+    "vitest": "^5.0.0"
   },
   "peerDependencies": {
     "@nkzw/eslint-plugin": "^2.0.0",
