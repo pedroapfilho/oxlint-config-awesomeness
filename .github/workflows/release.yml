@@ -15,12 +15,15 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
+      # Persisted credentials are the point here: changesets pushes the
+      # version commit and tags through this token.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: pnpm/action-setup@v6 # version comes from packageManager in package.json
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24 # matches engines.node ">=24"
           cache: pnpm
@@ -40,11 +43,31 @@ jobs:
 
       # The version PR is authored by GITHUB_TOKEN, so its pull_request runs are
       # created in `action_required` and never execute: without this the PR would
-      # merge and publish to npm on the feature PR's CI alone, even though
-      # changesets rewrote the version and the changelog on that branch.
+      # merge and publish to npm on the feature PR's CI alone, and changesets
+      # rewrites every version and internal dependency range in the workspace.
       # workflow_dispatch is exempt from that approval gate.
+      #
+      # A gate is any workflow carrying both triggers, derived here rather than
+      # listed: a hand-maintained list silently skips a gate added later, and
+      # merging this PR publishes to npm. Advisory workflows stay out of the set
+      # by not declaring workflow_dispatch.
       - name: Run gates on the version PR
-        if: steps.changesets.outputs.pullRequestNumber
+        if: steps.changesets.outputs.pr-number
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run gates.yml --ref changeset-release/main
+        run: |
+          set -euo pipefail
+          gates=""
+          for file in .github/workflows/*.yml; do
+            grep -q '^  pull_request:' "$file" || continue
+            grep -q '^  workflow_dispatch:' "$file" || continue
+            gates="$gates $(basename "$file")"
+          done
+          if [ -z "$gates" ]; then
+            echo "::error::found no dispatchable gate workflows"
+            exit 1
+          fi
+          echo "dispatching:$gates"
+          for workflow in $gates; do
+            gh workflow run "$workflow" --ref changeset-release/main
+          done
