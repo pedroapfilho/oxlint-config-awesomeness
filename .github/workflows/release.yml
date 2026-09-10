@@ -41,6 +41,35 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # changesets derives "published" from the publish command's exit code
+      # and never asks the registry, so the tags and the GitHub release can
+      # outlive a publish that never landed. The registry indexes a new
+      # version up to a couple of minutes after the run reports success, so
+      # the poll window has to outlast that lag or it reports the lag as a
+      # drop.
+      - name: Verify the published versions reached the registry
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          PUBLISHED: ${{ steps.changesets.outputs.published-packages }}
+        run: |
+          set -euo pipefail
+          missing=""
+          for spec in $(echo "$PUBLISHED" | jq -r '.[] | "\(.name)@\(.version)"'); do
+            found=""
+            for _ in $(seq 10); do
+              if npm view "$spec" version --prefer-online >/dev/null 2>&1; then
+                found=yes
+                break
+              fi
+              sleep 30
+            done
+            [ -n "$found" ] || missing="$missing $spec"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::changesets reported a successful publish but after 5 minutes the registry has no:$missing"
+            exit 1
+          fi
+
       # The version PR is authored by GITHUB_TOKEN, so its pull_request runs are
       # created in `action_required` and never execute: without this the PR would
       # merge and publish to npm on the feature PR's CI alone, and changesets
