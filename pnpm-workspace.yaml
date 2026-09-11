@@ -1,3 +1,8 @@
+overrides:
+  # Security: force patched transitive releases to clear pnpm audit advisories.
+  # Each pin is the lowest patched version within the already-resolved major.
+  js-yaml: "^4.3.2"
+
 peerDependencyRules:
   allowedVersions:
     # typescript-eslint caps TypeScript at <6.1.0 and has no release that allows
