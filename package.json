@@ -75,7 +75,7 @@
     "fallow": "^3.22.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.4.1",
-    "oxfmt": "^0.66.0",
+    "oxfmt": "^0.67.0",
     "oxlint": "^1.81.0",
     "oxlint-plugin-react-doctor": "^0.9.13",
     "oxlint-tsgolint": "^7.0.2001",
