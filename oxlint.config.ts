@@ -3,6 +3,23 @@ import config from "oxlint-config-awesomeness";
 
 export default defineConfig({
   extends: [config],
+  jsPlugins: ["@shadcn/lint"],
+  rules: {
+    "shadcn/no-restyle": [
+      "error",
+      {
+        allow: ["layout"],
+        contracts: [
+          {
+            allow: ["layout", "gap-*"],
+            pattern: "^PopoverTrigger$",
+          },
+        ],
+      },
+    ],
+    "shadcn/no-unknown-classes": "error",
+    "shadcn/require-static-classes": "error",
+  },
   // Generated output and the vendored third-party bundle are checked at source.
   ignorePatterns: ["dist/**", "anti-slop/index.js"],
   overrides: [
