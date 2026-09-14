@@ -34,19 +34,19 @@ importers:
         specifier: ~4.4.1
         version: 4.4.1(eslint@9.39.2)
       fallow:
-        specifier: ^3.22.0
+        specifier: ^3.24.1
         version: 3.24.1
       husky:
         specifier: ^9.1.7
         version: 9.1.7
       lint-staged:
-        specifier: ^17.4.1
+        specifier: ^17.5.0
         version: 17.5.0
       oxfmt:
         specifier: ^0.67.0
         version: 0.67.0
       oxlint:
-        specifier: ^1.81.0
+        specifier: ^1.82.0
         version: 1.82.0(oxlint-tsgolint@7.0.2001)
       oxlint-plugin-react-doctor:
         specifier: ^0.9.13
