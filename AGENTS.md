@@ -64,3 +64,7 @@ Managed repositories import this config through their pnpm update cycle. Major a
 - Package exports keep the public imports stable while resolving first-party code from `dist/`
 - `index.test.js` is the smoke test — not in `files`, not published
 - CI and the pre-commit hook build before checking; `prepack` builds before publishing through Changesets
+
+## Design-system linting
+
+Run `pnpm lint` after changes and fix every error. `oxlint.config.ts` registers `@shadcn/lint` and enforces all six rules as errors: component contracts, known Tailwind classes, static component class names, semantic colors, theme or scale values, and class-based styling. Use CSS custom properties for runtime geometry and named theme tokens for custom values. Use component variants for appearance and layout classes at call sites. All six rules also apply inside primitive directories. Shared styles belong to component variants or the owning stylesheet. Keep theme discovery local to each app. Exact class-merging fixture allowances apply only to the named test files.
