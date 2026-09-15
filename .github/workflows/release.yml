@@ -15,7 +15,7 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       # Persisted credentials are the point here: changesets pushes the
       # version commit and tags through this token.
@@ -37,32 +37,31 @@ jobs:
 
       # changesets derives "published" from the publish command's exit code
       # and never asks the registry, so the tags and the GitHub release can
-      # outlive a publish that never landed. The registry indexes a new
-      # version up to a couple of minutes after the run reports success, so
-      # the poll window has to outlast that lag or it reports the lag as a
-      # drop.
+      # outlive a publish that never landed. The deadline covers the whole set
+      # rather than each package in turn: a per-package window multiplies by the
+      # number of packages released, and the registry's indexing lag is one lag
+      # for the release, not one per name.
       - name: Verify the published versions reached the registry
         if: steps.changesets.outputs.published == 'true'
         env:
           PUBLISHED: ${{ steps.changesets.outputs.published-packages }}
         run: |
           set -euo pipefail
-          missing=""
-          for spec in $(echo "$PUBLISHED" | jq -r '.[] | "\(.name)@\(.version)"'); do
-            found=""
-            for _ in $(seq 10); do
-              if npm view "$spec" version --prefer-online >/dev/null 2>&1; then
-                found=yes
-                break
-              fi
-              sleep 30
+          pending=$(echo "$PUBLISHED" | jq -r '.[] | "\(.name)@\(.version)"')
+          deadline=$((SECONDS + 900))
+          while :; do
+            missing=""
+            for spec in $pending; do
+              npm view "$spec" version --prefer-online >/dev/null 2>&1 || missing="$missing $spec"
             done
-            [ -n "$found" ] || missing="$missing $spec"
+            pending="$missing"
+            [ -n "$pending" ] || break
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "::error::changesets reported a successful publish but after 15 minutes the registry has no:$pending"
+              exit 1
+            fi
+            sleep 30
           done
-          if [ -n "$missing" ]; then
-            echo "::error::changesets reported a successful publish but after 5 minutes the registry has no:$missing"
-            exit 1
-          fi
 
       # The version PR is authored by GITHUB_TOKEN, so its pull_request runs are
       # created in `action_required` and never execute: without this the PR would
