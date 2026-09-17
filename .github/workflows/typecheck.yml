@@ -6,21 +6,65 @@ on:
   # Dispatched by release.yml for the changeset-release/main PR, whose
   # pull_request runs are parked unexecuted behind an approval gate.
   workflow_dispatch:
+  schedule:
+    - cron: 54 4 * * 1
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 permissions:
   contents: read
 jobs:
-  typecheck:
+  ci-plan:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.plan.outputs.run }}
+      scope: ${{ steps.plan.outputs.scope }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
+      - name: Plan validation
+        id: plan
+        run: node .github/ci/ci.mjs plan typecheck
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        name: Upload CI evidence
+        if: ${{ !cancelled() }}
+        with:
+          name: ci-selection-${{ github.workflow }}-${{ github.job }}-${{ github.run_attempt }}
+          path: .ci-results/
+          include-hidden-files: true
+          retention-days: 14
+          if-no-files-found: error
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Require a successful CI plan
+        env:
+          RESULT: ${{ needs.ci-plan.result }}
+        run: test "$RESULT" = success
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Record validation inputs
+        run: node .github/ci/ci.mjs plan typecheck
       - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
         with:
           runtime: node@24
           cache: true
-      - run: pnpm typecheck
+      - run: node .github/ci/ci.mjs run typecheck -- pnpm typecheck
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        name: Upload CI evidence
+        if: ${{ !cancelled() }}
+        with:
+          name: ci-execution-${{ github.workflow }}-${{ github.job }}-${{ github.run_attempt }}
+          path: .ci-results/
+          include-hidden-files: true
+          retention-days: 14
+          if-no-files-found: error
+    needs:
+      - ci-plan
+    if: ${{ always() && (needs.ci-plan.result != 'success' || needs.ci-plan.outputs.run != 'false') }}

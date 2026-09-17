@@ -26,3 +26,6 @@ coverage/
 # claude code local
 .claude/
 agents
+
+# CI selection and execution reports
+.ci-results/
