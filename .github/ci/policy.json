@@ -1,5 +1,5 @@
 {
   "version": 1,
   "profile": "package",
-  "mode": "shadow"
+  "mode": "affected"
 }
