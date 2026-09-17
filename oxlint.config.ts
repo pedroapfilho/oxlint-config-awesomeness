@@ -24,7 +24,7 @@ export default defineConfig({
     "shadcn/require-static-classes": "error",
   },
   // Generated output and the vendored third-party bundle are checked at source.
-  ignorePatterns: ["dist/**", "anti-slop/index.js"],
+  ignorePatterns: [".github/ci/*.mjs", "dist/**", "anti-slop/index.js"],
   overrides: [
     {
       files: ["src/index.ts"],

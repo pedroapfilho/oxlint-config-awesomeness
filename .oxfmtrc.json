@@ -31,6 +31,7 @@
     "coverage/**",
     "pnpm-lock.yaml",
     "bin/**",
-    "anti-slop/**"
+    "anti-slop/**",
+    ".github/ci/*.mjs"
   ]
 }
