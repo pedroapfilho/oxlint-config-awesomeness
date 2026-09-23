@@ -35,6 +35,10 @@
       "default": "./anti-slop/index.js"
     },
     "./awesomeness": "./dist/awesomeness.js",
+    "./shadcn": {
+      "types": "./dist/shadcn.d.ts",
+      "default": "./dist/shadcn.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -63,35 +67,41 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@oxlint/plugins": "^1.79.0"
+    "@oxlint/plugins": "^1.85.0"
   },
   "devDependencies": {
-    "@changesets/cli": "^3.0.0",
+    "@changesets/cli": "^3.0.3",
     "@nkzw/eslint-plugin": "^2.0.0",
-    "@shadcn/lint": "0.1.0",
-    "@types/node": "^26.2.0",
+    "@shadcn/lint": "0.2.0",
+    "@types/node": "^26.6.2",
     "eslint-plugin-no-only-tests": "^3.4.0",
-    "eslint-plugin-perfectionist": "^5.10.1",
+    "eslint-plugin-perfectionist": "^5.12.0",
     "eslint-plugin-unused-imports": "~4.4.1",
-    "fallow": "^3.24.1",
+    "fallow": "^3.28.0",
     "husky": "^9.1.7",
-    "lint-staged": "^17.5.0",
-    "oxfmt": "^0.67.0",
-    "oxlint": "^1.82.0",
-    "oxlint-plugin-react-doctor": "^0.9.13",
-    "oxlint-tsgolint": "^7.0.2001",
+    "lint-staged": "^17.5.1",
+    "oxfmt": "^0.70.0",
+    "oxlint": "^1.85.0",
+    "oxlint-plugin-react-doctor": "^0.9.14",
+    "oxlint-tsgolint": "^7.0.2002",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.1"
   },
   "peerDependencies": {
     "@nkzw/eslint-plugin": "^2.0.0",
+    "@shadcn/lint": ">=0.1.0 <0.3.0",
     "eslint-plugin-no-only-tests": "^3.4.0",
     "eslint-plugin-perfectionist": "^5.10.1",
     "eslint-plugin-unused-imports": "~4.4.1",
     "oxlint": "^1.82.0",
-    "oxlint-plugin-react-doctor": "^0.9.11",
+    "oxlint-plugin-react-doctor": "^0.9.13",
     "oxlint-tsgolint": ">=7.0.2001 <8.0.0",
     "typescript": ">=7.0.0 <8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@shadcn/lint": {
+      "optional": true
+    }
   },
   "lint-staged": {
     "!(*.d).{ts,tsx,mts,cts,js,jsx,mjs,cjs}": [

@@ -2,7 +2,7 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-**460 rules** across **15 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+**546 rules** across **16 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
@@ -65,6 +65,12 @@ export default defineConfig({
 
 Type-aware rules only see types for files inside your tsconfig program. Plain `.js`, `.jsx`, `.mjs`, and `.cjs` files are usually outside it, where every expression resolves to `any` and the `no-unsafe-*` family would fire on every line, so this config turns those rules off for JavaScript. `typeCheck` is left off as well, since it reports TypeScript compiler diagnostics through the linter and every repo here already runs `tsc` separately.
 
+### Unused suppressions
+
+This config sets `options.reportUnusedDisableDirectives` to `warn`. An `oxlint-disable` or `eslint-disable` comment that no longer suppresses anything is reported, whether the rule was turned off, renamed, or the code it covered was fixed. That includes directives naming rules oxlint does not know, such as `react-hooks-js/*` or `@next/next/*` left over from an ESLint setup.
+
+Pass `--report-unused-disable-directives-severity` on the command line to override it for one run.
+
 ## Usage
 
 This package ships an oxlint config object — installing it does **not** generate a config file. You opt in by importing it from your own `oxlint.config.ts`.
@@ -89,6 +95,30 @@ export default defineConfig({
 ```
 
 Then run `pnpm oxlint` or `npx oxlint`.
+
+### shadcn/ui projects
+
+Projects built on shadcn/ui can also extend the design-system preset, which registers [`@shadcn/lint`](https://github.com/shadcn-ui/lint) and enables its six rules as errors (known Tailwind classes, theme colors, scale values, no inline styles, static class names, and component restyling limited to layout):
+
+```
+npm install -D @shadcn/lint
+```
+
+```ts
+import awesomeness from "oxlint-config-awesomeness";
+import shadcn from "oxlint-config-awesomeness/shadcn";
+import { defineConfig } from "oxlint";
+
+export default defineConfig({
+  extends: [awesomeness, shadcn],
+  settings: {
+    // Only needed when the components are imported from a package.
+    shadcn: { componentImports: ["^@acme/ui/components/"] },
+  },
+});
+```
+
+`@shadcn/lint` is an optional peer dependency, so projects that skip the preset never load it. To give specific components more room, redefine `shadcn/no-restyle` with `contracts`; your setting replaces the preset's.
 
 ## Upgrading from 2.x
 
@@ -160,41 +190,45 @@ export default defineConfig({
 | Plugin        | Rules | Description                                    |
 | ------------- | ----- | ---------------------------------------------- |
 | eslint (core) | 151   | JavaScript best practices and error prevention |
-| unicorn       | 112   | Modern JavaScript patterns and idioms          |
-| typescript    | 80    | Strict type safety and TypeScript conventions  |
-| react         | 44    | React component rules, hooks, and performance  |
-| jsx-a11y      | 30    | Accessibility enforcement for JSX              |
-| import        | 21    | Module hygiene and import/export conventions   |
+| unicorn       | 121   | Modern JavaScript patterns and idioms          |
+| typescript    | 98    | Strict type safety and TypeScript conventions  |
+| react         | 59    | React component rules, hooks, and performance  |
+| jsx-a11y      | 36    | Accessibility enforcement for JSX              |
+| oxc           | 22    | Bug-catching rules unique to oxlint            |
 | nextjs        | 21    | Next.js framework best practices               |
-| oxc           | 19    | Bug-catching rules unique to oxlint            |
-| promise       | 13    | Async/promise handling                         |
-| node          | 2     | Node.js environment rules                      |
+| import        | 13    | Module hygiene and import/export conventions   |
+| promise       | 12    | Async/promise handling                         |
+| node          | 9     | Node.js environment rules                      |
+| vitest        | 28    | Test correctness, in test files only           |
 
-Plus JS plugins: **perfectionist** (sorting), **react-hooks** + **React Compiler**, **no-only-tests**, **unused-imports**, **react-doctor** (352 diagnostics), **anti-slop** (vendored, low-evidence TypeScript patterns), and the first-party **awesomeness** plugin.
+Plus JS plugins: **perfectionist** (sorting), **react-hooks** + **React Compiler**, **no-only-tests**, **unused-imports**, **react-doctor** (431 diagnostics), **anti-slop** (vendored, low-evidence TypeScript patterns), and the first-party **awesomeness** plugin.
 
 ## File-Type Overrides
 
 The config includes smart overrides so strict rules don't create noise in files that need flexibility:
 
-| Files                                  | Relaxed Rules                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `*.test.*`, `*.spec.*`, `__tests__/**` | `no-explicit-any`, `no-non-null-assertion` (+ asserted-nullish variant), `no-require-imports`, `no-var-requires`, `promise-function-async`, all `no-unsafe-*`, `import/no-cycle`, `max-lines`, `max-lines-per-function`, `max-nested-callbacks`, `max-statements`, `no-empty`, `no-empty-function`, `no-use-before-define`, the `anti-slop` assertion family (`no-chained-type-assertions`, `no-known-value-widening`, `no-unknown-type-aliases`, `no-unsafe-dictionary-type`, `no-widen-then-assert`, `require-safety-comment-for-type-assertion`) |
-| `*.stories.tsx`                        | `no-console`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `**/seed.ts`, `**/migrate.ts`          | `no-console`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `**/bin/**`, `scripts/**`              | `no-console`, `unicorn/no-process-exit`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `*.config.ts`, `next.config.*`, etc.   | `max-lines`, `no-anonymous-default-export`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `**/e2e/**`                            | `rules-of-hooks`, all `no-unsafe-*`, the `anti-slop` assertion family, `strict-boolean-expressions`                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `*.ts`, `*.tsx` (all TypeScript)       | Rules handled natively by the TS compiler (`no-undef`, `no-redeclare`, etc.)                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Files                                    | Relaxed Rules                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `*.test.*`, `*.spec.*`, `__tests__/**`   | Adds the **vitest** plugin (its correctness rules plus the style rules the repos already follow). Relaxes `no-explicit-any`, `no-non-null-assertion` (+ asserted-nullish variant), `no-require-imports`, `no-var-requires`, `promise-function-async`, all `no-unsafe-*`, `import/no-cycle`, `max-lines`, `max-lines-per-function`, `max-nested-callbacks`, `max-statements`, `no-empty`, `no-empty-function`, `no-use-before-define`, the `anti-slop` assertion family (`no-chained-type-assertions`, `no-known-value-widening`, `no-unknown-type-aliases`, `no-unsafe-dictionary-type`, `no-widen-then-assert`, `require-safety-comment-for-type-assertion`) |
+| `*.stories.tsx`                          | `no-console`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `**/seed.ts`, `**/migrate.ts`            | `no-console`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `**/bin/**`, `**/scripts/**`, `tools/**` | `no-console`, `unicorn/no-process-exit`, `node/no-sync`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `*.config.ts`, `next.config.*`, etc.     | `max-lines`, `no-anonymous-default-export`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `**/e2e/**`                              | `rules-of-hooks`, all `no-unsafe-*`, the `anti-slop` assertion family, `strict-boolean-expressions`, `no-empty-pattern` (Playwright's `async ({}, use)` fixtures), `require-unicode-regexp` (Playwright rejects `v`-flagged regex)                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `*.ts`, `*.tsx` (all TypeScript)         | Rules handled natively by the TS compiler (`no-undef`, `no-redeclare`, etc.); `require-await` (the type-aware twin reports it); `new-cap` checks only `new` targets                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `*.d.ts`                                 | `consistent-type-definitions`, `consistent-indexed-object-style` (ambient declarations merge through `interface`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `*.astro`                                | `react-doctor/no-impure-call-at-module-scope`, `unused-imports/no-unused-imports` (imports used only in markup)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `**/middleware.ts`, `**/proxy.ts`        | `unicorn/prefer-string-raw` (Next.js reads `config.matcher` as a plain string literal)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 
 ## Cherry-Picked Restriction Rules
 
 Instead of enabling the entire `restriction` category (which includes rules like `no-bitwise`, `no-plusplus`, `capitalized-comments` that cause daily friction), this config cherry-picks the most valuable restriction rules, grouped by plugin:
 
 **Core ESLint**
-`curly`, `default-case`, `eqeqeq`, `grouped-accessor-pairs`, `max-classes-per-file`, `max-depth`, `max-lines`, `max-nested-callbacks`, `max-params`, `no-alert`, `no-caller`, `no-console`, `no-empty`, `no-eval`, `no-extend-native`, `no-implicit-coercion`, `no-new-func`, `no-new-wrappers`, `no-object-constructor`, `no-param-reassign`, `no-proto`, `no-return-assign`, `no-script-url`, `no-shadow`, `no-throw-literal`, `no-use-before-define`, `no-var`, `no-void`, `prefer-promise-reject-errors`, `prefer-template`
+`curly`, `default-case`, `eqeqeq`, `grouped-accessor-pairs`, `max-classes-per-file`, `max-depth`, `max-lines`, `max-nested-callbacks`, `max-params`, `no-alert`, `no-caller`, `no-console`, `no-empty`, `no-eval`, `no-extend-native`, `no-implicit-coercion`, `no-new-func`, `no-new-wrappers`, `no-object-constructor`, `no-param-reassign`, `no-proto`, `no-return-assign`, `no-script-url`, `no-sequences`, `no-shadow`, `no-throw-literal`, `no-unreachable-loop`, `no-use-before-define`, `no-var`, `no-void`, `prefer-promise-reject-errors`, `prefer-template`
 
 **TypeScript** — blocks escape hatches (`any`, `!`, `require`) that AI-generated code routinely produces:
-`@typescript-eslint/no-dynamic-delete`, `no-empty-object-type`, `no-explicit-any`, `no-import-type-side-effects`, `no-invalid-void-type`, `no-non-null-asserted-nullish-coalescing`, `no-non-null-assertion`, `no-require-imports`, `no-var-requires`, `promise-function-async`, `use-unknown-in-catch-callback-variable`
+`@typescript-eslint/no-dynamic-delete`, `no-empty-object-type`, `no-explicit-any`, `no-import-type-side-effects`, `no-invalid-void-type`, `no-namespace`, `no-non-null-asserted-nullish-coalescing`, `no-non-null-assertion`, `no-require-imports`, `no-var-requires`, `promise-function-async`, `use-unknown-in-catch-callback-variable`
 
 **React**
 `react/button-has-type`, `react/no-danger`, `react/no-unknown-property`
@@ -203,10 +237,13 @@ Instead of enabling the entire `restriction` category (which includes rules like
 `import/no-cycle`
 
 **Unicorn** (modern JS + anti-escape-hatch)
-`unicorn/no-abusive-eslint-disable`, `unicorn/no-document-cookie`, `unicorn/no-process-exit`, `unicorn/prefer-modern-math-apis`, `unicorn/prefer-node-protocol`, `unicorn/prefer-number-properties`
+`unicorn/no-abusive-eslint-disable`, `unicorn/no-document-cookie`, `unicorn/no-length-as-slice-end`, `unicorn/no-process-exit`, `unicorn/prefer-modern-math-apis`, `unicorn/prefer-node-protocol`, `unicorn/prefer-number-properties`
 
 **Promise / Node**
-`promise/catch-or-return`, `node/handle-callback-err`, `node/no-new-require`, `node/no-path-concat`
+`promise/catch-or-return`, `promise/no-return-in-finally`, `node/handle-callback-err`, `node/no-new-require`, `node/no-path-concat`
+
+**Oxc**
+`oxc/bad-bitwise-operator`
 
 **Accessibility**
 `jsx-a11y/anchor-ambiguous-text`
@@ -221,6 +258,7 @@ The five categories are enabled at `error`, but a small set of category-included
 | **Modern ESM (named exports, side-effect imports, namespace imports, `node:` protocol)** | `import/no-named-export`, `import/prefer-default-export`, `import/group-exports`, `import/exports-last`, `import/no-anonymous-default-export`, `import/no-nodejs-modules`, `import/no-unassigned-import`, `import/no-namespace`, `import/max-dependencies`, `import/first`, `import/consistent-type-specifier-style`       |
 | **Pedantic style preferences**                                                           | `no-magic-numbers`, `no-ternary`, `no-inline-comments`, `capitalized-comments`, `arrow-body-style`, `func-style`, `func-names`, `init-declarations`, `no-inferrable-types`, `prefer-destructuring`, `no-negated-condition`, `no-continue`, `parameter-properties`, `max-statements`, `max-lines-per-function`, `id-length` |
 | **Unicorn overreach**                                                                    | `unicorn/prefer-global-this`, `unicorn/no-useless-undefined`, `unicorn/no-nested-ternary`, `unicorn/explicit-length-check`, `unicorn/custom-error-definition`, `unicorn/no-zero-fractions`, `unicorn/escape-case`, `unicorn/no-array-callback-reference`, `unicorn/no-array-for-each`, `unicorn/no-array-reduce`           |
+| **Sequential awaits by design** (pagination, rate limits, one transaction connection)    | `no-await-in-loop`, `react-doctor/async-await-in-loop`                                                                                                                                                                                                                                                                     |
 | **Promise rules with broken assumptions**                                                | `promise/prefer-await-to-callbacks`, `promise/avoid-new`, `promise/param-names`                                                                                                                                                                                                                                            |
 
 A few of these are particularly worth calling out because they form **contradictory pairs** when both fire on the same code:
@@ -238,10 +276,11 @@ If you want any of these back on for your project, add them to your `oxlint.conf
 
 ## Unicorn Overrides
 
-| Rule                    | Setting                            | Reason                                            |
-| ----------------------- | ---------------------------------- | ------------------------------------------------- |
-| `unicorn/filename-case` | kebab-case with Next.js exceptions | Allows `[slug]`, `[...catchAll]`, `_app` patterns |
-| `unicorn/no-null`       | off                                | APIs, JSON, and DOM all return `null`             |
+| Rule                          | Setting                            | Reason                                                  |
+| ----------------------------- | ---------------------------------- | ------------------------------------------------------- |
+| `unicorn/filename-case`       | kebab-case with Next.js exceptions | Allows `[slug]`, `[...catchAll]`, `_app` patterns       |
+| `unicorn/no-null`             | off                                | APIs, JSON, and DOM all return `null`                   |
+| `unicorn/number-literal-case` | off                                | oxfmt lowercases hex digits; the rule demands uppercase |
 
 ## Suggestions
 
@@ -1977,6 +2016,19 @@ const x = 0;
 console.log(x);
 ```
 
+### no-underscore-dangle
+
+Disallow dangling underscores in identifiers. Prisma's aggregate and relation-count keys (`_count`, `_sum`, `_avg`, `_min`, `_max`, `_all`) are allowed.
+
+```js
+// bad
+const _secret = load();
+
+// good
+const secret = load();
+const total = result._count.posts;
+```
+
 ### no-unexpected-multiline
 
 Disallow confusing multiline expressions.
@@ -2018,6 +2070,21 @@ const isYes = answer === 1 ? true : false;
 
 // good
 const isYes = answer === 1;
+```
+
+### no-unreachable-loop
+
+Disallow loops whose body always exits on the first iteration.
+
+```js
+// bad
+for (const item of items) {
+  return item.id;
+}
+
+// good
+const [first] = items;
+return first?.id;
 ```
 
 ### no-unsafe-finally
@@ -2136,6 +2203,19 @@ const x = 1;
 // good
 const x = 1;
 console.log(x);
+```
+
+### no-useless-assignment
+
+Disallow assigning a value that is overwritten before it is read. Severity: `warn`.
+
+```js
+// bad
+let status = "idle";
+status = "loading";
+
+// good
+const status = "loading";
 ```
 
 ### no-useless-backreference
@@ -5691,18 +5771,6 @@ const x = 1.0;
 const x = 1;
 ```
 
-### unicorn/number-literal-case
-
-Enforce proper case for numeric literals.
-
-```js
-// bad
-const x = 0xff;
-
-// good
-const x = 0xff;
-```
-
 ### unicorn/numeric-separators-style
 
 Enforce consistent style for numeric separators.
@@ -7605,15 +7673,17 @@ str.matchAll(/x/gv);
 
 ### oxc/bad-bitwise-operator
 
-Flag potentially incorrect bitwise operators.
+Disallow bitwise operators where a logical operator was meant: `|` and `&` coerce to int32 and skip short-circuit evaluation.
 
 ```js
 // bad
-if (x | (0 === 0)) {
+options = options | {};
+if (obj & obj.prop) {
 }
 
 // good
-if ((x | 0) === 0) {
+options = options || {};
+if (obj && obj.prop) {
 }
 ```
 
@@ -7925,6 +7995,466 @@ const { TextDecoder } = require("util");
 
 // good
 const decoder = new TextDecoder();
+```
+
+## Vitest Rules
+
+Enabled for test files only (`*.test.*`, `*.spec.*`, `__tests__/**`), which includes Playwright specs. `vitest/no-restricted-matchers` and `vitest/no-restricted-vi-methods` are also on but inert until a project configures them.
+
+### vitest/consistent-each-for
+
+Inert unless configured; enforce one parameterized-test method (`.each` or `.for`) per block type (`test`, `it`, `describe`, `suite`), shown here with `{ test: "for" }`.
+
+```ts
+// bad
+test.each([[1, 1, 2]])("adds %i + %i", (a, b, sum) => {
+  expect(a + b).toBe(sum);
+});
+
+// good
+test.for([[1, 1, 2]])("adds %i + %i", ([a, b, sum]) => {
+  expect(a + b).toBe(sum);
+});
+```
+
+### vitest/consistent-vitest-vi
+
+Enforce `vi` over its `vitest` alias as the accessor for Vitest utilities.
+
+```ts
+// bad
+vitest.mock("./api");
+
+// good
+vi.mock("./api");
+```
+
+### vitest/hoisted-apis-on-top
+
+Require `vi.mock`, `vi.unmock`, and `vi.hoisted` at the top level of the file, since Vitest hoists them above the imports wherever they are written.
+
+```ts
+// bad
+it("loads the client", async () => {
+  vi.mock("./api");
+  const { client } = await import("./api");
+  expect(client).toBeDefined();
+});
+
+// good
+vi.mock("./api");
+
+it("loads the client", async () => {
+  const { client } = await import("./api");
+  expect(client).toBeDefined();
+});
+```
+
+### vitest/max-nested-describe
+
+Enforce a maximum nesting depth of 5 for `describe` blocks.
+
+```ts
+// bad
+describe("a", () => {
+  describe("b", () => {
+    describe("c", () => {
+      describe("d", () => {
+        describe("e", () => {
+          describe("f", () => {
+            it("works", () => {
+              expect(run()).toBe(true);
+            });
+          });
+        });
+      });
+    });
+  });
+});
+
+// good
+describe("a", () => {
+  describe("b", () => {
+    it("works", () => {
+      expect(run()).toBe(true);
+    });
+  });
+});
+```
+
+### vitest/no-alias-methods
+
+Disallow matcher aliases in favor of their canonical names.
+
+```ts
+// bad
+expect(onSave).toBeCalledWith("draft");
+expect(save).toThrowError();
+
+// good
+expect(onSave).toHaveBeenCalledWith("draft");
+expect(save).toThrow();
+```
+
+### vitest/no-commented-out-tests
+
+Disallow commented-out tests; restore or delete them instead.
+
+```ts
+// bad
+// it("parses input", () => {
+//   expect(parse("a")).toBe("a");
+// });
+
+// good
+it("parses input", () => {
+  expect(parse("a")).toBe("a");
+});
+```
+
+### vitest/no-conditional-tests
+
+Disallow declaring tests inside conditional statements, so the set of tests that runs is always the same.
+
+```ts
+// bad
+describe("parser", () => {
+  if (process.env.CI) {
+    it("parses input", () => {
+      expect(parse("a")).toBe("a");
+    });
+  }
+});
+
+// good
+describe("parser", () => {
+  it("parses input", () => {
+    expect(parse("a")).toBe("a");
+  });
+});
+```
+
+### vitest/no-disabled-tests
+
+Disallow skipped tests (`.skip`, `xit`, `xdescribe`) and tests declared without a body.
+
+```ts
+// bad
+it.skip("parses input", () => {
+  expect(parse("a")).toBe("a");
+});
+
+// good
+it("parses input", () => {
+  expect(parse("a")).toBe("a");
+});
+```
+
+### vitest/no-duplicate-hooks
+
+Disallow more than one hook of the same type in a `describe` block.
+
+```ts
+// bad
+describe("store", () => {
+  beforeEach(() => {
+    resetStore();
+  });
+  beforeEach(() => {
+    seedStore();
+  });
+
+  it("starts empty", () => {
+    expect(store.size).toBe(0);
+  });
+});
+
+// good
+describe("store", () => {
+  beforeEach(() => {
+    resetStore();
+    seedStore();
+  });
+
+  it("starts empty", () => {
+    expect(store.size).toBe(0);
+  });
+});
+```
+
+### vitest/no-identical-title
+
+Disallow two tests or two suites with the same title at the same level.
+
+```ts
+// bad
+describe("parser", () => {
+  it("parses input", () => {
+    expect(parse("a")).toBe("a");
+  });
+  it("parses input", () => {
+    expect(parse("b")).toBe("b");
+  });
+});
+
+// good
+describe("parser", () => {
+  it("parses a letter", () => {
+    expect(parse("a")).toBe("a");
+  });
+  it("parses another letter", () => {
+    expect(parse("b")).toBe("b");
+  });
+});
+```
+
+### vitest/no-interpolation-in-snapshots
+
+Disallow string interpolation in inline snapshots; use property matchers for values that change.
+
+```ts
+// bad
+expect(user).toMatchInlineSnapshot(`{ "id": ${user.id} }`);
+
+// good
+expect(user).toMatchInlineSnapshot({ id: expect.any(Number) }, `{ "id": Any<Number> }`);
+```
+
+### vitest/no-large-snapshots
+
+Disallow inline snapshots longer than 50 lines (oxlint does not lint `.snap` files, so external snapshots are not checked).
+
+```ts
+// bad
+expect(renderPage()).toMatchInlineSnapshot(`
+  ... 60 lines of markup
+`);
+
+// good
+expect(renderPage().title).toMatchInlineSnapshot(`"Settings"`);
+```
+
+### vitest/no-mocks-import
+
+Disallow importing from `__mocks__` directories; mock the real module with `vi.mock` instead.
+
+```ts
+// bad
+import { client } from "./__mocks__/api";
+
+// good
+import { client } from "./api";
+
+vi.mock("./api");
+```
+
+### vitest/no-test-prefixes
+
+Require `.skip` and `.only` over the `x`- and `f`-prefixed aliases (`xit`, `xdescribe`, `fit`, ...).
+
+```ts
+// bad
+xit("parses input", () => {
+  expect(parse("a")).toBe("a");
+});
+
+// good
+it("parses input", () => {
+  expect(parse("a")).toBe("a");
+});
+```
+
+### vitest/no-test-return-statement
+
+Disallow returning a synchronous `expect` assertion from a test callback.
+
+```ts
+// bad
+test("adds numbers", () => {
+  return expect(add(1, 2)).toBe(3);
+});
+
+// good
+test("adds numbers", () => {
+  expect(add(1, 2)).toBe(3);
+});
+```
+
+### vitest/no-unneeded-async-expect-function
+
+Disallow wrapping a single awaited call in an async function passed to `expect`; pass the promise directly.
+
+```ts
+// bad
+await expect(async () => {
+  await save();
+}).rejects.toThrow();
+
+// good
+await expect(save()).rejects.toThrow();
+```
+
+### vitest/prefer-comparison-matcher
+
+Require the built-in comparison matchers (`toBeGreaterThan`, `toBeLessThanOrEqual`, ...) over asserting on the result of a comparison.
+
+```ts
+// bad
+expect(items.length > 5).toBe(true);
+
+// good
+expect(items.length).toBeGreaterThan(5);
+```
+
+### vitest/prefer-snapshot-hint
+
+Require a hint string on external snapshot matchers (`toMatchSnapshot`, `toThrowErrorMatchingSnapshot`) when a test has more than one, so reordering assertions does not renumber the snapshots.
+
+```ts
+// bad
+it("renders the header", () => {
+  expect(renderTitle()).toMatchSnapshot();
+  expect(renderSubtitle()).toMatchSnapshot();
+});
+
+// good
+it("renders the header", () => {
+  expect(renderTitle()).toMatchSnapshot("title");
+  expect(renderSubtitle()).toMatchSnapshot("subtitle");
+});
+```
+
+### vitest/prefer-to-be-object
+
+Require `expectTypeOf(...).toBeObject()` over `toBeInstanceOf(Object)` or an `instanceof Object` check.
+
+```ts
+// bad
+expectTypeOf(config).toBeInstanceOf(Object);
+
+// good
+expectTypeOf(config).toBeObject();
+```
+
+### vitest/prefer-todo
+
+Require `test.todo` for placeholder tests instead of an empty or missing callback.
+
+```ts
+// bad
+test("parses nested input", () => {});
+
+// good
+test.todo("parses nested input");
+```
+
+### vitest/require-awaited-expect-poll
+
+Require `expect.poll` and `expect.element` assertions to be awaited or returned; otherwise the test finishes before they settle.
+
+```ts
+// bad
+test("shows the toast", () => {
+  expect.poll(() => getToast()).toBe("Saved");
+});
+
+// good
+test("shows the toast", async () => {
+  await expect.poll(() => getToast()).toBe("Saved");
+});
+```
+
+### vitest/require-local-test-context-for-concurrent-snapshots
+
+Require concurrent tests that assert snapshots to use `expect` from the local test context.
+
+```ts
+// bad
+test.concurrent("renders the card", () => {
+  expect(renderCard()).toMatchSnapshot();
+});
+
+// good
+test.concurrent("renders the card", ({ expect }) => {
+  expect(renderCard()).toMatchSnapshot();
+});
+```
+
+### vitest/valid-describe-callback
+
+Require the `describe` callback to be a function that takes no parameters and returns nothing.
+
+```ts
+// bad
+describe("parser", (done) => {
+  it("parses input", () => {
+    expect(parse("a")).toBe("a");
+  });
+});
+
+// good
+describe("parser", () => {
+  it("parses input", () => {
+    expect(parse("a")).toBe("a");
+  });
+});
+```
+
+### vitest/valid-expect
+
+Require `expect` to take exactly one argument and end in a matcher call, and `.resolves`/`.rejects` assertions to be awaited or returned.
+
+```ts
+// bad
+it("loads the user", () => {
+  expect(user).toBeDefined;
+  expect(loadUser()).resolves.toBe("Ada");
+});
+
+// good
+it("loads the user", async () => {
+  expect(user).toBeDefined();
+  await expect(loadUser()).resolves.toBe("Ada");
+});
+```
+
+### vitest/valid-expect-in-promise
+
+Require promise chains that contain `expect` calls to be awaited or returned from the test.
+
+```ts
+// bad
+test("loads the user", async () => {
+  loadUser().then((user) => {
+    expect(user.name).toBe("Ada");
+  });
+});
+
+// good
+test("loads the user", async () => {
+  const user = await loadUser();
+  expect(user.name).toBe("Ada");
+});
+```
+
+### vitest/valid-title
+
+Require test and suite titles to be non-empty strings, without leading or trailing spaces or a repeat of the block name (`it("it works")`).
+
+```ts
+// bad
+describe("", () => {
+  it(" parses input", () => {
+    expect(parse("a")).toBe("a");
+  });
+});
+
+// good
+describe("parser", () => {
+  it("parses input", () => {
+    expect(parse("a")).toBe("a");
+  });
+});
 ```
 
 ## Perfectionist Rules
@@ -8249,7 +8779,7 @@ const activeEmails = (users: Array<User>) => dedupe(sortedEmails(users));
 
 ## React Doctor Rules
 
-Original diagnostics from [oxlint-plugin-react-doctor](https://www.npmjs.com/package/oxlint-plugin-react-doctor), enabled at upstream severities: `warn` means advisory, `error` means definite bug. Ports of native react/jsx-a11y/react-hooks rules already covered above are excluded, as are rules gated on libraries the fleet does not ship.
+Original diagnostics from [oxlint-plugin-react-doctor](https://www.npmjs.com/package/oxlint-plugin-react-doctor), enabled at upstream severities: `warn` means advisory, `error` means definite bug. Ports of native react/jsx-a11y/react-hooks rules already covered above are excluded, as are rules gated on libraries the fleet does not ship and rules upstream has retired. Library-specific rules (Base UI, shadcn, TanStack, Motion, Zustand, Ink, React Native) only act on code that imports the library, and the Ink rules also need `ink` in the nearest `package.json`.
 
 ## React Doctor: Accessibility
 
@@ -8277,6 +8807,44 @@ Require elements using `aria-braillelabel` or `aria-brailleroledescription` to a
 
 // good
 <button aria-label="Save" aria-braillelabel="Save">Save</button>
+```
+
+### react-doctor/base-ui-dialog-popup-requires-title
+
+Require Base UI `Dialog.Popup` and `AlertDialog.Popup` to render a `Title` part or carry an `aria-label`. Severity: `warn`.
+
+```tsx
+// bad
+<Dialog.Popup>
+  <Dialog.Description>Changes save automatically.</Dialog.Description>
+  <Dialog.Close>Close</Dialog.Close>
+</Dialog.Popup>
+
+// good
+<Dialog.Popup>
+  <Dialog.Title>Settings</Dialog.Title>
+  <Dialog.Description>Changes save automatically.</Dialog.Description>
+  <Dialog.Close>Close</Dialog.Close>
+</Dialog.Popup>
+```
+
+### react-doctor/base-ui-field-requires-label
+
+Require a Base UI `Field.Root` that wraps a `Field.Control` to render a `Field.Label` or label the control with `aria-label`. Severity: `warn`.
+
+```tsx
+// bad
+<Field.Root>
+  <Field.Control type="email" placeholder="you@example.com" />
+  <Field.Error />
+</Field.Root>
+
+// good
+<Field.Root>
+  <Field.Label>Email</Field.Label>
+  <Field.Control type="email" placeholder="you@example.com" />
+  <Field.Error />
+</Field.Root>
 ```
 
 ### react-doctor/data-table-requires-accessible-name
@@ -8650,21 +9218,6 @@ Disallow inline styles with insufficient text contrast. Severity: `warn`.
 <p style={{ color: "#444444", background: "#ffffff" }}>Notice</p>
 ```
 
-### react-doctor/no-multi-component-file
-
-Disallow files that declare several components where the extras are not exported. Supersedes the native `react/no-multi-comp`, which flagged any file with more than one component and so hit every shadcn primitive family. This one leaves exported families alone and fires only on secondary components hiding in a file. Severity: `warn`.
-
-```tsx
-// bad
-const PanelHeader = () => <div />;
-const PanelBody = () => <div />;
-export const Panel = { Body: PanelBody, Header: PanelHeader };
-
-// good
-export const PanelHeader = () => <div />;
-export const PanelBody = () => <div />;
-```
-
 ### react-doctor/no-multiple-main-landmarks
 
 Disallow more than one `<main>` landmark per page. Severity: `warn`.
@@ -8942,6 +9495,66 @@ Require elements with `role="button"` to handle both Enter and Space activation.
 </div>
 ```
 
+### react-doctor/shadcn-dialog-content-requires-title
+
+Require shadcn `DialogContent`, `SheetContent`, `AlertDialogContent`, and `DrawerContent` to render their matching title part or carry an `aria-label`. Severity: `warn`.
+
+```tsx
+// bad
+<DialogContent>
+  <DialogHeader>
+    <DialogDescription>This action cannot be undone.</DialogDescription>
+  </DialogHeader>
+</DialogContent>
+
+// good
+<DialogContent>
+  <DialogHeader>
+    <DialogTitle>Delete project?</DialogTitle>
+    <DialogDescription>This action cannot be undone.</DialogDescription>
+  </DialogHeader>
+</DialogContent>
+```
+
+### react-doctor/shadcn-form-item-requires-label
+
+Require a shadcn `FormItem` that wraps a `FormControl` to render a `FormLabel` or label the control with `aria-label`. Severity: `warn`.
+
+```tsx
+// bad
+<FormItem>
+  <FormControl>
+    <Input {...field} />
+  </FormControl>
+  <FormMessage />
+</FormItem>
+
+// good
+<FormItem>
+  <FormLabel>Email</FormLabel>
+  <FormControl>
+    <Input {...field} />
+  </FormControl>
+  <FormMessage />
+</FormItem>
+```
+
+### react-doctor/shadcn-icon-button-requires-label
+
+Require icon-sized shadcn `Button` components to have an `aria-label` or visually hidden text. Severity: `warn`.
+
+```tsx
+// bad
+<Button size="icon" variant="ghost">
+  <TrashIcon />
+</Button>
+
+// good
+<Button size="icon" variant="ghost" aria-label="Delete">
+  <TrashIcon />
+</Button>
+```
+
 ## React Doctor: Architecture
 
 ### react-doctor/no-giant-component
@@ -8995,18 +9608,6 @@ class Provider extends React.Component {
 // good
 const ThemeContext = React.createContext("dark");
 <ThemeContext.Provider value="dark">{children}</ThemeContext.Provider>;
-```
-
-### react-doctor/no-many-boolean-props
-
-Disallow components that take many boolean props; use a variant prop instead. Severity: `warn`.
-
-```tsx
-// bad
-<Button primary large rounded outlined disabled />
-
-// good
-<Button variant="primary" size="large" shape="rounded" disabled />
 ```
 
 ### react-doctor/no-nested-component-definition
@@ -9072,30 +9673,6 @@ Disallow calling a component as a plain function inside render. Severity: `warn`
 
 // good
 <div><Header title={title} /></div>
-```
-
-### react-doctor/no-render-prop-children
-
-Disallow passing a function as `children` when composition works. Severity: `warn`.
-
-```tsx
-// bad
-<Card>{() => <p>Content</p>}</Card>
-
-// good
-<Card><p>Content</p></Card>
-```
-
-### react-doctor/prefer-explicit-variants
-
-Prefer an explicit variant string prop over combinations of boolean flags. Severity: `warn`.
-
-```tsx
-// bad
-<Alert isError={!isWarning} isWarning={isWarning} />
-
-// good
-<Alert variant={isWarning ? "warning" : "error"} />
 ```
 
 ### react-doctor/prefer-module-scope-pure-function
@@ -9167,38 +9744,6 @@ Disallow nesting interactive elements inside other interactive elements. Severit
 
 // good
 <a href="/docs">Docs</a>
-```
-
-### react-doctor/no-jsx-element-type
-
-Disallow `JSX.Element` as a prop or return type; use `ReactNode` or `ReactElement`. Severity: `error`.
-
-```ts
-// bad
-type Props = { icon: JSX.Element };
-
-// good
-type Props = { icon: ReactNode };
-```
-
-### react-doctor/no-polymorphic-children
-
-Disallow children whose type changes shape depending on props. Severity: `warn`.
-
-```tsx
-// bad
-<Button as="a">{isLink ? <a href="/docs">Docs</a> : "Docs"}</Button>;
-
-// good
-{
-  isLink ? (
-    <Button as="a" href="/docs">
-      Docs
-    </Button>
-  ) : (
-    <Button>Docs</Button>
-  );
-}
 ```
 
 ### react-doctor/no-prevent-default
@@ -9367,7 +9912,39 @@ Disallow text smaller than a legible minimum size. Severity: `warn`.
 <span style={{ fontSize: "12px" }}>Terms apply</span>
 ```
 
+### react-doctor/prefer-dvh-over-vh
+
+Require dynamic viewport units (`dvh`) instead of `vh` for full-height layouts, since `100vh` is taller than the visible viewport on mobile browsers. Severity: `warn`.
+
+```tsx
+// bad
+<main className="h-screen">{children}</main>
+
+// good
+<main className="h-dvh">{children}</main>
+```
+
 ## React Doctor: Bugs
+
+### react-doctor/base-ui-tabs-tab-requires-list
+
+Require Base UI `Tabs.Tab` components to be rendered inside `Tabs.List`. Severity: `warn`.
+
+```tsx
+// bad
+<Tabs.Root>
+  <Tabs.Tab value="profile">Profile</Tabs.Tab>
+  <Tabs.Panel value="profile">…</Tabs.Panel>
+</Tabs.Root>
+
+// good
+<Tabs.Root>
+  <Tabs.List>
+    <Tabs.Tab value="profile">Profile</Tabs.Tab>
+  </Tabs.List>
+  <Tabs.Panel value="profile">…</Tabs.Panel>
+</Tabs.Root>
+```
 
 ### react-doctor/class-component-missing-component-will-unmount-teardown
 
@@ -10479,6 +11056,40 @@ Require components using `setPointerCapture` to handle `pointercancel` or `lostp
      onPointerCancel={endDrag} />
 ```
 
+### react-doctor/shadcn-command-item-state-variant-requires-value
+
+Disallow presence-only `data-[selected]:` and `data-[disabled]:` variants on cmdk command items; cmdk sets both attributes on every item, so match `=true` instead. Severity: `warn`.
+
+```tsx
+// bad
+<CommandItem className="data-[selected]:bg-accent">Settings</CommandItem>
+
+// good
+<CommandItem className="data-[selected=true]:bg-accent">Settings</CommandItem>
+```
+
+### react-doctor/shadcn-input-group-no-raw-controls
+
+Disallow raw `Input`, `Textarea`, and `Button` controls directly inside a shadcn `InputGroup`; use `InputGroupInput`, `InputGroupTextarea`, and `InputGroupButton`. Severity: `warn`.
+
+```tsx
+// bad
+<InputGroup>
+  <InputGroupAddon>
+    <SearchIcon />
+  </InputGroupAddon>
+  <Input placeholder="Search" />
+</InputGroup>
+
+// good
+<InputGroup>
+  <InputGroupAddon>
+    <SearchIcon />
+  </InputGroupAddon>
+  <InputGroupInput placeholder="Search" />
+</InputGroup>
+```
+
 ### react-doctor/shadcn-tabs-trigger-requires-list
 
 Require shadcn `TabsTrigger` components to be wrapped in a `TabsList`. Severity: `warn`.
@@ -10495,6 +11106,43 @@ Require shadcn `TabsTrigger` components to be wrapped in a `TabsList`. Severity:
     <TabsTrigger value="a">A</TabsTrigger>
   </TabsList>
 </Tabs>
+```
+
+### react-doctor/tanstack-form-on-submit-requires-prevent-default
+
+Require `<form>` submit handlers that call TanStack Form's `handleSubmit` to call `event.preventDefault()` first. Severity: `warn`.
+
+```tsx
+// bad
+<form onSubmit={() => form.handleSubmit()}>…</form>
+
+// good
+<form
+  onSubmit={(event) => {
+    event.preventDefault();
+    form.handleSubmit();
+  }}
+>
+  …
+</form>
+```
+
+### react-doctor/tanstack-table-no-unstable-data-or-columns
+
+Disallow `useReactTable` `data` and `columns` arrays that are recreated on every render; memoize them or hoist them to module scope. Severity: `warn`.
+
+```tsx
+// bad
+function UsersTable({ users }) {
+  const columns = [{ accessorKey: "name", header: "Name" }];
+  const table = useReactTable({ data: users, columns, getCoreRowModel: getCoreRowModel() });
+}
+
+// good
+const columns = [{ accessorKey: "name", header: "Name" }];
+function UsersTable({ users }) {
+  const table = useReactTable({ data: users, columns, getCoreRowModel: getCoreRowModel() });
+}
 ```
 
 ### react-doctor/waapi-animation-in-render
@@ -10633,18 +11281,6 @@ import { LazyMotion, domAnimation, m } from "framer-motion";
 
 ## React Doctor: Client APIs
 
-### react-doctor/client-localstorage-no-version
-
-Require localStorage payloads to include a schema version key so stale data can be migrated or discarded. Severity: `warn`.
-
-```ts
-// bad
-localStorage.setItem("settings", JSON.stringify({ theme }));
-
-// good
-localStorage.setItem("settings", JSON.stringify({ version: 1, theme }));
-```
-
 ### react-doctor/client-passive-event-listeners
 
 Require passive listeners for scroll-blocking events like `touchstart` and `wheel`. Severity: `warn`.
@@ -10658,21 +11294,6 @@ window.addEventListener("touchstart", onTouch, { passive: true });
 ```
 
 ## React Doctor: JavaScript Performance
-
-### react-doctor/async-await-in-loop
-
-Disallow awaiting inside a loop when the iterations are independent. Severity: `warn`.
-
-```ts
-// bad
-for (const id of ids) {
-  const user = await fetchUser(id);
-  users.push(user);
-}
-
-// good
-const users = await Promise.allSettled(ids.map((id) => fetchUser(id)));
-```
 
 ### react-doctor/async-parallel
 
@@ -10766,18 +11387,6 @@ for (const u of users) {
 }
 ```
 
-### react-doctor/js-early-exit
-
-Prefer early-exit methods like some/find/includes over full iterations that only need the first match. Severity: `warn`.
-
-```ts
-// bad
-const hasAdmin = users.filter((u) => u.role === "admin").length > 0;
-
-// good
-const hasAdmin = users.some((u) => u.role === "admin");
-```
-
 ### react-doctor/js-flatmap-filter
 
 Prefer flatMap over chaining map and flat, or filter-then-map pairs that flatMap can express in one pass. Severity: `warn`.
@@ -10867,18 +11476,6 @@ const active = users.filter((u) => activeIds.includes(u.id));
 // good
 const activeIdSet = new Set(activeIds);
 const active = users.filter((u) => activeIdSet.has(u.id));
-```
-
-### react-doctor/js-tosorted-immutable
-
-Prefer toSorted()/toReversed() over copying an array just to mutate it with sort()/reverse(). Severity: `warn`.
-
-```ts
-// bad
-const sorted = [...items].sort((a, b) => a.rank - b.rank);
-
-// good
-const sorted = items.toSorted((a, b) => a.rank - b.rank);
 ```
 
 ## React Doctor: Maintainability
@@ -11337,18 +11934,6 @@ Disallow leaving will-change applied permanently instead of only around the anim
 <div className={isAnimating ? "will-change-transform" : ""}>{content}</div>
 ```
 
-### react-doctor/no-scale-from-zero
-
-Disallow entrance animations that scale from zero; start from a value near one instead. Severity: `warn`.
-
-```tsx
-// bad
-<motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} />
-
-// good
-<motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} />
-```
-
 ### react-doctor/no-transition-all
 
 Disallow transition-all; list the specific properties to transition. Severity: `warn`.
@@ -11384,18 +11969,6 @@ const List = ({ items }) => <Rows items={items ?? []} />;
 // good
 const EMPTY_ITEMS = [];
 const List = ({ items }) => <Rows items={items ?? EMPTY_ITEMS} />;
-```
-
-### react-doctor/rendering-animate-svg-wrapper
-
-Prefer animating a wrapper element around an SVG instead of the SVG's internals. Severity: `warn`.
-
-```tsx
-// bad
-<svg className="animate-spin"><path d="..." /></svg>
-
-// good
-<div className="animate-spin"><svg><path d="..." /></svg></div>
 ```
 
 ### react-doctor/rendering-hoist-jsx
@@ -11457,21 +12030,6 @@ Prefer defer or async on script tags so they do not block parsing. Severity: `wa
 
 // good
 <script src="/analytics.js" defer />
-```
-
-### react-doctor/rendering-usetransition-loading
-
-Prefer useTransition for pending state instead of manual loading flags around state updates. Severity: `warn`.
-
-```tsx
-// bad
-setLoading(true);
-setFilter(next);
-setLoading(false);
-
-// good
-const [isPending, startTransition] = useTransition();
-startTransition(() => setFilter(next));
 ```
 
 ### react-doctor/rerender-derived-state-from-hook
@@ -12473,22 +13031,6 @@ const [user, posts] = await Promise.all([getUser(id), getPosts(id)]);
 
 ## React Doctor: State and Effects
 
-### react-doctor/activity-wraps-effect-heavy-subtree
-
-Wrap effect-heavy offscreen subtrees in Activity instead of mounting and unmounting them. Severity: `warn`.
-
-```tsx
-// bad
-{
-  isOpen && <HeavyPanel />;
-}
-
-// good
-<Activity mode={isOpen ? "visible" : "hidden"}>
-  <HeavyPanel />
-</Activity>;
-```
-
 ### react-doctor/advanced-event-handler-refs
 
 Keep the latest event handler in a ref so long-lived subscriptions do not resubscribe on every handler change. Severity: `warn`.
@@ -12527,24 +13069,6 @@ useEffect(() => {
 }, []);
 ```
 
-### react-doctor/hooks-no-nan-in-deps
-
-Disallow possibly-NaN values in dependency arrays, since NaN never equals itself and retriggers the hook every render. Severity: `warn`.
-
-```tsx
-// bad
-useEffect(() => {
-  draw(Number(input));
-}, [Number(input)]);
-
-// good
-const parsed = Number(input);
-const value = Number.isNaN(parsed) ? 0 : parsed;
-useEffect(() => {
-  draw(value);
-}, [value]);
-```
-
 ### react-doctor/no-adjust-state-on-prop-change
 
 Disallow resetting state in an effect when a prop changes; adjust it during render instead. Severity: `error`.
@@ -12561,24 +13085,6 @@ if (items !== prevItems) {
   setPrevItems(items);
   setSelection(null);
 }
-```
-
-### react-doctor/no-cascading-set-state
-
-Disallow effects that copy computable values into state, causing cascading render passes. Severity: `warn`.
-
-```tsx
-// bad
-useEffect(() => {
-  setTotal(items.length);
-}, [items]);
-useEffect(() => {
-  setIsEmpty(total === 0);
-}, [total]);
-
-// good
-const total = items.length;
-const isEmpty = total === 0;
 ```
 
 ### react-doctor/no-chain-state-updates
@@ -13170,6 +13676,28 @@ const query = useQuery({ queryKey: ["todos"], queryFn: fetchTodos });
 return query.isLoading ? <Spinner /> : <List items={query.data} />;
 ```
 
+### react-doctor/query-floating-mutate-async
+
+Disallow discarding the promise from `mutateAsync()` without handling its rejection. Severity: `warn`.
+
+```tsx
+// bad
+const mutation = useMutation({ mutationFn: saveTodo });
+const handleSave = () => {
+  mutation.mutateAsync(todo);
+};
+
+// good
+const mutation = useMutation({ mutationFn: saveTodo });
+const handleSave = async () => {
+  try {
+    await mutation.mutateAsync(todo);
+  } catch {
+    toast.error("Could not save");
+  }
+};
+```
+
 ### react-doctor/query-mutation-missing-invalidation
 
 Invalidate affected queries after a successful mutation. Severity: `warn`.
@@ -13183,6 +13711,27 @@ useMutation({
   mutationFn: addTodo,
   onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
 });
+```
+
+### react-doctor/query-no-mutation-in-effect-as-read
+
+Disallow firing a `useMutation` from an effect to fetch data that is then rendered; use `useQuery` so the read is cached and deduplicated. Severity: `warn`.
+
+```tsx
+// bad
+const searchMutation = useMutation({ mutationFn: searchProducts });
+useEffect(() => {
+  searchMutation.mutate(query);
+}, [query]);
+return <List items={searchMutation.data} />;
+
+// good
+const searchQuery = useQuery({
+  queryKey: ["products", query],
+  queryFn: () => searchProducts(query),
+  enabled: query.length > 0,
+});
+return <List items={searchQuery.data} />;
 ```
 
 ### react-doctor/query-no-query-in-effect
@@ -13267,6 +13816,709 @@ function App() {
 }
 ```
 
+## React Doctor: TanStack Start
+
+### react-doctor/tanstack-start-get-mutation
+
+Disallow data mutations (database writes, cookie changes, or mutating `fetch()` calls) in `createServerFn()` handlers that keep the default GET method; declare `method: "POST"`, `"PUT"`, `"PATCH"`, or `"DELETE"` instead. Severity: `warn`.
+
+```ts
+// bad
+const deletePost = createServerFn()
+  .inputValidator((id: string) => id)
+  .handler(async ({ data }) => {
+    await db.post.delete({ where: { id: data } });
+  });
+
+// good
+const deletePost = createServerFn({ method: "POST" })
+  .inputValidator((id: string) => id)
+  .handler(async ({ data }) => {
+    await db.post.delete({ where: { id: data } });
+  });
+```
+
+### react-doctor/tanstack-start-loader-parallel-fetch
+
+Disallow two or more independent sequential `await`s in a route `loader`; start them together with `Promise.all` to avoid a request waterfall. Severity: `warn`.
+
+```ts
+// bad
+export const Route = createFileRoute("/dashboard")({
+  loader: async () => {
+    const user = await fetchUser();
+    const projects = await fetchProjects();
+    return { user, projects };
+  },
+});
+
+// good
+export const Route = createFileRoute("/dashboard")({
+  loader: async () => {
+    const [user, projects] = await Promise.all([fetchUser(), fetchProjects()]);
+    return { user, projects };
+  },
+});
+```
+
+### react-doctor/tanstack-start-missing-head-content
+
+Require `<HeadContent />` inside `<head>` in the TanStack Start root route; only runs on `__root` route files (`__root.tsx`, `__root.ts`, `__root.jsx`, `__root.js`). Severity: `warn`.
+
+```tsx
+// bad
+export const Route = createRootRoute({
+  shellComponent: ({ children }) => (
+    <html>
+      <head>
+        <meta charSet="utf-8" />
+      </head>
+      <body>
+        {children}
+        <Scripts />
+      </body>
+    </html>
+  ),
+});
+
+// good
+export const Route = createRootRoute({
+  shellComponent: ({ children }) => (
+    <html>
+      <head>
+        <meta charSet="utf-8" />
+        <HeadContent />
+      </head>
+      <body>
+        {children}
+        <Scripts />
+      </body>
+    </html>
+  ),
+});
+```
+
+### react-doctor/tanstack-start-missing-scripts
+
+Require `<Scripts />` inside the `<body>` rendered by the root route's `component` or `shellComponent`; only runs on `__root` route files. Severity: `warn`.
+
+```tsx
+// bad
+export const Route = createRootRoute({
+  shellComponent: ({ children }) => (
+    <html>
+      <head>
+        <HeadContent />
+      </head>
+      <body>{children}</body>
+    </html>
+  ),
+});
+
+// good
+export const Route = createRootRoute({
+  shellComponent: ({ children }) => (
+    <html>
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        {children}
+        <Scripts />
+      </body>
+    </html>
+  ),
+});
+```
+
+### react-doctor/tanstack-start-no-anchor-element
+
+Disallow plain `<a>` elements with an internal `href` (starting with `/`) in files under a `routes/` directory; use TanStack Router's `Link`. Links to `/api/`, files with an extension, `download` links, and `target="_blank"` links are allowed. Severity: `warn`.
+
+```tsx
+// bad
+<a href="/settings">Settings</a>
+
+// good
+<Link to="/settings">Settings</Link>
+```
+
+### react-doctor/tanstack-start-no-dynamic-server-fn-import
+
+Disallow dynamic `import()` of server function modules (paths ending in `.functions`, with or without a JS or TS extension); import them statically so the bundler can replace server code with RPC stubs. Severity: `error`.
+
+```ts
+// bad
+const { getUser } = await import("~/utils/users.functions");
+
+// good
+import { getUser } from "~/utils/users.functions";
+```
+
+### react-doctor/tanstack-start-no-navigate-in-render
+
+Disallow calling `navigate()` during render in files under a `routes/` directory; throw `redirect()` from `beforeLoad` or `loader` instead. Calls inside effects, callbacks, and event handlers are allowed. Severity: `warn`.
+
+```tsx
+// bad
+function Dashboard() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  if (!user) navigate({ to: "/login" });
+  return <h1>Dashboard</h1>;
+}
+
+// good
+export const Route = createFileRoute("/dashboard")({
+  beforeLoad: ({ context }) => {
+    if (!context.user) throw redirect({ to: "/login" });
+  },
+  component: () => <h1>Dashboard</h1>,
+});
+```
+
+### react-doctor/tanstack-start-no-secrets-in-loader
+
+Disallow reading secret-looking environment variables (names containing `secret`, `token`, `apikey`, `api_key`, `password`, or `private`) from `process.env` or `import.meta.env` in a route `loader` or `beforeLoad`, which also run on the client; read them in a `createServerFn()` handler. Severity: `error`.
+
+```ts
+// bad
+export const Route = createFileRoute("/billing")({
+  loader: () => fetchInvoices(process.env.STRIPE_SECRET_KEY),
+});
+
+// good
+const getInvoices = createServerFn().handler(() => fetchInvoices(process.env.STRIPE_SECRET_KEY));
+
+export const Route = createFileRoute("/billing")({
+  loader: () => getInvoices(),
+});
+```
+
+### react-doctor/tanstack-start-no-use-server-in-handler
+
+Disallow a `"use server"` directive inside a server function `.handler()` callback; TanStack Start already keeps the handler on the server. Severity: `error`.
+
+```ts
+// bad
+const getUser = createServerFn().handler(async () => {
+  "use server";
+  return db.user.findFirst();
+});
+
+// good
+const getUser = createServerFn().handler(async () => {
+  return db.user.findFirst();
+});
+```
+
+### react-doctor/tanstack-start-no-useeffect-fetch
+
+Disallow `fetch()` inside `useEffect` or `useLayoutEffect` in files under a `routes/` directory; load the data in the route `loader`. Severity: `warn`.
+
+```tsx
+// bad
+function Posts() {
+  const [posts, setPosts] = useState([]);
+  useEffect(() => {
+    fetch("/api/posts")
+      .then((res) => res.json())
+      .then(setPosts);
+  }, []);
+  return <PostList posts={posts} />;
+}
+
+// good
+export const Route = createFileRoute("/posts")({
+  loader: () => fetchPosts(),
+  component: Posts,
+});
+
+function Posts() {
+  const posts = Route.useLoaderData();
+  return <PostList posts={posts} />;
+}
+```
+
+### react-doctor/tanstack-start-redirect-in-try-catch
+
+Disallow `throw redirect()` or `throw notFound()` inside a `try` block whose `catch` does not rethrow the error, which swallows the router's redirect. Severity: `warn`.
+
+```ts
+// bad
+export const Route = createFileRoute("/dashboard")({
+  beforeLoad: async ({ context }) => {
+    try {
+      await context.auth.refresh();
+      if (!context.auth.user) throw redirect({ to: "/login" });
+    } catch (error) {
+      console.error(error);
+    }
+  },
+});
+
+// good
+export const Route = createFileRoute("/dashboard")({
+  beforeLoad: async ({ context }) => {
+    try {
+      await context.auth.refresh();
+    } catch (error) {
+      console.error(error);
+    }
+    if (!context.auth.user) throw redirect({ to: "/login" });
+  },
+});
+```
+
+### react-doctor/tanstack-start-route-property-order
+
+Require route options passed to `createFileRoute()`, `createRoute()`, `createRootRoute()`, or `createRootRouteWithContext()` to follow TanStack Router's inference order: `params`, `validateSearch`, `loaderDeps`, `ssr`, `context`, `beforeLoad`, `loader`, `onEnter`, `onStay`, `onLeave`, `head`, `scripts`, `headers`, `remountDeps`. Severity: `error`.
+
+```ts
+// bad
+export const Route = createFileRoute("/posts")({
+  loader: ({ deps }) => fetchPosts(deps.page),
+  loaderDeps: ({ search }) => ({ page: search.page }),
+  validateSearch: (search) => ({ page: Number(search.page ?? 1) }),
+});
+
+// good
+export const Route = createFileRoute("/posts")({
+  validateSearch: (search) => ({ page: Number(search.page ?? 1) }),
+  loaderDeps: ({ search }) => ({ page: search.page }),
+  loader: ({ deps }) => fetchPosts(deps.page),
+});
+```
+
+### react-doctor/tanstack-start-server-fn-method-order
+
+Require `createServerFn()` chains to call `.middleware()`, `.inputValidator()` (or `.validator()`), `.client()`, `.server()`, and `.handler()` in that order. Severity: `error`.
+
+```ts
+// bad
+const updateUser = createServerFn({ method: "POST" })
+  .inputValidator(userSchema)
+  .middleware([authMiddleware])
+  .handler(({ data, context }) => saveUser(context.userId, data));
+
+// good
+const updateUser = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .inputValidator(userSchema)
+  .handler(({ data, context }) => saveUser(context.userId, data));
+```
+
+### react-doctor/tanstack-start-server-fn-validate-input
+
+Require an `.inputValidator()` (or `.validator()`) step in `createServerFn()` chains whose handler reads `data`, because that input arrives over the network. Severity: `warn`.
+
+```ts
+// bad
+const deletePost = createServerFn({ method: "POST" }).handler(async ({ data }) => {
+  await db.post.delete({ where: { id: data.id } });
+});
+
+// good
+const deletePost = createServerFn({ method: "POST" })
+  .inputValidator(z.object({ id: z.string() }))
+  .handler(async ({ data }) => {
+    await db.post.delete({ where: { id: data.id } });
+  });
+```
+
+## React Doctor: Ink
+
+### react-doctor/ink-ctrl-c-handler-requires-exit-option
+
+Require `exitOnCtrlC: false` in Ink's `render()` options when a rendered component handles Ctrl-C with `useInput`, because Ink otherwise exits before the handler runs. Severity: `error`.
+
+```tsx
+// bad
+function App() {
+  useInput((input, key) => {
+    if (key.ctrl && input === "c") saveDraft();
+  });
+  return <Text>Editing</Text>;
+}
+render(<App />);
+
+// good
+function App() {
+  useInput((input, key) => {
+    if (key.ctrl && input === "c") saveDraft();
+  });
+  return <Text>Editing</Text>;
+}
+render(<App />, { exitOnCtrlC: false });
+```
+
+### react-doctor/ink-no-bare-process-exit
+
+Disallow `process.exit()` inside a `useInput` handler; call `exit()` from `useApp()` so Ink restores the terminal first. Severity: `error`.
+
+```tsx
+// bad
+function App() {
+  useInput((input) => {
+    if (input === "q") process.exit(0);
+  });
+  return <Text>Press q to quit</Text>;
+}
+
+// good
+function App() {
+  const { exit } = useApp();
+  useInput((input) => {
+    if (input === "q") exit();
+  });
+  return <Text>Press q to quit</Text>;
+}
+```
+
+### react-doctor/ink-no-direct-raw-mode
+
+Disallow calling `setRawMode()` from `useStdin()` during render; toggle raw mode in an effect and restore it in the cleanup. Severity: `error`.
+
+```tsx
+// bad
+function Prompt() {
+  const { setRawMode } = useStdin();
+  setRawMode(true);
+  return <Text>Waiting for input</Text>;
+}
+
+// good
+function Prompt() {
+  const { setRawMode } = useStdin();
+  useEffect(() => {
+    setRawMode(true);
+    return () => setRawMode(false);
+  }, [setRawMode]);
+  return <Text>Waiting for input</Text>;
+}
+```
+
+### react-doctor/ink-no-dom-host-elements
+
+Disallow DOM host elements such as `<div>` and `<span>` in an Ink tree; use Ink primitives like `<Box>` and `<Text>`. Severity: `error`.
+
+```tsx
+// bad
+<Box>
+  <span>Loading</span>
+</Box>
+
+// good
+<Box>
+  <Text>Loading</Text>
+</Box>
+```
+
+### react-doctor/ink-no-dom-router
+
+Disallow React Router's DOM routers and links (`BrowserRouter`, `HashRouter`, `Link`, `NavLink`, `createBrowserRouter`, `createHashRouter`) in an Ink tree; use the memory router APIs. Severity: `error`.
+
+```tsx
+// bad
+<BrowserRouter>
+  <Box>
+    <AppRoutes />
+  </Box>
+</BrowserRouter>
+
+// good
+<MemoryRouter>
+  <Box>
+    <AppRoutes />
+  </Box>
+</MemoryRouter>
+```
+
+### react-doctor/ink-no-focus-in-render
+
+Disallow calling `focus()`, `focusNext()`, or `focusPrevious()` from `useFocusManager()` during render; move the call to an effect or input handler. Severity: `error`.
+
+```tsx
+// bad
+function Form() {
+  const { focus } = useFocusManager();
+  focus("name");
+  return <NameField />;
+}
+
+// good
+function Form() {
+  const { focus } = useFocusManager();
+  useEffect(() => {
+    focus("name");
+  }, [focus]);
+  return <NameField />;
+}
+```
+
+### react-doctor/ink-no-layout-inside-text
+
+Disallow Ink layout components (`<Box>`, `<Spacer>`, `<Static>`) inside `<Text>` or `<Transform>`. Severity: `error`.
+
+```tsx
+// bad
+<Text>
+  Name <Spacer /> Value
+</Text>
+
+// good
+<Box>
+  <Text>Name</Text>
+  <Spacer />
+  <Text>Value</Text>
+</Box>
+```
+
+### react-doctor/ink-no-live-hooks-in-render-to-string
+
+Disallow `useInput` and `usePaste` in components rendered only through `renderToString()`, where they never receive input. Severity: `error`.
+
+```tsx
+// bad
+function Summary() {
+  useInput(handleKey);
+  return <Text>3 tests passed</Text>;
+}
+const output = renderToString(<Summary />);
+
+// good
+function Summary() {
+  return <Text>3 tests passed</Text>;
+}
+const output = renderToString(<Summary />);
+```
+
+### react-doctor/ink-no-measure-element-in-render
+
+Disallow calling `measureElement()` during render; measure in a layout effect, effect, callback ref, or event handler after Ink lays out the element. Severity: `error`.
+
+```tsx
+// bad
+function Panel() {
+  const ref = useRef(null);
+  const { width } = measureElement(ref.current);
+  return (
+    <Box ref={ref}>
+      <Text>{width}</Text>
+    </Box>
+  );
+}
+
+// good
+function Panel() {
+  const ref = useRef(null);
+  const [width, setWidth] = useState(0);
+  useLayoutEffect(() => {
+    setWidth(measureElement(ref.current).width);
+  }, []);
+  return (
+    <Box ref={ref}>
+      <Text>{width}</Text>
+    </Box>
+  );
+}
+```
+
+### react-doctor/ink-no-multiple-static
+
+Disallow more than one unconditional `<Static>` in the same render root; combine the output into a single `<Static>`. Severity: `warn`.
+
+```tsx
+// bad
+function Log({ tasks, warnings }) {
+  return (
+    <Box flexDirection="column">
+      <Static items={tasks}>{(task) => <Text key={task.id}>{task.title}</Text>}</Static>
+      <Static items={warnings}>{(warning) => <Text key={warning.id}>{warning.text}</Text>}</Static>
+    </Box>
+  );
+}
+
+// good
+function Log({ entries }) {
+  return (
+    <Box flexDirection="column">
+      <Static items={entries}>{(entry) => <Text key={entry.id}>{entry.text}</Text>}</Static>
+    </Box>
+  );
+}
+```
+
+### react-doctor/ink-no-raw-text
+
+Require text rendered by Ink to be wrapped in `<Text>` instead of placed directly inside `<Box>` or another non-text component. Severity: `error`.
+
+```tsx
+// bad
+<Box>Loading...</Box>
+
+// good
+<Box>
+  <Text>Loading...</Text>
+</Box>
+```
+
+### react-doctor/ink-no-repeated-render
+
+Disallow calling Ink's `render()` again on the same output before the first instance is unmounted; update it with `rerender()` instead. Severity: `error`.
+
+```tsx
+// bad
+async function main() {
+  render(<Loading />);
+  const data = await loadData();
+  render(<Results data={data} />);
+}
+
+// good
+async function main() {
+  const { rerender } = render(<Loading />);
+  const data = await loadData();
+  rerender(<Results data={data} />);
+}
+```
+
+### react-doctor/ink-prefer-use-animation
+
+Prefer Ink's `useAnimation()` over a `setInterval` frame counter inside an effect; it shares one timer across components and cleans up on unmount. Severity: `warn`.
+
+```tsx
+// bad
+function Spinner() {
+  const [frame, setFrame] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setFrame((f) => (f + 1) % frames.length), 80);
+    return () => clearInterval(timer);
+  }, []);
+  return <Text>{frames[frame]}</Text>;
+}
+
+// good
+function Spinner() {
+  const { frame } = useAnimation({ interval: 80 });
+  return <Text>{frames[frame % frames.length]}</Text>;
+}
+```
+
+### react-doctor/ink-prefer-use-paste
+
+Prefer Ink's `usePaste()` over detecting pasted text in a `useInput` handler by checking for newlines or multi-character input. Severity: `warn`.
+
+```tsx
+// bad
+useInput((input) => {
+  if (input.length > 1) setQuery((query) => query + input);
+});
+
+// good
+usePaste((text) => {
+  setQuery((query) => query + text);
+});
+```
+
+### react-doctor/ink-static-is-append-only
+
+Disallow passing `<Static>` a collection reordered with `sort()`, `reverse()`, `toSorted()`, or `toReversed()`, because `<Static>` never rewrites output it has already printed. Severity: `warn`.
+
+```tsx
+// bad
+<Static items={logs.toReversed()}>{(log) => <Text key={log.id}>{log.text}</Text>}</Static>
+
+// good
+<Static items={logs}>{(log) => <Text key={log.id}>{log.text}</Text>}</Static>
+```
+
+### react-doctor/ink-static-requires-key
+
+Require a `key` on the root element returned by a `<Static>` render function. Severity: `error`.
+
+```tsx
+// bad
+<Static items={logs}>{(log) => <Text>{log.text}</Text>}</Static>
+
+// good
+<Static items={logs}>{(log) => <Text key={log.id}>{log.text}</Text>}</Static>
+```
+
+### react-doctor/ink-use-reactive-window-size
+
+Disallow reading `process.stdout.columns` or `process.stdout.rows` in an Ink component; use `useWindowSize()` so the component re-renders on resize. Severity: `warn`.
+
+```tsx
+// bad
+function Divider() {
+  return <Text>{"-".repeat(process.stdout.columns)}</Text>;
+}
+
+// good
+function Divider() {
+  const { columns } = useWindowSize();
+  return <Text>{"-".repeat(columns)}</Text>;
+}
+```
+
+### react-doctor/ink-use-string-width-for-cursor
+
+Disallow a string's `.length` as the `x` position passed to `useCursor().setCursorPosition()`; measure terminal columns with `string-width`. Severity: `warn`.
+
+```tsx
+// bad
+function Prompt({ value }) {
+  const cursor = useCursor();
+  cursor.setCursorPosition({ x: value.length, y: 0 });
+  return <Text>{value}</Text>;
+}
+
+// good
+function Prompt({ value }) {
+  const cursor = useCursor();
+  cursor.setCursorPosition({ x: stringWidth(value), y: 0 });
+  return <Text>{value}</Text>;
+}
+```
+
+### react-doctor/ink-use-suspend-terminal
+
+Require child processes started from a `useInput` handler with `stdio: "inherit"` to run inside `useApp().suspendTerminal()`, so Ink hands over the terminal first. Severity: `error`.
+
+```tsx
+// bad
+function Notes({ file }) {
+  useInput((input) => {
+    if (input === "e") spawnSync("vim", [file], { stdio: "inherit" });
+  });
+  return <Text>Press e to edit</Text>;
+}
+
+// good
+function Notes({ file }) {
+  const { suspendTerminal } = useApp();
+  useInput((input) => {
+    if (input === "e") suspendTerminal(() => spawnSync("vim", [file], { stdio: "inherit" }));
+  });
+  return <Text>Press e to edit</Text>;
+}
+```
+
+### react-doctor/ink-valid-aria-semantics
+
+Require valid Ink accessibility props: `aria-role` and `aria-state` only on `<Box>`, only roles and states Ink supports, and no `aria-label` on an `aria-hidden` element. Severity: `error`.
+
+```tsx
+// bad
+<Text aria-role="button">Submit</Text>
+
+// good
+<Box aria-role="button">
+  <Text>Submit</Text>
+</Box>
+```
+
 ## React Doctor: Jotai
 
 ### react-doctor/jotai-derived-atom-returns-fresh-object
@@ -13310,6 +14562,677 @@ const todos = useAtomValue(todosAtom);
 // good
 const todosQuery = useAtomValue(todosQueryAtom);
 const todos = todosQuery.data;
+```
+
+## React Doctor: Motion
+
+### react-doctor/motion-animate-presence-must-outlive-child
+
+Require `AnimatePresence` to stay mounted and wrap the condition that removes its child, so the exit animation can run. Severity: `warn`.
+
+```tsx
+// bad
+<main>
+  {isOpen && (
+    <AnimatePresence>
+      <motion.div exit={{ opacity: 0 }} />
+    </AnimatePresence>
+  )}
+</main>
+
+// good
+<main>
+  <AnimatePresence>
+    {isOpen && <motion.div key="modal" initial={{ opacity: 0 }} exit={{ opacity: 0 }} />}
+  </AnimatePresence>
+</main>
+```
+
+### react-doctor/motion-animate-presence-requires-key
+
+Require a `key` on every direct child when `AnimatePresence` has more than one child. Severity: `warn`.
+
+```tsx
+// bad
+<AnimatePresence>
+  <motion.div exit={{ opacity: 0 }} />
+  <motion.aside exit={{ x: "100%" }} />
+</AnimatePresence>
+
+// good
+<AnimatePresence>
+  <motion.div key="backdrop" exit={{ opacity: 0 }} />
+  <motion.aside key="panel" exit={{ x: "100%" }} />
+</AnimatePresence>
+```
+
+### react-doctor/motion-animate-presence-wait-single-child
+
+Disallow more than one direct child inside `AnimatePresence mode="wait"`. Severity: `warn`.
+
+```tsx
+// bad
+<AnimatePresence mode="wait">
+  <motion.div key="intro" exit={{ opacity: 0 }} />
+  <motion.div key="details" exit={{ opacity: 0 }} />
+</AnimatePresence>
+
+// good
+<AnimatePresence mode="wait">
+  <motion.div key={step} exit={{ opacity: 0 }} />
+</AnimatePresence>
+```
+
+### react-doctor/motion-create-in-render
+
+Disallow calling `motion.create()` during render; create Motion components at module scope. Severity: `warn`.
+
+```tsx
+// bad
+function NavItem() {
+  const MotionLink = motion.create(Link);
+  return <MotionLink animate={{ opacity: 1 }} />;
+}
+
+// good
+const MotionLink = motion.create(Link);
+function NavItem() {
+  return <MotionLink animate={{ opacity: 1 }} />;
+}
+```
+
+### react-doctor/motion-drag-axis-constraint-mismatch
+
+Require `dragConstraints` to bound the axis chosen by `drag="x"` or `drag="y"`, with paired bounds in ascending order. Severity: `warn`.
+
+```tsx
+// bad
+<motion.div drag="x" dragConstraints={{ top: 0, bottom: 300 }} />
+
+// good
+<motion.div drag="x" dragConstraints={{ left: 0, right: 300 }} />
+```
+
+### react-doctor/motion-imperative-animation-in-render
+
+Disallow starting imperative Motion animations (`animate()`, `controls.start()`, motion value `.set()`) during render; run them in an effect or event handler. Severity: `error`.
+
+```tsx
+// bad
+const scale = useMotionValue(1);
+scale.set(count > 0 ? 1.2 : 1);
+
+// good
+const scale = useMotionValue(1);
+useEffect(() => {
+  scale.set(count > 0 ? 1.2 : 1);
+}, [count, scale]);
+```
+
+### react-doctor/motion-keyframe-times-mismatch
+
+Require `transition.times` to have one entry per keyframe. Severity: `error`.
+
+```tsx
+// bad
+<motion.div animate={{ opacity: [0, 1, 0] }} transition={{ duration: 2, times: [0, 1] }} />
+
+// good
+<motion.div animate={{ opacity: [0, 1, 0] }} transition={{ duration: 2, times: [0, 0.2, 1] }} />
+```
+
+### react-doctor/motion-layout-on-inline-element
+
+Disallow Motion `layout` and `layoutId` animations on elements styled `display: inline`. Severity: `warn`.
+
+```tsx
+// bad
+<motion.span layout className="inline">
+  {label}
+</motion.span>
+
+// good
+<motion.span layout className="inline-block">
+  {label}
+</motion.span>
+```
+
+### react-doctor/motion-unstable-layout-id-in-iteration
+
+Disallow `layoutId` values in a mapped list that every item shares or that derive from the iteration index; derive them from stable item identity. Severity: `warn`.
+
+```tsx
+// bad
+items.map((item, index) => <motion.li key={item.id} layoutId={`card-${index}`} />);
+
+// good
+items.map((item) => <motion.li key={item.id} layoutId={`card-${item.id}`} />);
+```
+
+### react-doctor/motion-use-transform-range-length
+
+Require `useTransform` input and output ranges to have the same length. Severity: `error`.
+
+```ts
+// bad
+const opacity = useTransform(scrollY, [0, 100, 200], [1, 0]);
+
+// good
+const opacity = useTransform(scrollY, [0, 100, 200], [1, 0.5, 0]);
+```
+
+### react-doctor/motion-value-constructor-in-render
+
+Disallow calling `motionValue()` during render; use `useMotionValue()` instead. Severity: `warn`.
+
+```tsx
+// bad
+function Box() {
+  const x = motionValue(0);
+  return <motion.div style={{ x }} />;
+}
+
+// good
+function Box() {
+  const x = useMotionValue(0);
+  return <motion.div style={{ x }} />;
+}
+```
+
+### react-doctor/motion-value-subscription-in-render
+
+Disallow subscribing to a Motion value with `.on()` during render; use `useMotionValueEvent()` or an effect with cleanup. Severity: `error`.
+
+```tsx
+// bad
+const x = useMotionValue(0);
+x.on("change", onMove);
+
+// good
+const x = useMotionValue(0);
+useMotionValueEvent(x, "change", onMove);
+```
+
+### react-doctor/no-conflicting-spring-options
+
+Disallow spring transitions that mix `stiffness`/`damping`/`mass` with `duration`/`bounce`. Severity: `warn`.
+
+```tsx
+// bad
+<motion.div animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300, duration: 0.4 }} />
+
+// good
+<motion.div animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 20 }} />
+```
+
+### react-doctor/no-static-motion-config-never
+
+Disallow a hard-coded `reducedMotion="never"` on `MotionConfig` in app root files (`app/layout`, `pages/_app`, `App`, `main`, `root`). Severity: `warn`.
+
+```tsx
+// bad
+<MotionConfig reducedMotion="never">
+  <Routes />
+</MotionConfig>
+
+// good
+<MotionConfig reducedMotion="user">
+  <Routes />
+</MotionConfig>
+```
+
+## React Doctor: React Native
+
+### react-doctor/rn-animation-reaction-as-derived
+
+Disallow `useAnimatedReaction` callbacks that only copy one shared value into another; use `useDerivedValue` instead. Severity: `warn`.
+
+```tsx
+// bad
+useAnimatedReaction(
+  () => progress.value,
+  (value) => {
+    opacity.value = value;
+  },
+);
+
+// good
+const opacity = useDerivedValue(() => progress.value);
+```
+
+### react-doctor/rn-bottom-sheet-no-ignored-scroll-prop
+
+Disallow `scrollEventThrottle`, `decelerationRate`, and `onScrollBeginDrag` on `BottomSheetScrollView`, which ignores them. Severity: `warn`.
+
+```tsx
+// bad
+<BottomSheetScrollView scrollEventThrottle={16}>{content}</BottomSheetScrollView>;
+
+// good
+<BottomSheetScrollView>{content}</BottomSheetScrollView>;
+```
+
+### react-doctor/rn-bottom-sheet-no-state-in-on-animate
+
+Disallow React state updates inside a Bottom Sheet `onAnimate` handler; use `animatedIndex`, `animatedPosition`, or `onChange` instead. Severity: `warn`.
+
+```tsx
+// bad
+function Sheet() {
+  const [index, setIndex] = useState(0);
+  return <BottomSheet onAnimate={(from, to) => setIndex(to)}>{content}</BottomSheet>;
+}
+
+// good
+function Sheet() {
+  const [index, setIndex] = useState(0);
+  return <BottomSheet onChange={setIndex}>{content}</BottomSheet>;
+}
+```
+
+### react-doctor/rn-bottom-sheet-use-integrated-scrollable
+
+Require `@gorhom/bottom-sheet`'s integrated scrollables instead of React Native's `ScrollView`, `FlatList`, `SectionList`, or `VirtualizedList` inside a Bottom Sheet. Severity: `warn`.
+
+```tsx
+// bad
+<BottomSheet snapPoints={snapPoints}>
+  <ScrollView>{content}</ScrollView>
+</BottomSheet>;
+
+// good
+<BottomSheet snapPoints={snapPoints}>
+  <BottomSheetScrollView>{content}</BottomSheetScrollView>
+</BottomSheet>;
+```
+
+### react-doctor/rn-detox-missing-await
+
+Require `await` on Detox actions, `waitFor(...)` chains, and `expect(element(...))` assertions in e2e tests. Severity: `warn`.
+
+```ts
+// bad
+it("signs in", async () => {
+  element(by.id("submit")).tap();
+});
+
+// good
+it("signs in", async () => {
+  await element(by.id("submit")).tap();
+});
+```
+
+### react-doctor/rn-list-callback-per-row
+
+Disallow inline event handlers inside an inline list `renderItem`; hoist the handler with `useCallback` and pass the row id. Severity: `warn`.
+
+```tsx
+// bad
+<FlatList
+  data={items}
+  renderItem={({ item }) => <Row title={item.title} onPress={() => select(item.id)} />}
+/>;
+
+// good
+const renderItem = useCallback(
+  ({ item }) => <Row id={item.id} title={item.title} onSelect={select} />,
+  [select],
+);
+
+<FlatList data={items} renderItem={renderItem} />;
+```
+
+### react-doctor/rn-list-data-mapped
+
+Disallow passing a freshly built array (`.map`, `.filter`, spread, and similar) as a list's `data` prop; memoize it with `useMemo`. Severity: `warn`.
+
+```tsx
+// bad
+<FlatList data={items.filter((item) => item.visible)} renderItem={renderItem} />;
+
+// good
+const visibleItems = useMemo(() => items.filter((item) => item.visible), [items]);
+
+<FlatList data={visibleItems} renderItem={renderItem} />;
+```
+
+### react-doctor/rn-list-missing-estimated-item-size
+
+Require `estimatedItemSize` (or `estimatedListSize`) on FlashList and LegendList lists that receive `data`. Severity: `warn`.
+
+```tsx
+// bad
+<FlashList data={items} renderItem={renderItem} />;
+
+// good
+<FlashList data={items} renderItem={renderItem} estimatedItemSize={72} />;
+```
+
+### react-doctor/rn-list-recyclable-without-types
+
+Require `getItemType` on recycling FlashList or LegendList lists whose `renderItem` returns different row shapes. Severity: `warn`.
+
+```tsx
+// bad
+const renderItem = ({ item }) =>
+  item.type === "header" ? <SectionHeader title={item.title} /> : <PostRow post={item} />;
+
+<LegendList data={feed} renderItem={renderItem} estimatedItemSize={80} recycleItems />;
+
+// good
+<LegendList
+  data={feed}
+  renderItem={renderItem}
+  getItemType={(item) => item.type}
+  estimatedItemSize={80}
+  recycleItems
+/>;
+```
+
+### react-doctor/rn-no-deep-imports
+
+Disallow deep imports from `react-native/Libraries/...`; import from the `react-native` package root. Severity: `warn`.
+
+```tsx
+// bad
+import { Text } from "react-native/Libraries/Text/Text";
+
+// good
+import { Text } from "react-native";
+```
+
+### react-doctor/rn-no-deprecated-modules
+
+Disallow importing modules that were removed from React Native core, such as `AsyncStorage` or `Picker`, from `react-native`; use the community package. Severity: `error`.
+
+```tsx
+// bad
+import { AsyncStorage } from "react-native";
+
+// good
+import AsyncStorage from "@react-native-async-storage/async-storage";
+```
+
+### react-doctor/rn-no-falsy-and-render
+
+Disallow `&&` rendering with a numeric left side outside `<Text>`, which renders a bare `0` and crashes React Native. Severity: `error`.
+
+```tsx
+// bad
+<View>{unreadCount && <Badge count={unreadCount} />}</View>;
+
+// good
+<View>{unreadCount > 0 && <Badge count={unreadCount} />}</View>;
+```
+
+### react-doctor/rn-no-image-children
+
+Disallow children inside React Native's `<Image>`; use `<ImageBackground>` to layer content over an image. Severity: `error`.
+
+```tsx
+// bad
+<Image source={cover}>
+  <Text>{title}</Text>
+</Image>;
+
+// good
+<ImageBackground source={cover}>
+  <Text>{title}</Text>
+</ImageBackground>;
+```
+
+### react-doctor/rn-no-inline-flatlist-renderitem
+
+Disallow inline `renderItem` functions on FlatList, SectionList, FlashList, and other virtualized lists; use a named function or `useCallback`. Severity: `warn`.
+
+```tsx
+// bad
+<FlatList data={items} renderItem={({ item }) => <Row item={item} />} />;
+
+// good
+const renderItem = ({ item }) => <Row item={item} />;
+
+<FlatList data={items} renderItem={renderItem} />;
+```
+
+### react-doctor/rn-no-inline-object-in-list-item
+
+Disallow inline object and array props inside an inline list `renderItem`, which make `memo()` rows redraw every time. Severity: `warn`.
+
+```tsx
+// bad
+<FlatList data={items} renderItem={({ item }) => <Row item={item} style={{ padding: 12 }} />} />;
+
+// good
+const renderItem = ({ item }) => <Row item={item} style={styles.row} />;
+
+<FlatList data={items} renderItem={renderItem} />;
+```
+
+### react-doctor/rn-no-legacy-expo-packages
+
+Disallow unmaintained packages such as `expo-av`, `expo-permissions`, `expo-app-loading`, and `react-native-fast-image`; use their maintained replacements. Severity: `warn`.
+
+```tsx
+// bad
+import { Video } from "expo-av";
+
+// good
+import { useVideoPlayer, VideoView } from "expo-video";
+```
+
+### react-doctor/rn-no-legacy-shadow-styles
+
+Disallow platform-specific shadow styles (`shadowColor`, `shadowOffset`, `shadowOpacity`, `shadowRadius`, `elevation`); use `boxShadow`. Severity: `warn`.
+
+```ts
+// bad
+const styles = StyleSheet.create({
+  card: { shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 },
+});
+
+// good
+const styles = StyleSheet.create({
+  card: { boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)" },
+});
+```
+
+### react-doctor/rn-no-raw-text
+
+Disallow raw text rendered outside a `<Text>` component, which crashes on React Native. Severity: `error`.
+
+```tsx
+// bad
+<View>Hello, world</View>
+
+// good
+<View>
+  <Text>Hello, world</Text>
+</View>
+```
+
+### react-doctor/rn-no-renderitem-key
+
+Disallow `key` on the element returned from a list's `renderItem`; set `keyExtractor` on the list instead. Severity: `warn`.
+
+```tsx
+// bad
+<FlatList data={users} renderItem={({ item }) => <UserRow key={item.id} user={item} />} />
+
+// good
+<FlatList
+  data={users}
+  keyExtractor={(user) => user.id}
+  renderItem={({ item }) => <UserRow user={item} />}
+/>
+```
+
+### react-doctor/rn-no-scroll-state
+
+Disallow calling a `useState` setter from an `onScroll` handler; track the position with a Reanimated shared value or a ref. Severity: `error`.
+
+```tsx
+// bad
+const [offsetY, setOffsetY] = useState(0);
+<ScrollView onScroll={(event) => setOffsetY(event.nativeEvent.contentOffset.y)} />;
+
+// good
+const offsetY = useSharedValue(0);
+const onScroll = useAnimatedScrollHandler((event) => {
+  offsetY.value = event.contentOffset.y;
+});
+<Animated.ScrollView onScroll={onScroll} />;
+```
+
+### react-doctor/rn-no-scrollview-mapped-list
+
+Disallow rendering a mapped list inside `ScrollView`; use a virtualized list such as FlashList, LegendList, or FlatList. Severity: `warn`.
+
+```tsx
+// bad
+<ScrollView>
+  {messages.map((message) => (
+    <MessageRow key={message.id} message={message} />
+  ))}
+</ScrollView>
+
+// good
+<FlatList
+  data={messages}
+  keyExtractor={(message) => message.id}
+  renderItem={({ item }) => <MessageRow message={item} />}
+/>
+```
+
+### react-doctor/rn-platform-shaking-use-direct-import
+
+Require importing `Platform` directly from `react-native` instead of reaching it through a namespace import, so Expo can remove the other platform's branches. Severity: `warn`.
+
+```ts
+// bad
+import * as ReactNative from "react-native";
+const isIOS = ReactNative.Platform.OS === "ios";
+
+// good
+import { Platform } from "react-native";
+const isIOS = Platform.OS === "ios";
+```
+
+### react-doctor/rn-pressable-shared-value-mutation
+
+Disallow mutating a Reanimated shared value from a `Pressable` or `Touchable*` press handler; drive the animation from `Gesture.Tap()` so it runs on the UI thread. Severity: `warn`.
+
+```tsx
+// bad
+function LikeButton() {
+  const scale = useSharedValue(1);
+  return (
+    <Pressable
+      onPressIn={() => {
+        scale.value = withSpring(0.9);
+      }}
+    >
+      <HeartIcon />
+    </Pressable>
+  );
+}
+
+// good
+function LikeButton() {
+  const scale = useSharedValue(1);
+  const tap = Gesture.Tap().onBegin(() => {
+    scale.value = withSpring(0.9);
+  });
+  return (
+    <GestureDetector gesture={tap}>
+      <HeartIcon />
+    </GestureDetector>
+  );
+}
+```
+
+### react-doctor/rn-reanimated-4-no-legacy-spring-thresholds
+
+Disallow the Reanimated 3 `restDisplacementThreshold` and `restSpeedThreshold` options in `withSpring`; use Reanimated 4's `energyThreshold` instead. Severity: `warn`.
+
+```ts
+// bad
+offset.value = withSpring(0, { restDisplacementThreshold: 0.01, restSpeedThreshold: 2 });
+
+// good
+offset.value = withSpring(0, { energyThreshold: 6e-9 });
+```
+
+### react-doctor/rn-reanimated-4-no-removed-api
+
+Disallow Reanimated APIs removed in Reanimated 4, such as `useAnimatedGestureHandler`, `useWorkletCallback`, and `combineTransition`. Severity: `warn`.
+
+```ts
+// bad
+const onDrag = useAnimatedGestureHandler({
+  onActive: (event) => {
+    offsetX.value = event.translationX;
+  },
+});
+
+// good
+const pan = Gesture.Pan().onUpdate((event) => {
+  offsetX.value = event.translationX;
+});
+```
+
+### react-doctor/rn-reanimated-4-use-worklets-scheduler
+
+Require the `react-native-worklets` schedulers instead of Reanimated's `runOnJS`, `runOnUI`, `executeOnUIRuntimeSync`, and `runOnRuntime` when migrating to Reanimated 4. Severity: `warn`.
+
+```ts
+// bad
+import { runOnJS } from "react-native-reanimated";
+runOnJS(onComplete)(result);
+
+// good
+import { scheduleOnRN } from "react-native-worklets";
+scheduleOnRN(onComplete, result);
+```
+
+### react-doctor/rn-scrollview-dynamic-padding
+
+Disallow dynamic `paddingTop` or `paddingBottom` in an inline `contentContainerStyle` on scroll views and lists; use `contentInset` instead. Severity: `warn`.
+
+```tsx
+// bad
+<ScrollView contentContainerStyle={{ paddingBottom: keyboardHeight }} />
+
+// good
+<ScrollView contentInset={{ bottom: keyboardHeight }} />
+```
+
+### react-doctor/rn-scrollview-flex-in-content-container
+
+Disallow `flex` on a scroll view's `contentContainerStyle`; use `flexGrow: 1` instead. Severity: `warn`.
+
+```tsx
+// bad
+<ScrollView contentContainerStyle={{ flex: 1 }} />
+
+// good
+<ScrollView contentContainerStyle={{ flexGrow: 1 }} />
+```
+
+### react-doctor/rn-style-prefer-boxshadow
+
+Prefer a cross-platform `boxShadow` over the iOS-only `shadow*` keys or the Android-only `elevation`. Severity: `warn`.
+
+```ts
+// bad
+const styles = StyleSheet.create({
+  card: { shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 8 },
+});
+
+// good
+const styles = StyleSheet.create({
+  card: { boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)" },
+});
 ```
 
 ## React Doctor: View Transitions
@@ -13388,6 +15311,74 @@ const Email = z.string().email();
 
 // good
 const Email = z.email();
+```
+
+## React Doctor: Zustand
+
+### react-doctor/zustand-no-fresh-selector-result
+
+Disallow Zustand selectors that return a new object or array on every call; select a stable field or wrap the selector in `useShallow`. Severity: `error`.
+
+```tsx
+// bad
+const { items, total } = useCartStore((state) => ({ items: state.items, total: state.total }));
+
+// good
+const { items, total } = useCartStore(
+  useShallow((state) => ({ items: state.items, total: state.total })),
+);
+```
+
+### react-doctor/zustand-no-get-during-initialization
+
+Disallow calling `get()` while a Zustand store's initial state is being created. Severity: `error`.
+
+```ts
+// bad
+const useCounterStore = create((set, get) => ({
+  count: 1,
+  doubled: get().count * 2,
+}));
+
+// good
+const useCounterStore = create((set, get) => ({
+  count: 1,
+  doubled: () => get().count * 2,
+}));
+```
+
+### react-doctor/zustand-no-mutating-state
+
+Disallow mutating Zustand state in place before passing it to `set`; create a new object, array, Map, or Set. Severity: `error`.
+
+```ts
+// bad
+addTodo: (todo) =>
+  set((state) => {
+    state.todos.push(todo);
+    return { todos: state.todos };
+  }),
+
+// good
+addTodo: (todo) => set((state) => ({ todos: [...state.todos, todo] })),
+```
+
+### react-doctor/zustand-no-whole-store-destructure
+
+Disallow calling a Zustand store hook without a selector during render, which subscribes the component to the whole store. Severity: `warn`.
+
+```tsx
+// bad
+function BearCounter() {
+  const { bears } = useBearStore();
+  return <h1>{bears} bears</h1>;
+}
+
+// good
+function BearCounter() {
+  const bears = useBearStore((state) => state.bears);
+  return <h1>{bears} bears</h1>;
+}
 ```
 
 ## Development

@@ -1,13 +1,10 @@
 import { defineConfig } from "oxlint";
 import config from "oxlint-config-awesomeness";
+import shadcn from "oxlint-config-awesomeness/shadcn";
 
 export default defineConfig({
-  extends: [config],
-  jsPlugins: ["@shadcn/lint"],
+  extends: [config, shadcn],
   rules: {
-    "shadcn/no-arbitrary-values": "error",
-    "shadcn/no-inline-styles": "error",
-    "shadcn/no-raw-colors": "error",
     "shadcn/no-restyle": [
       "error",
       {
@@ -20,8 +17,6 @@ export default defineConfig({
         ],
       },
     ],
-    "shadcn/no-unknown-classes": "error",
-    "shadcn/require-static-classes": "error",
   },
   // Generated output and the vendored third-party bundle are checked at source.
   ignorePatterns: [".github/ci/*.mjs", "dist/**", "anti-slop/index.js"],
