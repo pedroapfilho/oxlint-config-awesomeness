@@ -23,9 +23,9 @@ const createBlockComment = (value, startLine) => ({
   value,
 });
 
-const runNoNovelComments = (comments) => {
+const runCommentRule = (ruleName, comments) => {
   const reports = [];
-  const visitors = awesomenessPlugin.rules["no-novel-comments"].create({
+  const visitors = awesomenessPlugin.rules[ruleName].create({
     report: (report) => reports.push(report),
     sourceCode: { getAllComments: () => comments },
   });
@@ -34,6 +34,8 @@ const runNoNovelComments = (comments) => {
   runProgram();
   return reports;
 };
+
+const runNoNovelComments = (comments) => runCommentRule("no-novel-comments", comments);
 
 const lineRun = (values, startLine = 1) =>
   values.map((value, index) => createLineComment(value, startLine + index));
@@ -173,6 +175,30 @@ describe("awesomeness/no-novel-comments", () => {
     },
   ])("$name", ({ comments, expected }) => {
     expect(runNoNovelComments(comments)).toHaveLength(expected);
+  });
+});
+
+describe("awesomeness/require-disable-reason", () => {
+  it.each([
+    { comment: " oxlint-disable-next-line no-console", expected: 1 },
+    { comment: " eslint-disable-line no-console, no-alert", expected: 1 },
+    { comment: " oxlint-disable-next-line no-console -- ", expected: 1 },
+    { comment: " oxlint-disable-next-line no-console -- CLI output is the product", expected: 0 },
+    { comment: " eslint-disable-next-line no-console -- CLI output", expected: 0 },
+    { comment: " eslint-enable no-console", expected: 0 },
+    { comment: " oxlint-disabled is not a directive", expected: 0 },
+    { comment: " prose that mentions oxlint-disable later", expected: 0 },
+  ])("reports $expected for `$comment`", ({ comment, expected }) => {
+    const reports = runCommentRule("require-disable-reason", [createLineComment(comment, 1)]);
+    expect(reports).toHaveLength(expected);
+  });
+
+  it("checks block and file-level directives", () => {
+    const reports = runCommentRule("require-disable-reason", [
+      createBlockComment(" oxlint-disable node/no-sync ", 1),
+      createBlockComment(" oxlint-disable node/no-sync -- bounded CLI read ", 2),
+    ]);
+    expect(reports).toHaveLength(1);
   });
 });
 

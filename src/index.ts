@@ -48,17 +48,14 @@ const VITEST_OFF = {
   // `no-only-tests/no-only-tests` already reports `.only`, in every file.
   "vitest/no-focused-tests": "off",
 
-  // Correctness rules whose premise does not hold here: assertions live in
-  // shared helpers (`expect-expect`), branching on fixture data is deliberate
-  // (`no-conditional-*`), mocks are typed by their factory
-  // (`require-mock-type-parameters`), and `.todo` is a planning marker.
+  // Correctness rules whose premise does not hold here: branching on fixture
+  // data narrows a result type (`no-conditional-*`), mocks are typed by their
+  // factory (`require-mock-type-parameters`), and `.todo` is a planning marker.
   // `no-standalone-expect` misreads the curried `describe.skipIf(cond)(...)`.
-  "vitest/expect-expect": "off",
   "vitest/no-conditional-expect": "off",
   "vitest/no-conditional-in-test": "off",
   "vitest/no-standalone-expect": "off",
   "vitest/require-mock-type-parameters": "off",
-  "vitest/require-to-throw-message": "off",
   "vitest/warn-todo": "off",
 
   // Style preferences the repos do not follow; measured against them, each
@@ -242,6 +239,34 @@ const config: OxlintConfig = defineConfig({
         ...ASSERTION_FAMILY_OFF,
         ...REACT_COMPILER_OFF,
         ...VITEST_OFF,
+        // Tests probe runtime shapes the types promise, so `?.` inside an
+        // assertion is how a missing value fails the test instead of crashing it.
+        "@typescript-eslint/no-unnecessary-condition": "off",
+        // A test that asserts nothing passes whatever the code does. Shared
+        // helpers (`expectInvalidLinkState`, `assertShape`), Testing Library
+        // queries that throw when nothing matches (`getBy*`, `findBy*`), and
+        // `waitFor`, which throws on timeout, count as assertions.
+        "vitest/expect-expect": [
+          "error",
+          {
+            assertFunctionNames: [
+              "**.findBy*",
+              "**.getBy*",
+              "assert",
+              "assert*",
+              "assertType",
+              "expect",
+              "expect*",
+              "expectTypeOf",
+              "findBy*",
+              "getBy*",
+              "waitFor",
+            ],
+          },
+        ],
+        // A bare `toThrow()` passes on any error, including the `TypeError` a
+        // typo throws. Warn, not error: 136 existing assertions across the fleet.
+        "vitest/require-to-throw-message": "warn",
         // Mocks are commonly typed `any` for speed.
         "@typescript-eslint/no-explicit-any": "off",
         // Fixtures chain `!` + `??` for narrowing.
@@ -337,6 +362,8 @@ const config: OxlintConfig = defineConfig({
         ...UNSAFE_ANY_OFF,
         ...ASSERTION_FAMILY_OFF,
         ...REACT_COMPILER_OFF,
+        // Harness code checks page and API state the types cannot see.
+        "@typescript-eslint/no-unnecessary-condition": "off",
         // Harness code branches on optional env vars (`if (process.env.CI)`).
         "@typescript-eslint/strict-boolean-expressions": "off",
         // A fixture with no dependencies must be written `async ({}, use) =>`;
@@ -405,7 +432,9 @@ const config: OxlintConfig = defineConfig({
     // Require the `v` flag on regex literals — opts into Unicode-aware matching with set notation.
     "eslint/require-unicode-regexp": ["error", { requireFlag: "v" }],
     // Block `@nocommit` markers from reaching main — a hard stop for WIP code.
-    "no-warning-comments": ["error", { terms: ["@nocommit"] }],
+    // `todo`/`fixme`/`xxx` too: a placeholder left in generated code ships
+    // unfinished behavior behind a comment. The managed repos carried two.
+    "no-warning-comments": ["error", { terms: ["@nocommit", "fixme", "todo", "xxx"] }],
     // Lives in `style`, which we bulk-enable, so it needs an explicit "off" —
     // deleting this line would restore the upstream default ("always"), which
     // demands comma-combined declarations.
@@ -455,6 +484,8 @@ const config: OxlintConfig = defineConfig({
     "no-param-reassign": "error",
     // `__proto__` is deprecated — use `Object.getPrototypeOf`.
     "no-proto": "error",
+    // Multiple spaces in a regex literal are invisible; `/a {3}b/` states the count.
+    "no-regex-spaces": "error",
     // `return a = b` looks like a typo for `==`.
     "no-return-assign": "error",
     // `javascript:` URLs are XSS vectors.
@@ -484,6 +515,8 @@ const config: OxlintConfig = defineConfig({
     "prefer-promise-reject-errors": "error",
     // Template literals > string concatenation — fewer escape/coercion bugs.
     "prefer-template": "error",
+    // A byte-order mark breaks shebangs and file concatenation; UTF-8 needs none.
+    "unicode-bom": "error",
 
     // Restriction — TypeScript
     // Highest-leverage rules for AI-generated code: they block the escape hatches
@@ -509,6 +542,9 @@ const config: OxlintConfig = defineConfig({
     // Use ESM `import` — `require()` breaks tree-shaking and type inference.
     "@typescript-eslint/no-require-imports": "error",
     "@typescript-eslint/no-var-requires": "error",
+    // A computed enum member (`B = compute()`) loses the literal type and
+    // makes the enum's value set unknowable to the checker.
+    "@typescript-eslint/prefer-literal-enum-member": "error",
     // Promise-returning functions must be `async` — guarantees thrown errors become rejections.
     "@typescript-eslint/promise-function-async": ["error", { checkArrowFunctions: false }],
     // `.catch((err) => ...)` — `err` should be `unknown`, not `any` (strict TS behavior).
@@ -522,7 +558,18 @@ const config: OxlintConfig = defineConfig({
     "@typescript-eslint/prefer-readonly-parameter-types": "off",
     // Fires on idiomatic destructuring of library hooks (`const { push } = useRouter()`)
     // because their types lack `this: void` annotations; false positives dominate.
+    // Most peer configs enable it; measured on the fleet, 11 of 12 sampled hits were this.
     "@typescript-eslint/unbound-method": "off",
+    // Defensive checks the types rule out (`user?.name ?? "anonymous"` on a
+    // required field) hide a wrong type instead of fixing it. Warn, not error:
+    // 721 existing sites, and a flag flipped inside a callback (`cancelled`)
+    // reads as constant to the checker. Nursery-classified, so enabled by name.
+    "@typescript-eslint/no-unnecessary-condition": [
+      "warn",
+      { allowConstantLoopConditions: "only-allowed-literals" },
+    ],
+    // `a && a.b && a.b.c` is `a?.b?.c`. Nursery-classified, so enabled by name.
+    "@typescript-eslint/prefer-optional-chain": "error",
 
     // Restriction — React
 
@@ -534,10 +581,18 @@ const config: OxlintConfig = defineConfig({
       "error",
       { namedComponents: "arrow-function", unnamedComponents: "arrow-function" },
     ],
+    // `cloneElement` is a legacy API that injects props a child cannot see at
+    // its call site; it survives in generated code because older examples used
+    // it. Pass the data as a prop instead. (`react/no-react-children` stays
+    // off: every `Children.toArray` in the managed repos was a legitimate
+    // flattening of arbitrary children.)
+    "react/no-clone-element": "error",
     // Raw HTML insertion in JSX is an XSS vector — require a deliberate opt-out.
     "react/no-danger": "error",
     // Catches typos like `class=` or `tabindex=` in JSX.
     "react/no-unknown-property": "error",
+    // A class component `render` without a `return` renders nothing. Nursery-classified.
+    "react/require-render-return": "error",
 
     // Restriction — import graph
 
@@ -545,8 +600,12 @@ const config: OxlintConfig = defineConfig({
     // module shapes that only surface at import time. Nursery-classified in
     // oxlint, so no bulk-enabled category covers it; enabled here by name.
     "import/export": "error",
+    // AMD `define`/`require([...])` and `loader!./file` specifiers bind a
+    // module to one bundler or loader; both come from pre-ESM examples.
+    "import/no-amd": "error",
     // Circular imports produce `undefined` exports at runtime — a real-world crash source.
     "import/no-cycle": "error",
+    "import/no-webpack-loader-syntax": "error",
 
     // Restriction — unicorn (modern JS + anti-escape-hatch)
 
@@ -560,6 +619,9 @@ const config: OxlintConfig = defineConfig({
     "unicorn/no-magic-array-flat-depth": "error",
     // `process.exit()` skips `finally` blocks and async flushes. CLI override above handles CLIs.
     "unicorn/no-process-exit": "error",
+    // `Error.captureStackTrace(this)` in an `Error` subclass constructor
+    // repeats what the engine already did; it is copied boilerplate.
+    "unicorn/no-useless-error-capture-stack-trace": "error",
     // `Math.trunc(x)` over `x | 0` — clearer intent, correct for numbers outside Int32 range.
     "unicorn/prefer-modern-math-apis": "error",
     // `import { fs } from 'node:fs'` — the `node:` prefix disambiguates from npm packages.
@@ -580,6 +642,9 @@ const config: OxlintConfig = defineConfig({
     // A `return` inside `.finally()` is ignored; the chain keeps the prior value.
     // Nursery-classified, so enabled by name.
     "promise/no-return-in-finally": "error",
+    // `Promise.done`, `.spread`, and other non-standard methods are library
+    // extensions (Bluebird, Q) that native promises do not have.
+    "promise/spec-only": "error",
 
     // Restriction — oxc
 
@@ -794,6 +859,10 @@ const config: OxlintConfig = defineConfig({
     "react/set-state-in-effect": "error",
     // Never set state during render; it loops forever.
     "react/set-state-in-render": "error",
+    // Disabling a React rule inside a component makes the compiler skip that
+    // component entirely, silently. Warn, not error: the opt-out can be right,
+    // but it should be visible. Restriction-classified, so enabled by name.
+    "react/rule-suppression": "warn",
     // Prefer static component definitions over dynamic factories.
     "react/static-components": "error",
     // Syntax (decorators, specific private-field patterns) the compiler can't analyze.
@@ -889,6 +958,12 @@ const config: OxlintConfig = defineConfig({
     // behavior, e2e helper contracts). Blocking a build on prose is the wrong
     // trade; the warning still surfaces every one of them.
     "awesomeness/no-novel-comments": "warn",
+    // Every `oxlint-disable`/`eslint-disable` needs `-- reason`, the lint
+    // counterpart of `ban-ts-comment` requiring a description on
+    // `@ts-expect-error`. A suppression is the cheapest way to make an error
+    // go away, and without a reason a reviewer cannot tell a considered
+    // exception from a silenced bug.
+    "awesomeness/require-disable-reason": "error",
 
     // React Doctor (react-doctor): original diagnostic rules at upstream severities
     // (warn = advisory, error = definite bug). Excluded on purpose: the ports of

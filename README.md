@@ -2,7 +2,7 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-**546 rules** across **16 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+**559 rules** across **16 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
@@ -207,40 +207,40 @@ Plus JS plugins: **perfectionist** (sorting), **react-hooks** + **React Compiler
 
 The config includes smart overrides so strict rules don't create noise in files that need flexibility:
 
-| Files                                    | Relaxed Rules                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `*.test.*`, `*.spec.*`, `__tests__/**`   | Adds the **vitest** plugin (its correctness rules plus the style rules the repos already follow). Relaxes `no-explicit-any`, `no-non-null-assertion` (+ asserted-nullish variant), `no-require-imports`, `no-var-requires`, `promise-function-async`, all `no-unsafe-*`, `import/no-cycle`, `max-lines`, `max-lines-per-function`, `max-nested-callbacks`, `max-statements`, `no-empty`, `no-empty-function`, `no-use-before-define`, the `anti-slop` assertion family (`no-chained-type-assertions`, `no-known-value-widening`, `no-unknown-type-aliases`, `no-unsafe-dictionary-type`, `no-widen-then-assert`, `require-safety-comment-for-type-assertion`) |
-| `*.stories.tsx`                          | `no-console`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `**/seed.ts`, `**/migrate.ts`            | `no-console`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `**/bin/**`, `**/scripts/**`, `tools/**` | `no-console`, `unicorn/no-process-exit`, `node/no-sync`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `*.config.ts`, `next.config.*`, etc.     | `max-lines`, `no-anonymous-default-export`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `**/e2e/**`                              | `rules-of-hooks`, all `no-unsafe-*`, the `anti-slop` assertion family, `strict-boolean-expressions`, `no-empty-pattern` (Playwright's `async ({}, use)` fixtures), `require-unicode-regexp` (Playwright rejects `v`-flagged regex)                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `*.ts`, `*.tsx` (all TypeScript)         | Rules handled natively by the TS compiler (`no-undef`, `no-redeclare`, etc.); `require-await` (the type-aware twin reports it); `new-cap` checks only `new` targets                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `*.d.ts`                                 | `consistent-type-definitions`, `consistent-indexed-object-style` (ambient declarations merge through `interface`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `*.astro`                                | `react-doctor/no-impure-call-at-module-scope`, `unused-imports/no-unused-imports` (imports used only in markup)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `**/middleware.ts`, `**/proxy.ts`        | `unicorn/prefer-string-raw` (Next.js reads `config.matcher` as a plain string literal)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Files                                    | Relaxed Rules                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `*.test.*`, `*.spec.*`, `__tests__/**`   | Adds the **vitest** plugin (its correctness rules, `expect-expect` with assertion helpers, and the style rules the repos already follow). Relaxes `no-unnecessary-condition`, `no-explicit-any`, `no-non-null-assertion` (+ asserted-nullish variant), `no-require-imports`, `no-var-requires`, `promise-function-async`, all `no-unsafe-*`, `import/no-cycle`, `max-lines`, `max-lines-per-function`, `max-nested-callbacks`, `max-statements`, `no-empty`, `no-empty-function`, `no-use-before-define`, the `anti-slop` assertion family (`no-chained-type-assertions`, `no-known-value-widening`, `no-unknown-type-aliases`, `no-unsafe-dictionary-type`, `no-widen-then-assert`, `require-safety-comment-for-type-assertion`) |
+| `*.stories.tsx`                          | `no-console`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `**/seed.ts`, `**/migrate.ts`            | `no-console`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `**/bin/**`, `**/scripts/**`, `tools/**` | `no-console`, `unicorn/no-process-exit`, `node/no-sync`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `*.config.ts`, `next.config.*`, etc.     | `max-lines`, `no-anonymous-default-export`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `**/e2e/**`                              | `no-unnecessary-condition`, `rules-of-hooks`, all `no-unsafe-*`, the `anti-slop` assertion family, `strict-boolean-expressions`, `no-empty-pattern` (Playwright's `async ({}, use)` fixtures), `require-unicode-regexp` (Playwright rejects `v`-flagged regex)                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `*.ts`, `*.tsx` (all TypeScript)         | Rules handled natively by the TS compiler (`no-undef`, `no-redeclare`, etc.); `require-await` (the type-aware twin reports it); `new-cap` checks only `new` targets                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `*.d.ts`                                 | `consistent-type-definitions`, `consistent-indexed-object-style` (ambient declarations merge through `interface`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `*.astro`                                | `react-doctor/no-impure-call-at-module-scope`, `unused-imports/no-unused-imports` (imports used only in markup)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `**/middleware.ts`, `**/proxy.ts`        | `unicorn/prefer-string-raw` (Next.js reads `config.matcher` as a plain string literal)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 
 ## Cherry-Picked Restriction Rules
 
 Instead of enabling the entire `restriction` category (which includes rules like `no-bitwise`, `no-plusplus`, `capitalized-comments` that cause daily friction), this config cherry-picks the most valuable restriction rules, grouped by plugin:
 
 **Core ESLint**
-`curly`, `default-case`, `eqeqeq`, `grouped-accessor-pairs`, `max-classes-per-file`, `max-depth`, `max-lines`, `max-nested-callbacks`, `max-params`, `no-alert`, `no-caller`, `no-console`, `no-empty`, `no-eval`, `no-extend-native`, `no-implicit-coercion`, `no-new-func`, `no-new-wrappers`, `no-object-constructor`, `no-param-reassign`, `no-proto`, `no-return-assign`, `no-script-url`, `no-sequences`, `no-shadow`, `no-throw-literal`, `no-unreachable-loop`, `no-use-before-define`, `no-var`, `no-void`, `prefer-promise-reject-errors`, `prefer-template`
+`curly`, `default-case`, `eqeqeq`, `grouped-accessor-pairs`, `max-classes-per-file`, `max-depth`, `max-lines`, `max-nested-callbacks`, `max-params`, `no-alert`, `no-caller`, `no-console`, `no-empty`, `no-eval`, `no-extend-native`, `no-implicit-coercion`, `no-new-func`, `no-new-wrappers`, `no-object-constructor`, `no-param-reassign`, `no-proto`, `no-regex-spaces`, `no-return-assign`, `no-script-url`, `no-sequences`, `no-shadow`, `no-throw-literal`, `no-unreachable-loop`, `no-use-before-define`, `no-var`, `no-void`, `prefer-promise-reject-errors`, `prefer-template`, `unicode-bom`
 
 **TypeScript** — blocks escape hatches (`any`, `!`, `require`) that AI-generated code routinely produces:
-`@typescript-eslint/no-dynamic-delete`, `no-empty-object-type`, `no-explicit-any`, `no-import-type-side-effects`, `no-invalid-void-type`, `no-namespace`, `no-non-null-asserted-nullish-coalescing`, `no-non-null-assertion`, `no-require-imports`, `no-var-requires`, `promise-function-async`, `use-unknown-in-catch-callback-variable`
+`@typescript-eslint/no-dynamic-delete`, `no-empty-object-type`, `no-explicit-any`, `no-import-type-side-effects`, `no-invalid-void-type`, `no-namespace`, `no-non-null-asserted-nullish-coalescing`, `no-non-null-assertion`, `no-require-imports`, `no-var-requires`, `prefer-literal-enum-member`, `promise-function-async`, `use-unknown-in-catch-callback-variable`
 
 **React**
-`react/button-has-type`, `react/no-danger`, `react/no-unknown-property`
+`react/button-has-type`, `react/no-clone-element`, `react/no-danger`, `react/no-unknown-property`, `react/rule-suppression`
 
 **Import graph**
-`import/no-cycle`
+`import/no-amd`, `import/no-cycle`, `import/no-webpack-loader-syntax`
 
 **Unicorn** (modern JS + anti-escape-hatch)
-`unicorn/no-abusive-eslint-disable`, `unicorn/no-document-cookie`, `unicorn/no-length-as-slice-end`, `unicorn/no-process-exit`, `unicorn/prefer-modern-math-apis`, `unicorn/prefer-node-protocol`, `unicorn/prefer-number-properties`
+`unicorn/no-abusive-eslint-disable`, `unicorn/no-document-cookie`, `unicorn/no-length-as-slice-end`, `unicorn/no-process-exit`, `unicorn/no-useless-error-capture-stack-trace`, `unicorn/prefer-modern-math-apis`, `unicorn/prefer-node-protocol`, `unicorn/prefer-number-properties`
 
 **Promise / Node**
-`promise/catch-or-return`, `promise/no-return-in-finally`, `node/handle-callback-err`, `node/no-new-require`, `node/no-path-concat`
+`promise/catch-or-return`, `promise/no-return-in-finally`, `promise/spec-only`, `node/handle-callback-err`, `node/no-new-require`, `node/no-path-concat`
 
 **Oxc**
 `oxc/bad-bitwise-operator`
@@ -2363,14 +2363,15 @@ undefined;
 
 ### no-warning-comments
 
-Disallow comments containing `@nocommit`.
+Disallow `@nocommit`, `TODO`, `FIXME`, and `XXX` comments. A placeholder in generated code ships unfinished behavior behind a comment; track the follow-up in an issue instead.
 
 ```js
 // bad
-// @nocommit temporary hack
+// TODO: handle the empty state
+const items = data ?? [];
 
 // good
-// TODO: refactor this later
+const items = data ?? [];
 ```
 
 ### no-with
@@ -3381,18 +3382,14 @@ if (isReady) {
 
 ### @typescript-eslint/no-unnecessary-condition
 
-Disallow conditionals where the type is always truthy or always falsy.
+Disallow conditions, optional chains, and `??` fallbacks on values whose type already rules the case out. A defensive check on a required field hides a wrong type instead of fixing it. Off in test and e2e files. Severity: `warn`.
 
 ```ts
 // bad
-const x = "hello";
-if (x) {
-}
+const label = (user: { name: string }) => user?.name ?? "anonymous";
 
 // good
-const x = getValue();
-if (x) {
-}
+const label = (user: { name?: string }) => user.name ?? "anonymous";
 ```
 
 ### @typescript-eslint/no-unnecessary-qualifier
@@ -4454,6 +4451,18 @@ Disallow passing children as props.
 <Component><Child /></Component>
 ```
 
+### react/no-clone-element
+
+Disallow `cloneElement`, a legacy API that injects props a child cannot see in its own call site. Pass the data as a prop instead.
+
+```tsx
+// bad
+const Disabled = ({ child }) => cloneElement(child, { disabled: true });
+
+// good
+const Field = ({ disabled }) => <input disabled={disabled} />;
+```
+
 ### react/no-danger
 
 Disallow `dangerouslySetInnerHTML`.
@@ -4919,6 +4928,23 @@ const show = isLoading && elapsed === epochRef.current;
 useEffect(() => {
   setShow(isLoading && elapsed === epochRef.current);
 }, [isLoading, elapsed]);
+```
+
+### react/rule-suppression
+
+Flag disabled React rules inside a component: the compiler then skips that component without saying so. Severity: `warn`.
+
+```tsx
+// bad
+const Search = ({ query }) => {
+  // oxlint-disable-next-line react-hooks/exhaustive-deps -- track only the first query
+  useEffect(() => track(query), []);
+};
+
+// good
+const Search = ({ query }) => {
+  useEffect(() => track(query), [query]);
+};
 ```
 
 ### react/set-state-in-effect
@@ -5667,6 +5693,28 @@ console.log(obj.used);
 // good
 const obj = { used: 1 };
 console.log(obj.used);
+```
+
+### unicorn/no-useless-error-capture-stack-trace
+
+Disallow `Error.captureStackTrace` in an `Error` subclass constructor, where the engine has already captured the stack.
+
+```ts
+// bad
+class ApiError extends Error {
+  constructor(message: string) {
+    super(message);
+    Error.captureStackTrace(this, ApiError);
+  }
+}
+
+// good
+class ApiError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
 ```
 
 ### unicorn/no-useless-fallback-in-spread
@@ -8029,6 +8077,22 @@ vitest.mock("./api");
 vi.mock("./api");
 ```
 
+### vitest/expect-expect
+
+Require at least one assertion in every test; a test that asserts nothing passes whatever the code does. Calls to `expect*`, `assert*`, `expectTypeOf`, `assertType`, `waitFor`, and Testing Library's throwing `getBy*`/`findBy*` queries count, so shared assertion helpers work.
+
+```ts
+// bad
+it("renders the button", () => {
+  render(<Button />);
+});
+
+// good
+it("renders the button", () => {
+  expect(render(<Button />).text).toBe("Save");
+});
+```
+
 ### vitest/hoisted-apis-on-top
 
 Require `vi.mock`, `vi.unmock`, and `vi.hoisted` at the top level of the file, since Vitest hoists them above the imports wherever they are written.
@@ -8378,6 +8442,18 @@ test.concurrent("renders the card", () => {
 test.concurrent("renders the card", ({ expect }) => {
   expect(renderCard()).toMatchSnapshot();
 });
+```
+
+### vitest/require-to-throw-message
+
+Require an expected message or error on `toThrow` and `rejects.toThrow`; a bare `toThrow()` passes on any error, including a `TypeError` from a typo. Reported as a warning.
+
+```ts
+// bad
+expect(() => parse("")).toThrow();
+
+// good
+expect(() => parse("")).toThrow("input is empty");
 ```
 
 ### vitest/valid-describe-callback
@@ -8775,6 +8851,20 @@ const activeEmails = (users: Array<User>) => dedupe(sortedEmails(users));
 // good
 // Dedupe AFTER lowercasing: the upstream CRM exports mixed-case duplicates.
 const activeEmails = (users: Array<User>) => dedupe(sortedEmails(users));
+```
+
+### awesomeness/require-disable-reason
+
+Require a `-- reason` on every `oxlint-disable` and `eslint-disable` directive, the lint counterpart of `@typescript-eslint/ban-ts-comment` requiring a description on `@ts-expect-error`. Without a reason, a reviewer cannot tell a considered exception from a silenced bug. Severity: `error`.
+
+```ts
+// bad
+// oxlint-disable-next-line no-console
+console.log(report);
+
+// good
+// oxlint-disable-next-line no-console -- the CLI prints its report to stdout
+console.log(report);
 ```
 
 ## React Doctor Rules

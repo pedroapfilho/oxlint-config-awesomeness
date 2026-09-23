@@ -23,6 +23,15 @@ Fix rules that fight the toolchain or the fleet's layout:
 Test files:
 
 - The vitest plugin now runs on `*.test.*`, `*.spec.*`, and `__tests__/**`. Its correctness rules are on, including `valid-expect`, which reports an un-awaited `.resolves`/`.rejects` assertion that never runs, plus the style rules the repos already follow. `vitest/no-focused-tests` stays off because `no-only-tests` already covers `.only`.
+- `vitest/expect-expect` reports tests with no assertion; calls to `expect*`, `assert*`, `expectTypeOf`, `assertType`, `waitFor`, and Testing Library's throwing `getBy*`/`findBy*` queries count, so shared helpers work. `vitest/require-to-throw-message` warns on a bare `toThrow()`, which passes on any error.
+
+Guardrails for generated code:
+
+- New first-party rule `awesomeness/require-disable-reason` (error): every `oxlint-disable`/`eslint-disable` directive needs `-- reason`, the lint counterpart of `ban-ts-comment` requiring a description on `@ts-expect-error`.
+- `no-warning-comments` also rejects `todo`, `fixme`, and `xxx`, so placeholders do not ship.
+- `@typescript-eslint/no-unnecessary-condition` (warn, off in tests and e2e) reports defensive checks on values the types rule out; `@typescript-eslint/prefer-optional-chain` (error) replaces `a && a.b` chains.
+- `react/no-clone-element` rejects the legacy prop-injection API; `react/rule-suppression` warns when disabling a React rule makes the compiler skip a component.
+- Rules most peer configs enable and this one lacked, none of which fires more than three times across the managed repos: `no-regex-spaces`, `unicode-bom`, `@typescript-eslint/prefer-literal-enum-member`, `react/require-render-return`, `import/no-amd`, `import/no-webpack-loader-syntax`, `promise/spec-only`, `unicorn/no-useless-error-capture-stack-trace`.
 
 Enable rules:
 
