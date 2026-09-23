@@ -27,7 +27,7 @@ Test files:
 
 Guardrails for generated code:
 
-- New first-party rule `awesomeness/require-disable-reason` (error): every `oxlint-disable`/`eslint-disable` directive needs `-- reason`, the lint counterpart of `ban-ts-comment` requiring a description on `@ts-expect-error`.
+- New first-party rule `awesomeness/require-disable-reason` (warn): every `oxlint-disable`/`eslint-disable` directive needs `-- reason`, the lint counterpart of `ban-ts-comment` requiring a description on `@ts-expect-error`. It warns while the 303 unexplained directives across the managed repos are explained or deleted; it becomes an error in a later release.
 - `no-warning-comments` also rejects `todo`, `fixme`, and `xxx`, so placeholders do not ship.
 - `@typescript-eslint/no-unnecessary-condition` (warn, off in tests and e2e) reports defensive checks on values the types rule out; `@typescript-eslint/prefer-optional-chain` (error) replaces `a && a.b` chains.
 - `react/no-clone-element` rejects the legacy prop-injection API; `react/rule-suppression` warns when disabling a React rule makes the compiler skip a component.

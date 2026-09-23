@@ -963,7 +963,11 @@ const config: OxlintConfig = defineConfig({
     // `@ts-expect-error`. A suppression is the cheapest way to make an error
     // go away, and without a reason a reviewer cannot tell a considered
     // exception from a silenced bug.
-    "awesomeness/require-disable-reason": "error",
+    //
+    // Warn, not error, while the managed repos catch up: they carried 303
+    // unexplained directives, many of them stale ones due for deletion.
+    // Promote to error once they are clean.
+    "awesomeness/require-disable-reason": "warn",
 
     // React Doctor (react-doctor): original diagnostic rules at upstream severities
     // (warn = advisory, error = definite bug). Excluded on purpose: the ports of

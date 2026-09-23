@@ -8855,7 +8855,7 @@ const activeEmails = (users: Array<User>) => dedupe(sortedEmails(users));
 
 ### awesomeness/require-disable-reason
 
-Require a `-- reason` on every `oxlint-disable` and `eslint-disable` directive, the lint counterpart of `@typescript-eslint/ban-ts-comment` requiring a description on `@ts-expect-error`. Without a reason, a reviewer cannot tell a considered exception from a silenced bug. Severity: `error`.
+Require a `-- reason` on every `oxlint-disable` and `eslint-disable` directive, the lint counterpart of `@typescript-eslint/ban-ts-comment` requiring a description on `@ts-expect-error`. Without a reason, a reviewer cannot tell a considered exception from a silenced bug. A warning for now, while existing directives gain reasons or are deleted. Severity: `warn`.
 
 ```ts
 // bad
