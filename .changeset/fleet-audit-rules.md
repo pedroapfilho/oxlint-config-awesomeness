@@ -17,6 +17,7 @@ Fix rules that fight the toolchain or the fleet's layout:
 - New overrides: `*.d.ts` allows `interface` for declaration merging; `*.astro` turns off `react-doctor/no-impure-call-at-module-scope` and `unused-imports/no-unused-imports`; Next.js `middleware.ts`/`proxy.ts` turn off `unicorn/prefer-string-raw` so `config.matcher` stays a plain string literal.
 - The e2e override also turns off `no-empty-pattern` (Playwright's `async ({}, use)` fixtures) and `require-unicode-regexp` (Playwright rejects `v`-flagged regex).
 - `no-underscore-dangle` allows Prisma's aggregate keys (`_count`, `_sum`, `_avg`, `_min`, `_max`, `_all`).
+- `perfectionist/sort-objects` leaves objects passed to a `create*Route` factory unsorted. TanStack Router infers types from option order, and `react-doctor/tanstack-start-route-property-order` rejects the alphabetical order sorting would impose.
 - `react-doctor/async-await-in-loop` is off, like core `no-await-in-loop`: the fleet carried 58 reasoned suppressions of it for deliberately sequential awaits.
 
 Test files:

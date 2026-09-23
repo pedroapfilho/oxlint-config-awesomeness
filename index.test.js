@@ -351,3 +351,16 @@ describe("oxlint-config-awesomeness/shadcn", () => {
     expect(config.jsPlugins).not.toContain("@shadcn/lint");
   });
 });
+
+describe("TanStack route options", () => {
+  it("leaves route factory objects in the order TanStack infers types from", () => {
+    const [severity, routeOptions, defaultOptions] = config.rules["perfectionist/sort-objects"];
+    expect(severity).toBe("error");
+    expect(routeOptions.type).toBe("unsorted");
+    expect('createFileRoute("/")').toMatch(
+      new RegExp(routeOptions.useConfigurationIf.callingFunctionNamePattern, "v"),
+    );
+    expect(defaultOptions).toEqual({ partitionByComment: true });
+    expect(config.rules["react-doctor/tanstack-start-route-property-order"]).toBe("error");
+  });
+});

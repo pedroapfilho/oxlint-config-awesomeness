@@ -8481,7 +8481,7 @@ Sort members of object type annotations alphabetically.
 
 ### perfectionist/sort-objects
 
-Sort object keys alphabetically, with partition-by-comment support.
+Sort object keys alphabetically, with partition-by-comment support. Objects passed to a `create*Route` factory are left alone: TanStack Router infers types from option order (`validateSearch` before `beforeLoad` before `loader`), which `react-doctor/tanstack-start-route-property-order` enforces.
 
 ## Other JS Plugin Rules
 

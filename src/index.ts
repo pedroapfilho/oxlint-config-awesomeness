@@ -746,7 +746,17 @@ const config: OxlintConfig = defineConfig({
     // Type fields sorted alphabetically for scannability.
     "perfectionist/sort-object-types": "error",
     // Object keys alphabetical; partitionByComment preserves intentional grouping.
-    "perfectionist/sort-objects": ["error", { partitionByComment: true }],
+    // Except objects passed to a `create*Route` factory: TanStack Router infers
+    // types from option order (`validateSearch` before `beforeLoad` before
+    // `loader`), which `react-doctor/tanstack-start-route-property-order` enforces.
+    "perfectionist/sort-objects": [
+      "error",
+      {
+        type: "unsorted",
+        useConfigurationIf: { callingFunctionNamePattern: String.raw`^create\w*Route\b` },
+      },
+      { partitionByComment: true },
+    ],
 
     // React Compiler: oxlint's native port of the compiler's validation passes
     // (oxlint 1.79+). Replaces the eslint-plugin-react-hooks JS plugin, so the
