@@ -36,8 +36,7 @@ const groupRuns = (comments: ReadonlyArray<Comment>): Array<Array<Comment>> => {
     const previous = currentRun?.at(-1);
     const continuesRun =
       currentRun !== undefined &&
-      previous !== undefined &&
-      previous.type === "Line" &&
+      previous?.type === "Line" &&
       comment.type === "Line" &&
       comment.loc.start.line === previous.loc.end.line + 1;
 
@@ -86,10 +85,41 @@ const noNovelCommentsRule = defineRule({
   },
 });
 
+const DISABLE_DIRECTIVE_PATTERN = /^\s*(?:eslint|oxlint)-disable(?:-next-line|-line)?(?=\s|$)/v;
+const DIRECTIVE_REASON_PATTERN = /\s--\s*\S/v;
+
+const requireDisableReasonRule = defineRule({
+  create(context) {
+    return {
+      Program() {
+        for (const comment of context.sourceCode.getAllComments()) {
+          if (
+            DISABLE_DIRECTIVE_PATTERN.test(comment.value) &&
+            !DIRECTIVE_REASON_PATTERN.test(comment.value)
+          ) {
+            context.report({ loc: comment.loc, messageId: "missingReason" });
+          }
+        }
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description: "Require a `-- reason` on every eslint/oxlint disable directive.",
+    },
+    messages: {
+      missingReason:
+        "Say why the rule does not apply here: add ` -- <reason>` after the rule names. An unexplained suppression reads the same as one that silences a real bug.",
+    },
+    type: "suggestion",
+  },
+});
+
 const awesomenessPlugin = definePlugin({
   meta: { name: "awesomeness" },
   rules: {
     "no-novel-comments": noNovelCommentsRule,
+    "require-disable-reason": requireDisableReasonRule,
   },
 });
 

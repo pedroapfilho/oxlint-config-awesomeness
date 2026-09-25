@@ -77,7 +77,7 @@ describe("init CLI", () => {
 
     expect(code).toBe(1);
     expect(stderr).toContain("already exists. Re-run with --force.");
-    expect(() => readFileSync(join(cwd, "outside.ts"), "utf8")).toThrow();
+    expect(() => readFileSync(join(cwd, "outside.ts"), "utf8")).toThrow("ENOENT");
   });
 
   it.each([

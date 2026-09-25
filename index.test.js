@@ -23,9 +23,9 @@ const createBlockComment = (value, startLine) => ({
   value,
 });
 
-const runNoNovelComments = (comments) => {
+const runCommentRule = (ruleName, comments) => {
   const reports = [];
-  const visitors = awesomenessPlugin.rules["no-novel-comments"].create({
+  const visitors = awesomenessPlugin.rules[ruleName].create({
     report: (report) => reports.push(report),
     sourceCode: { getAllComments: () => comments },
   });
@@ -34,6 +34,8 @@ const runNoNovelComments = (comments) => {
   runProgram();
   return reports;
 };
+
+const runNoNovelComments = (comments) => runCommentRule("no-novel-comments", comments);
 
 const lineRun = (values, startLine = 1) =>
   values.map((value, index) => createLineComment(value, startLine + index));
@@ -176,6 +178,30 @@ describe("awesomeness/no-novel-comments", () => {
   });
 });
 
+describe("awesomeness/require-disable-reason", () => {
+  it.each([
+    { comment: " oxlint-disable-next-line no-console", expected: 1 },
+    { comment: " eslint-disable-line no-console, no-alert", expected: 1 },
+    { comment: " oxlint-disable-next-line no-console -- ", expected: 1 },
+    { comment: " oxlint-disable-next-line no-console -- CLI output is the product", expected: 0 },
+    { comment: " eslint-disable-next-line no-console -- CLI output", expected: 0 },
+    { comment: " eslint-enable no-console", expected: 0 },
+    { comment: " oxlint-disabled is not a directive", expected: 0 },
+    { comment: " prose that mentions oxlint-disable later", expected: 0 },
+  ])("reports $expected for `$comment`", ({ comment, expected }) => {
+    const reports = runCommentRule("require-disable-reason", [createLineComment(comment, 1)]);
+    expect(reports).toHaveLength(expected);
+  });
+
+  it("checks block and file-level directives", () => {
+    const reports = runCommentRule("require-disable-reason", [
+      createBlockComment(" oxlint-disable node/no-sync ", 1),
+      createBlockComment(" oxlint-disable node/no-sync -- bounded CLI read ", 2),
+    ]);
+    expect(reports).toHaveLength(1);
+  });
+});
+
 describe("oxlint-config-awesomeness", () => {
   it("exports a non-null object", () => {
     expect(config).not.toBeNull();
@@ -261,12 +287,84 @@ describe("anti-slop/no-shape-in-symbol-names", () => {
 
 describe("type-aware linting", () => {
   it("enables tsgolint rules and compiler diagnostics for consumers", () => {
-    expect(config.options).toEqual({ typeAware: true, typeCheck: true });
+    expect(config.options).toEqual({
+      reportUnusedDisableDirectives: "warn",
+      typeAware: true,
+      typeCheck: true,
+    });
   });
 
   it("silences type-dependent rules on JavaScript, where every type is `any`", () => {
     const jsOverride = findOverride("**/*.js");
     expect(jsOverride.rules["@typescript-eslint/no-unsafe-call"]).toBe("off");
     expect(jsOverride.rules["@typescript-eslint/strict-boolean-expressions"]).toBe("off");
+  });
+});
+
+describe("file-scoped overrides", () => {
+  it("exempts nested monorepo script folders, not just the root one", () => {
+    const cliOverride = findOverride("**/scripts/**");
+    expect(cliOverride.rules["no-console"]).toBe("off");
+    expect(cliOverride.files).not.toContain("scripts/**");
+  });
+
+  it("lets ambient declarations merge through interfaces", () => {
+    const declarationOverride = findOverride("**/*.d.ts");
+    expect(declarationOverride.rules["@typescript-eslint/consistent-type-definitions"]).toBe("off");
+    expect(config.rules["@typescript-eslint/consistent-type-definitions"]).toEqual([
+      "error",
+      "type",
+    ]);
+  });
+
+  it("keeps Next.js middleware matchers as plain string literals", () => {
+    expect(findOverride("**/proxy.ts").rules["unicorn/prefer-string-raw"]).toBe("off");
+  });
+
+  it("allows the empty fixture pattern Playwright requires", () => {
+    expect(findOverride("**/e2e/**/*.ts").rules["no-empty-pattern"]).toBe("off");
+  });
+});
+
+describe("formatter agreement", () => {
+  it("leaves hex digit casing to oxfmt", () => {
+    expect(config.rules["unicorn/number-literal-case"]).toBe("off");
+  });
+
+  it("reports missing awaits once, through the type-aware rule", () => {
+    expect(findOverride("**/*.ts").rules["require-await"]).toBe("off");
+  });
+});
+
+describe("vitest in test files", () => {
+  const testOverride = findOverride("**/*.test.*");
+
+  it("leaves `.only` to no-only-tests, which also covers non-test files", () => {
+    expect(testOverride.rules["vitest/no-focused-tests"]).toBe("off");
+    expect(config.rules["no-only-tests/no-only-tests"]).toBe("error");
+  });
+});
+
+describe("sequential awaits", () => {
+  it("turns off both loop-await rules together", () => {
+    expect(config.rules["no-await-in-loop"]).toBe("off");
+    expect(config.rules["react-doctor/async-await-in-loop"]).toBe("off");
+  });
+});
+
+describe("oxlint-config-awesomeness/shadcn", () => {
+  it("registers @shadcn/lint and all six of its rules as errors", async () => {
+    const { default: shadcn } = await import("oxlint-config-awesomeness/shadcn");
+    const { plugin } = await import("@shadcn/lint");
+
+    expect(shadcn.jsPlugins).toEqual(["@shadcn/lint"]);
+    for (const ruleName of Object.keys(plugin.rules)) {
+      const setting = shadcn.rules[`shadcn/${ruleName}`];
+      expect(Array.isArray(setting) ? setting[0] : setting).toBe("error");
+    }
+  });
+
+  it("stays out of the base config, so repos without shadcn need no plugin", () => {
+    expect(config.jsPlugins).not.toContain("@shadcn/lint");
   });
 });

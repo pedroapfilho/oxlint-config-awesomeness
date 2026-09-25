@@ -10,7 +10,7 @@ This is a **flat single-package repo**.
 
 For infrastructure PRs that do not intentionally change the config source, the published runtime config MUST remain identical. Run `pnpm build` before linting, tests, README checks, and Fallow. `pnpm check:generated` compares the current `dist/` files with a fresh temporary build and must pass.
 
-- `dist/index.js`, `dist/index.d.ts`, `dist/awesomeness.js`, and `dist/init.js` are generated package entrypoints. Never edit or commit build outputs; edit `src/index.ts`, `src/awesomeness.ts`, and `src/init.ts` instead.
+- `dist/index.js`, `dist/index.d.ts`, `dist/awesomeness.js`, `dist/shadcn.js`, and `dist/init.js` are generated package entrypoints. Never edit or commit build outputs; edit `src/index.ts`, `src/awesomeness.ts`, `src/shadcn.ts`, and `src/init.ts` instead.
 - `bin/template.ts` must remain byte-for-byte identical.
 
 The `ignorePatterns` in `.oxfmtrc.json` must exclude generated entrypoints and CLI files explicitly.
@@ -58,6 +58,7 @@ Managed repositories import this config through their pnpm update cycle. Major a
 - Single `package.json` at root — no workspace
 - `src/index.ts` is the config source; `dist/index.js` and `dist/index.d.ts` are generated
 - `src/awesomeness.ts` is the first-party plugin source; `dist/awesomeness.js` is generated. It must ship as JS because oxlint loads plugins with a plain `import()` and Node refuses to type-strip files under `node_modules`
+- `src/shadcn.ts` is the opt-in shadcn/ui preset (`oxlint-config-awesomeness/shadcn`); `dist/shadcn.js` is generated. `@shadcn/lint` is an optional peer dependency because only repos that extend the preset load it
 - `src/init.ts` is the CLI source; `dist/init.js` is generated. It scaffolds `oxlint.config.ts` in user repos via `npx oxlint-config-awesomeness init`
 - `bin/template.ts` is the file it copies
 - `anti-slop/index.js` is a committed vendored bundle; `pnpm build` does not regenerate it
@@ -67,4 +68,4 @@ Managed repositories import this config through their pnpm update cycle. Major a
 
 ## Design-system linting
 
-Run `pnpm lint` after changes and fix every error. `oxlint.config.ts` registers `@shadcn/lint` and enforces all six rules as errors: component contracts, known Tailwind classes, static component class names, semantic colors, theme or scale values, and class-based styling. Use CSS custom properties for runtime geometry and named theme tokens for custom values. Use component variants for appearance and layout classes at call sites. All six rules also apply inside primitive directories. Shared styles belong to component variants or the owning stylesheet. Keep theme discovery local to each app. Exact class-merging fixture allowances apply only to the named test files.
+Run `pnpm lint` after changes and fix every error. `oxlint.config.ts` extends the `oxlint-config-awesomeness/shadcn` preset, which registers `@shadcn/lint` and enforces all six rules as errors: component contracts, known Tailwind classes, static component class names, semantic colors, theme or scale values, and class-based styling. Use CSS custom properties for runtime geometry and named theme tokens for custom values. Use component variants for appearance and layout classes at call sites. All six rules also apply inside primitive directories. Shared styles belong to component variants or the owning stylesheet. Keep theme discovery local to each app. Exact class-merging fixture allowances apply only to the named test files.
