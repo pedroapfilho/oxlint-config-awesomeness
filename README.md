@@ -8047,7 +8047,9 @@ const decoder = new TextDecoder();
 
 ## Vitest Rules
 
-Enabled for test files only (`*.test.*`, `*.spec.*`, `__tests__/**`), which includes Playwright specs. `vitest/no-restricted-matchers` and `vitest/no-restricted-vi-methods` are also on but inert until a project configures them.
+Enabled for test files matching `*.test.*`, `*.spec.*`, or `__tests__/**`. The assertion rules recognize Vitest imports and supported test globals. Imports from `@playwright/test` are outside that coverage even when the filename matches; Playwright projects need their own framework-specific assertion rules.
+
+`vitest/no-restricted-matchers` and `vitest/no-restricted-vi-methods` are also on but inert until a project configures them.
 
 ### vitest/consistent-each-for
 
@@ -8557,7 +8559,7 @@ Sort members of object type annotations alphabetically.
 
 ### perfectionist/sort-objects
 
-Sort object keys alphabetically, with partition-by-comment support. Objects passed to a `create*Route` factory are left alone: TanStack Router infers types from option order (`validateSearch` before `beforeLoad` before `loader`), which `react-doctor/tanstack-start-route-property-order` enforces.
+Sort object keys alphabetically, with partition-by-comment support. Options passed to `createFileRoute`, `createRoute`, `createRootRoute`, or `createRootRouteWithContext` are left in TanStack Router's inference order (`validateSearch` before `beforeLoad` before `loader`), which `react-doctor/tanstack-start-route-property-order` enforces. Objects inside loaders and calls to unrelated factories still get sorted.
 
 ## Other JS Plugin Rules
 

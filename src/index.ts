@@ -230,7 +230,7 @@ const config: OxlintConfig = defineConfig({
       },
     },
     // Test files — relax strict rules that generate noise in mocks, fixtures, describe blocks,
-    // and add the vitest plugin (Playwright specs share its `test`/`expect` shape).
+    // and add Vitest rules. Playwright imports need their own framework-specific linter.
     {
       files: ["**/*.test.*", "**/*.spec.*", "**/__tests__/**"],
       plugins: ["vitest"],
@@ -811,14 +811,16 @@ const config: OxlintConfig = defineConfig({
     // Type fields sorted alphabetically for scannability.
     "perfectionist/sort-object-types": "error",
     // Object keys alphabetical; partitionByComment preserves intentional grouping.
-    // Except objects passed to a `create*Route` factory: TanStack Router infers
+    // Except options passed to the four TanStack Router factories: it infers
     // types from option order (`validateSearch` before `beforeLoad` before
     // `loader`), which `react-doctor/tanstack-start-route-property-order` enforces.
     "perfectionist/sort-objects": [
       "error",
       {
         type: "unsorted",
-        useConfigurationIf: { callingFunctionNamePattern: String.raw`^create\w*Route\b` },
+        useConfigurationIf: {
+          callingFunctionNamePattern: String.raw`^create(?:FileRoute|RootRoute(?:WithContext)?|Route)\b`,
+        },
       },
       { partitionByComment: true },
     ],

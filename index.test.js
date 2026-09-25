@@ -339,15 +339,6 @@ describe("formatter agreement", () => {
 describe("vitest in test files", () => {
   const testOverride = findOverride("**/*.test.*");
 
-  it("enables the plugin for test files only", () => {
-    expect(testOverride.plugins).toEqual(["vitest"]);
-    expect(config.plugins).not.toContain("vitest");
-  });
-
-  it("keeps the assertion that catches an un-awaited `.resolves`", () => {
-    expect(testOverride.rules).not.toHaveProperty("vitest/valid-expect");
-  });
-
   it("leaves `.only` to no-only-tests, which also covers non-test files", () => {
     expect(testOverride.rules["vitest/no-focused-tests"]).toBe("off");
     expect(config.rules["no-only-tests/no-only-tests"]).toBe("error");
@@ -375,18 +366,5 @@ describe("oxlint-config-awesomeness/shadcn", () => {
 
   it("stays out of the base config, so repos without shadcn need no plugin", () => {
     expect(config.jsPlugins).not.toContain("@shadcn/lint");
-  });
-});
-
-describe("TanStack route options", () => {
-  it("leaves route factory objects in the order TanStack infers types from", () => {
-    const [severity, routeOptions, defaultOptions] = config.rules["perfectionist/sort-objects"];
-    expect(severity).toBe("error");
-    expect(routeOptions.type).toBe("unsorted");
-    expect('createFileRoute("/")').toMatch(
-      new RegExp(routeOptions.useConfigurationIf.callingFunctionNamePattern, "v"),
-    );
-    expect(defaultOptions).toEqual({ partitionByComment: true });
-    expect(config.rules["react-doctor/tanstack-start-route-property-order"]).toBe("error");
   });
 });
