@@ -28,8 +28,10 @@ const proseLines = (comment: Comment): Array<string> => comment.value.split("\n"
 const startsLicenseHeader = (lines: ReadonlyArray<string>): boolean =>
   lines.slice(0, LICENSE_SCAN_LINES).some((line) => LICENSE_PATTERN.test(line));
 
-const groupRuns = (comments: ReadonlyArray<Comment>): Array<Array<Comment>> => {
-  const runs: Array<Array<Comment>> = [];
+type CommentRun = [Comment, ...Array<Comment>];
+
+const groupRuns = (comments: ReadonlyArray<Comment>): Array<CommentRun> => {
+  const runs: Array<CommentRun> = [];
 
   for (const comment of comments) {
     const currentRun = runs.at(-1);
