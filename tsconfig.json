@@ -4,6 +4,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "noEmit": true,
+    "noUncheckedIndexedAccess": true,
     "rootDir": "src",
     "strict": true,
     "target": "ES2024",
