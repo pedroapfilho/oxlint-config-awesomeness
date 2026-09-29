@@ -1,7 +1,5 @@
 name: Test
 on:
-  push:
-    branches: [main]
   pull_request:
   # Dispatched by release.yml for the changeset-release/main PR, whose
   # pull_request runs are parked unexecuted behind an approval gate.
@@ -14,12 +12,9 @@ concurrency:
 permissions:
   contents: read
 jobs:
-  ci-plan:
+  vitest:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      run: ${{ steps.plan.outputs.run }}
-      scope: ${{ steps.plan.outputs.scope }}
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -27,29 +22,6 @@ jobs:
           fetch-depth: 0
       - name: Plan validation
         id: plan
-        run: node .github/ci/ci.mjs plan test
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        name: Upload CI evidence
-        if: ${{ !cancelled() }}
-        with:
-          name: ci-selection-${{ github.workflow }}-${{ github.job }}-${{ github.run_attempt }}
-          path: .ci-results/
-          include-hidden-files: true
-          retention-days: 14
-          if-no-files-found: error
-  vitest:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Require a successful CI plan
-        env:
-          RESULT: ${{ needs.ci-plan.result }}
-        run: test "$RESULT" = success
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-      - name: Record validation inputs
         run: node .github/ci/ci.mjs plan test
       - uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024 # v3.0.0
         with:
@@ -67,6 +39,3 @@ jobs:
           include-hidden-files: true
           retention-days: 14
           if-no-files-found: error
-    needs:
-      - ci-plan
-    if: ${{ always() && (needs.ci-plan.result != 'success' || needs.ci-plan.outputs.run != 'false') }}
