@@ -1,6 +1,6 @@
 overrides:
   # Security: force patched transitive releases to clear pnpm audit advisories.
-  # Each pin is the lowest patched version within the already-resolved major.
+  # Each pin is the lowest release that carries the fix.
   js-yaml: "^4.3.2"
 
 peerDependencyRules:
