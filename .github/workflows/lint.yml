@@ -41,6 +41,9 @@ jobs:
         run: pnpm check:readme
       - if: ${{ !cancelled() }}
         run: node .github/ci/ci.mjs run lint -- pnpm oxlint --format=github .
+      - name: Audit dependencies
+        if: ${{ !cancelled() && github.event_name != 'pull_request' }}
+        run: node .github/ci/ci.mjs run lint -- pnpm audit --audit-level=high
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         name: Upload CI evidence
         if: ${{ !cancelled() }}
