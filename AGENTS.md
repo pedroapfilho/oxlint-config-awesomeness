@@ -1,5 +1,13 @@
 Guidance for AI coding agents working in `oxlint-config-awesomeness`. `CLAUDE.md` is a symlink to this file.
 
+## Friction Log
+
+- Log papercuts and friction (tooling, docs, APIs, tests, conventions) as you hit them with `npx frog log`.
+- Do not add global, system, or internal friction.
+- Run `npx frog list` first to see what is already known.
+
+Entries live in `.agents/friction-log/`, one directory each. A GitHub Action reports them as issues and deletes the entry once the issue closes, so anything still in that directory is still outstanding.
+
 ## What This Repo Is
 
 `oxlint-config-awesomeness` is the shared oxlint configuration for managed repositories. `src/index.ts` defines a single default `OxlintConfig` object. TypeScript emits the package entrypoints and declarations to the gitignored `dist/` directory, which is included in the npm package.
