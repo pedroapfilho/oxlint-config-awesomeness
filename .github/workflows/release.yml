@@ -7,19 +7,27 @@ on:
 concurrency: release-${{ github.ref }}
 
 permissions:
-  contents: write # push the version commit and git tags
-  pull-requests: write # open/update the "Version Packages" PR
+  contents: read
   id-token: write # OIDC exchange for npm trusted publishing
-  actions: write # dispatch the gate workflows onto the version branch
 
 jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      # Persisted credentials are the point here: changesets pushes the
-      # version commit and tags through this token.
+      # A version PR opened with GITHUB_TOKEN parks its pull_request checks
+      # until a person approves them; one opened by the app runs them.
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: app-token
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024 # v3.0.0
         with:
@@ -32,8 +40,7 @@ jobs:
           publish-script: pnpm release
           commit-message: "chore: version packages"
           pr-title: "chore: version packages"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.app-token.outputs.token }}
 
       # changesets derives "published" from the publish command's exit code
       # and never asks the registry, so the tags and the GitHub release can
@@ -61,35 +68,4 @@ jobs:
               exit 1
             fi
             sleep 30
-          done
-
-      # The version PR is authored by GITHUB_TOKEN, so its pull_request runs are
-      # created in `action_required` and never execute: without this the PR would
-      # merge and publish to npm on the feature PR's CI alone, and changesets
-      # rewrites every version and internal dependency range in the workspace.
-      # workflow_dispatch is exempt from that approval gate.
-      #
-      # A gate is any workflow carrying both triggers, derived here rather than
-      # listed: a hand-maintained list silently skips a gate added later, and
-      # merging this PR publishes to npm. Advisory workflows stay out of the set
-      # by not declaring workflow_dispatch.
-      - name: Run gates on the version PR
-        if: steps.changesets.outputs.pr-number
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          gates=""
-          for file in .github/workflows/*.yml; do
-            grep -q '^  pull_request:' "$file" || continue
-            grep -q '^  workflow_dispatch:' "$file" || continue
-            gates="$gates $(basename "$file")"
-          done
-          if [ -z "$gates" ]; then
-            echo "::error::found no dispatchable gate workflows"
-            exit 1
-          fi
-          echo "dispatching:$gates"
-          for workflow in $gates; do
-            gh workflow run "$workflow" --ref changeset-release/main
           done
