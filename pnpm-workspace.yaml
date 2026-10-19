@@ -14,6 +14,7 @@ peerDependencyRules:
     "@typescript-eslint/utils>typescript": "7"
 
 minimumReleaseAge: 180
+trustPolicy: no-downgrade
 
 # pnpm's release-age gate would otherwise block installing a fleet package the
 # moment it is published.

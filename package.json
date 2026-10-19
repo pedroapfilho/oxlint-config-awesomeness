@@ -61,7 +61,7 @@
     "fallow:dead": "fallow dead-code",
     "fallow:dupes": "fallow dupes",
     "fallow:health": "fallow health --score",
-    "fallow:audit": "fallow audit --base main",
+    "fallow:audit": "fallow audit",
     "prepare": "husky",
     "prepack": "pnpm build",
     "typecheck": "tsc -p tsconfig.json"

@@ -35,12 +35,37 @@ jobs:
       - name: Check dead code
         if: ${{ !cancelled() }}
         run: node .github/ci/ci.mjs run lint -- pnpm fallow:dead
+      - name: Audit changed code
+        if: ${{ !cancelled() }}
+        run: node .github/ci/ci.mjs run lint -- pnpm fallow:audit
       - if: ${{ !cancelled() }}
         run: pnpm check:generated
       - if: ${{ !cancelled() }}
         run: pnpm check:readme
       - if: ${{ !cancelled() }}
         run: node .github/ci/ci.mjs run lint -- pnpm oxlint --format=github .
+      - name: Install gitleaks
+        if: ${{ !cancelled() }}
+        env:
+          GITLEAKS_VERSION: 8.30.1
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+          gitleaks version
+      - name: Scan git history for secrets
+        if: ${{ !cancelled() }}
+        run: node .github/ci/ci.mjs run lint -- gitleaks git --redact --verbose --exit-code 1
+      - name: Install zizmor
+        if: ${{ !cancelled() }}
+        env:
+          ZIZMOR_VERSION: 1.31.1
+        run: |
+          curl -sSfL "https://github.com/zizmorcore/zizmor/releases/download/v${ZIZMOR_VERSION}/zizmor-x86_64-unknown-linux-gnu.tar.gz" \
+            | tar -xz -C /usr/local/bin zizmor
+          zizmor --version
+      - name: Audit workflows
+        if: ${{ !cancelled() }}
+        run: node .github/ci/ci.mjs run lint -- zizmor --offline --format github .github
       - name: Audit dependencies
         if: ${{ !cancelled() && github.event_name != 'pull_request' }}
         run: node .github/ci/ci.mjs run lint -- pnpm audit --audit-level=high
