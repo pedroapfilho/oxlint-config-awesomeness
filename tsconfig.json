@@ -5,6 +5,8 @@
     "moduleResolution": "NodeNext",
     "noEmit": true,
     "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
     "rootDir": "src",
     "strict": true,
     "target": "ES2024",
