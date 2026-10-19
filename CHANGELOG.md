@@ -1,5 +1,11 @@
 # oxlint-config-awesomeness
 
+## 4.7.0
+
+### Minor Changes
+
+- 8d346c0: Declare `eslint` as a peer dependency at `^10.0.0`. The ESLint plugins the config loads through oxlint load `eslint` at runtime via `@typescript-eslint/utils`, but only declare `eslint >= 9`, so a consumer kept whatever version pnpm auto-installed first, often the end-of-life 9.x line.
+
 ## 4.6.0
 
 ### Minor Changes
