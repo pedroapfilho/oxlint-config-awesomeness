@@ -74,6 +74,7 @@
     "@nkzw/eslint-plugin": "^2.0.0",
     "@shadcn/lint": "0.2.0",
     "@types/node": "^26.6.2",
+    "eslint": "^10.13.0",
     "eslint-plugin-no-only-tests": "^3.4.0",
     "eslint-plugin-perfectionist": "^5.12.1",
     "eslint-plugin-unused-imports": "~4.4.1",
@@ -90,6 +91,7 @@
   "peerDependencies": {
     "@nkzw/eslint-plugin": "^2.0.0",
     "@shadcn/lint": ">=0.1.0 <0.3.0",
+    "eslint": "^10.0.0",
     "eslint-plugin-no-only-tests": "^3.4.0",
     "eslint-plugin-perfectionist": "^5.10.1",
     "eslint-plugin-unused-imports": "~4.4.1",
