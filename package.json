@@ -45,7 +45,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "clean": "rm -rf dist coverage node_modules",
     "check:generated": "node scripts/check-generated.mjs",
     "lint": "oxlint .",
