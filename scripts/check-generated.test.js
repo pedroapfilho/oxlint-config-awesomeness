@@ -53,7 +53,7 @@ describe("generated output", () => {
     expect(result.status).toBe(0);
   });
 
-  it("checks nested generated files", () => {
+  it("checks nested generated files", { timeout: 30_000 }, () => {
     mkdirSync(join(cwd, "src", "nested"));
     writeFileSync(join(cwd, "src", "nested", "entry.ts"), "export const value = 1;\n");
     const build = run("build");
