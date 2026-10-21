@@ -1,5 +1,11 @@
 # oxlint-config-awesomeness
 
+## 4.7.1
+
+### Patch Changes
+
+- 3e98f2e: Remove obsolete build output before packaging, and reject unexpected generated files in the freshness check.
+
 ## 4.7.0
 
 ### Minor Changes
