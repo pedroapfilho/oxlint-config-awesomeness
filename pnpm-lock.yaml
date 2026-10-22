@@ -11,22 +11,12 @@ importers:
 
   .:
     dependencies:
-      '@oxlint/plugins':
-        specifier: ^1.85.0
-        version: 1.85.0
-    devDependencies:
-      '@changesets/cli':
-        specifier: ^3.0.3
-        version: 3.0.3
       '@nkzw/eslint-plugin':
         specifier: ^2.0.0
         version: 2.0.0(eslint@10.13.0)
-      '@shadcn/lint':
-        specifier: 0.2.0
-        version: 0.2.0(@typescript-eslint/parser@8.70.0(eslint@10.13.0)(typescript@7.0.2))(eslint@10.13.0)
-      '@types/node':
-        specifier: ^26.6.2
-        version: 26.6.2
+      '@oxlint/plugins':
+        specifier: ^1.85.0
+        version: 1.85.0
       eslint:
         specifier: ^10.13.0
         version: 10.13.0
@@ -36,6 +26,16 @@ importers:
       eslint-plugin-perfectionist:
         specifier: ^5.12.1
         version: 5.12.1(eslint@10.13.0)(typescript@7.0.2)
+    devDependencies:
+      '@changesets/cli':
+        specifier: ^3.0.3
+        version: 3.0.3
+      '@shadcn/lint':
+        specifier: 0.2.0
+        version: 0.2.0(@typescript-eslint/parser@8.70.0(eslint@10.13.0)(typescript@7.0.2))(eslint@10.13.0)
+      '@types/node':
+        specifier: ^26.6.2
+        version: 26.6.2
       fallow:
         specifier: ^3.28.0
         version: 3.28.0

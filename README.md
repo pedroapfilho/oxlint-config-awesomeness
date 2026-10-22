@@ -7,14 +7,13 @@ Opinionated Oxlint config for software houses that want all their apps to feel t
 ## Installation
 
 ```
-npm install -D oxlint-config-awesomeness eslint-plugin-no-only-tests eslint-plugin-perfectionist oxlint-plugin-react-doctor oxlint-tsgolint
+npm install -D oxlint-config-awesomeness oxlint-plugin-react-doctor oxlint-tsgolint
 ```
 
 > [!NOTE]
-> Oxlint resolves JS plugin specifiers from your project root, not from this
-> package, so the plugins have to be installed alongside it. They are declared as
-> peer dependencies: npm and pnpm install them for you, and Yarn will warn if any
-> are missing.
+> The config resolves its JS plugins from this package, so the ESLint plugins it
+> loads are its own dependencies. `oxlint-plugin-react-doctor` stays a peer
+> dependency, so you choose which React Doctor release runs.
 
 > [!TIP]
 > `eslint-plugin-perfectionist` pulls in `@typescript-eslint/utils`, which still

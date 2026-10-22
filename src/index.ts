@@ -121,18 +121,23 @@ const config: OxlintConfig = defineConfig({
     node: true,
   },
   // JS-plugin bridge for ESLint plugins oxlint doesn't yet implement natively.
+  // Oxlint resolves a bare specifier from the consumer's project root, where
+  // pnpm does not link this package's dependencies, so each one is resolved here.
   jsPlugins: [
-    "@nkzw/eslint-plugin",
-    "eslint-plugin-no-only-tests",
-    "eslint-plugin-perfectionist",
+    { name: "@nkzw", specifier: import.meta.resolve("@nkzw/eslint-plugin") },
+    { name: "no-only-tests", specifier: import.meta.resolve("eslint-plugin-no-only-tests") },
+    { name: "perfectionist", specifier: import.meta.resolve("eslint-plugin-perfectionist") },
     // React Doctor diagnostics (security, perf, correctness, RSC, TanStack Query).
-    { name: "react-doctor", specifier: "oxlint-plugin-react-doctor" },
+    { name: "react-doctor", specifier: import.meta.resolve("oxlint-plugin-react-doctor") },
     // Anti-slop: rejects low-evidence TypeScript patterns. Vendored into this
     // package (anti-slop/index.js) because upstream is source-distributed and
-    // not on npm yet; the specifier resolves via this package's exports map.
-    { name: "anti-slop", specifier: "oxlint-config-awesomeness/anti-slop" },
+    // not on npm yet.
+    { name: "anti-slop", specifier: import.meta.resolve("oxlint-config-awesomeness/anti-slop") },
     // First-party rules that ship with this config (dist/awesomeness.js).
-    { name: "awesomeness", specifier: "oxlint-config-awesomeness/awesomeness" },
+    {
+      name: "awesomeness",
+      specifier: import.meta.resolve("oxlint-config-awesomeness/awesomeness"),
+    },
   ],
   // Type-aware linting via tsgolint (stable since oxlint-tsgolint v7). Turns on
   // the 59 typescript-eslint rules that need a type checker; the `@typescript-eslint`
