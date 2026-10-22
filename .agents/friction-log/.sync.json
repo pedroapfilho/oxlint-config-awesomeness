@@ -1,0 +1,9 @@
+{
+  "mirrors": [
+    {
+      "issue": "pedroapfilho/oxlint-config-awesomeness#90",
+      "path": ".agents/friction-log/20261022113958-pnpm-install-warns/friction.md"
+    }
+  ],
+  "version": 1
+}
