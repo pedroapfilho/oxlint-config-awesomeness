@@ -26,6 +26,7 @@ const generatedFiles = () =>
 
 beforeEach(() => {
   cwd = mkdtempSync(join(tmpdir(), "oxlint-generated-"));
+
   for (const filename of [
     "package.json",
     "tsconfig.json",
@@ -37,6 +38,7 @@ beforeEach(() => {
     mkdirSync(dirname(destination), { recursive: true });
     cpSync(join(root, filename), destination, { recursive: true });
   }
+
   symlinkSync(join(root, "node_modules"), join(cwd, "node_modules"));
   const result = run("build");
   expect(result.error).toBeUndefined();

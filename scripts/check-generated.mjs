@@ -11,6 +11,7 @@ const temporaryDirectory = await mkdtemp(join(tmpdir(), "oxlint-config-build-"))
 
 const generatedFiles = async (directory) => {
   const entries = await readdir(directory, { recursive: true, withFileTypes: true });
+
   return entries
     .filter((entry) => !entry.isDirectory())
     .map((entry) => relative(directory, join(entry.parentPath, entry.name)))

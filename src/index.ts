@@ -951,8 +951,9 @@ const config: OxlintConfig = defineConfig({
     "anti-slop/no-unsafe-dictionary-type": "warn",
     // Widening a known value and asserting it back is a two-step type lie.
     "anti-slop/no-widen-then-assert": "error",
-    // Blank-line padding is formatting, which oxfmt owns.
-    "anti-slop/require-readable-spacing": "off",
+    // Dense blocks read as one wall of code. The fix only inserts blank lines,
+    // which oxfmt keeps, so `oxlint --fix` settles it.
+    "anti-slop/require-readable-spacing": "error",
     "anti-slop/require-safety-comment-for-type-assertion": "error",
 
     // Awesomeness: first-party rules shipped with this config.

@@ -25,13 +25,16 @@ const createBlockComment = (value, startLine) => ({
 
 const runCommentRule = (ruleName, comments) => {
   const reports = [];
+
   const visitors = awesomenessPlugin.rules[ruleName].create({
     report: (report) => reports.push(report),
     sourceCode: { getAllComments: () => comments },
   });
+
   const runProgram = visitors.Program;
 
   runProgram();
+
   return reports;
 };
 
@@ -70,6 +73,7 @@ const proseBlock = (count) => createBlockComment(plainBlock(repeated(count, "pro
 const findOverride = (glob) => {
   const override = config.overrides.find((entry) => entry.files.includes(glob));
   expect(override, `no override declares ${glob}`).toBeDefined();
+
   return override;
 };
 
@@ -81,14 +85,18 @@ const antiSlopRulesIn = (override) =>
 const runForbiddenIdentifier = (parent) => {
   const reports = [];
   const identifier = { name: "shape", parent, type: "Identifier" };
+
   if (parent !== null) {
     parent.property = identifier;
   }
+
   const visitors = antiSlopPlugin.rules["no-shape-in-symbol-names"].create({
     report: (report) => reports.push(report),
   });
+
   const runIdentifier = visitors.Identifier;
   runIdentifier(identifier);
+
   return reports;
 };
 
@@ -198,6 +206,7 @@ describe("awesomeness/require-disable-reason", () => {
       createBlockComment(" oxlint-disable node/no-sync ", 1),
       createBlockComment(" oxlint-disable node/no-sync -- bounded CLI read ", 2),
     ]);
+
     expect(reports).toHaveLength(1);
   });
 });
@@ -221,6 +230,7 @@ describe("oxlint-config-awesomeness", () => {
     const { default: plugin } = await import("oxlint-config-awesomeness/anti-slop");
     const ruleNames = Object.keys(plugin.rules).toSorted();
     expect(ruleNames).toHaveLength(18);
+
     for (const ruleName of ruleNames) {
       expect(config.rules).toHaveProperty(`anti-slop/${ruleName}`);
     }
@@ -233,6 +243,7 @@ describe("oxlint-config-awesomeness", () => {
     });
 
     const { default: plugin } = await import("oxlint-config-awesomeness/awesomeness");
+
     for (const ruleName of Object.keys(plugin.rules)) {
       expect(config.rules).toHaveProperty(`awesomeness/${ruleName}`);
     }
@@ -358,6 +369,7 @@ describe("oxlint-config-awesomeness/shadcn", () => {
     const { plugin } = await import("@shadcn/lint");
 
     expect(shadcn.jsPlugins).toEqual(["@shadcn/lint"]);
+
     for (const ruleName of Object.keys(plugin.rules)) {
       const setting = shadcn.rules[`shadcn/${ruleName}`];
       expect(Array.isArray(setting) ? setting[0] : setting).toBe("error");

@@ -2,7 +2,7 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-**558 rules** across **17 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+**559 rules** across **17 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
@@ -181,7 +181,7 @@ export default defineConfig({
 - **Category-Based, Future-Proof.** Five rule categories (`correctness`, `suspicious`, `pedantic`, `perf`, `style`) are enabled at `error`. Restriction rules are cherry-picked individually. New rules from categories are automatically included as oxlint evolves.
 - **Opinionated for Consistency.** When multiple approaches exist, this config enforces the strictest option. All apps in your organization will feel the same.
 - **Smart Overrides.** Test files, Storybook stories, seed scripts, config files, and E2E fixtures get relaxed rules where strict enforcement creates noise.
-- **Formatter-Safe.** No formatting rules. Pair with [Oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) for formatting.
+- **Formatter-Safe.** No rule fights the formatter. Pair with [Oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) for formatting.
 - **Prevent Bugs.** Debug-only code like `console.log` or `test.only` are errors. Missing `throw`, bad comparisons, and floating promises are caught automatically.
 
 ## Plugins
@@ -8812,15 +8812,15 @@ use(status);
 
 ### anti-slop/require-readable-spacing
 
-Require blank lines around multi-line statements, control flow, and documented declarations. Severity: `off` in this config: blank-line padding is formatting, which oxfmt owns.
+Require blank lines around multi-line statements, control flow, and documented declarations. The autofix only inserts blank lines, which oxfmt keeps. Severity: `error`.
 
 ```ts
-// what it would flag
+// bad
 export const first = 1;
 /** Documentation stays attached to second. */
 export const second = 2;
 
-// what it wants
+// good
 export const first = 1;
 
 /** Documentation stays attached to second. */
