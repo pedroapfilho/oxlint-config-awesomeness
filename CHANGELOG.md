@@ -1,5 +1,11 @@
 # oxlint-config-awesomeness
 
+## 4.8.1
+
+### Patch Changes
+
+- e30cb7f: Move `@nkzw/eslint-plugin`, `eslint-plugin-no-only-tests`, `eslint-plugin-perfectionist`, and `eslint` back to peer dependencies. As dependencies they made pnpm install TypeScript 6 in monorepos without a root `typescript`, because typescript-eslint's peer range stops below 7, and that left this package's `typescript` peer unmet. The plugins still load from this package, so they don't need to be linked in your project root.
+
 ## 4.8.0
 
 ### Minor Changes
