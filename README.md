@@ -11,9 +11,9 @@ npm install -D oxlint-config-awesomeness oxlint-plugin-react-doctor oxlint-tsgol
 ```
 
 > [!NOTE]
-> The config resolves its JS plugins from this package, so the ESLint plugins it
-> loads are its own dependencies. `oxlint-plugin-react-doctor` stays a peer
-> dependency, so you choose which React Doctor release runs.
+> The JS plugins are peer dependencies, which npm and pnpm install for you. The
+> config resolves them from this package rather than your project root, so they
+> load even where your package manager keeps them out of the root `node_modules`.
 
 > [!TIP]
 > `eslint-plugin-perfectionist` pulls in `@typescript-eslint/utils`, which still

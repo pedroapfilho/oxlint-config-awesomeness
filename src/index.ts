@@ -122,7 +122,8 @@ const config: OxlintConfig = defineConfig({
   },
   // JS-plugin bridge for ESLint plugins oxlint doesn't yet implement natively.
   // Oxlint resolves a bare specifier from the consumer's project root, where
-  // pnpm does not link this package's dependencies, so each one is resolved here.
+  // pnpm does not link the plugins it installs for this package, so each one
+  // is resolved here.
   jsPlugins: [
     { name: "@nkzw", specifier: import.meta.resolve("@nkzw/eslint-plugin") },
     { name: "no-only-tests", specifier: import.meta.resolve("eslint-plugin-no-only-tests") },
