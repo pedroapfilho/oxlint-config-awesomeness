@@ -57,6 +57,7 @@ try {
   } else {
     process.stderr.write(`Failed to create ${target}: ${messageOf(error)}\n`);
   }
+
   process.exit(1);
 }
 

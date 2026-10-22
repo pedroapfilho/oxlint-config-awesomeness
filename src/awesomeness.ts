@@ -36,6 +36,7 @@ const groupRuns = (comments: ReadonlyArray<Comment>): Array<CommentRun> => {
   for (const comment of comments) {
     const currentRun = runs.at(-1);
     const previous = currentRun?.at(-1);
+
     const continuesRun =
       currentRun !== undefined &&
       previous?.type === "Line" &&

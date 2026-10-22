@@ -22,6 +22,7 @@ const run = (...args) => {
     cwd,
     encoding: "utf8",
   });
+
   return { code: result.status, stderr: result.stderr, stdout: result.stdout };
 };
 
