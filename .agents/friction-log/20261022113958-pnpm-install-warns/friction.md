@@ -1,6 +1,7 @@
 ---
 title: 'pnpm install warns about an unmet TypeScript peer of @typescript-eslint/parser'
 severity: 'minor'
+issue: 'pedroapfilho/oxlint-config-awesomeness#90'
 ---
 
 ## Expected Behavior

@@ -1,6 +1,7 @@
 ---
 title: 'Committing only friction-log entries fails the pre-commit hook'
 severity: 'minor'
+issue: 'pedroapfilho/oxlint-config-awesomeness#91'
 ---
 
 ## Expected Behavior

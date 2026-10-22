@@ -1,6 +1,7 @@
 ---
 title: 'Fallow reports dependencies used only through import.meta.resolve as unused'
 severity: 'minor'
+issue: 'pedroapfilho/oxlint-config-awesomeness#89'
 ---
 
 ## Expected Behavior
