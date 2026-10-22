@@ -1,5 +1,11 @@
 # oxlint-config-awesomeness
 
+## 4.9.0
+
+### Minor Changes
+
+- 7f27dcb: Enable `anti-slop/require-readable-spacing` as an error. It asks for blank lines around multi-line statements, control flow and documented declarations, and its autofix only inserts blank lines, so after upgrading run `oxlint --fix` once, then your formatter.
+
 ## 4.8.1
 
 ### Patch Changes
