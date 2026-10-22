@@ -1,5 +1,21 @@
 # oxlint-config-awesomeness
 
+## 4.8.0
+
+### Minor Changes
+
+- dbe9313: Replace `eslint-plugin-unused-imports` with the import fix built into oxlint's `no-unused-vars`. Both rules reported every unused import, so each one showed up twice. Now `no-unused-vars` reports it once and `--fix` still deletes it.
+
+  `eslint-plugin-unused-imports` is no longer a peer dependency and can be uninstalled. If your own config sets `unused-imports/no-unused-imports`, delete that entry: oxlint rejects rules from a plugin it does not load. A disable comment naming the rule becomes an unused-directive warning.
+
+- dbe9313: Resolve every JS plugin from this package with `import.meta.resolve`, as `@nkzw/oxlint-config` 2.0.1 does. Oxlint resolves a bare plugin specifier from the project root, and pnpm does not link a package's dependencies there. In repos that never installed the ESLint plugins themselves, oxlint found them only through the `NODE_PATH` that pnpm's `.bin/oxlint` shim sets, so running oxlint any other way failed with `Failed to load JS plugin: @nkzw/eslint-plugin`.
+
+  `@nkzw/eslint-plugin`, `eslint-plugin-no-only-tests`, `eslint-plugin-perfectionist`, and `eslint` move from peer dependencies to dependencies, so each release ships with the plugin versions its rule list was tested against. If you installed any of them only for this config, remove them from your `package.json`. `oxlint-plugin-react-doctor` stays a peer dependency.
+
+### Patch Changes
+
+- dbe9313: Sync the vendored anti-slop plugin to upstream commit 13909c9. The existing rules behave the same. The new `anti-slop/require-readable-spacing` rule stays off, because blank-line padding is formatting and oxfmt owns it. The bundle now carries ESLint Stylistic code, so its MIT license ships as `anti-slop/LICENSE-eslint-stylistic`.
+
 ## 4.7.1
 
 ### Patch Changes
