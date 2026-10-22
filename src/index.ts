@@ -130,8 +130,8 @@ const config: OxlintConfig = defineConfig({
     // React Doctor diagnostics (security, perf, correctness, RSC, TanStack Query).
     { name: "react-doctor", specifier: import.meta.resolve("oxlint-plugin-react-doctor") },
     // Anti-slop: rejects low-evidence TypeScript patterns. Vendored into this
-    // package (anti-slop/index.js) because upstream is source-distributed and
-    // not on npm yet.
+    // package (anti-slop/index.js) because upstream is meant to be vendored and
+    // publishes no npm package.
     { name: "anti-slop", specifier: import.meta.resolve("oxlint-config-awesomeness/anti-slop") },
     // First-party rules that ship with this config (dist/awesomeness.js).
     {
@@ -950,6 +950,8 @@ const config: OxlintConfig = defineConfig({
     "anti-slop/no-unsafe-dictionary-type": "warn",
     // Widening a known value and asserting it back is a two-step type lie.
     "anti-slop/no-widen-then-assert": "error",
+    // Blank-line padding is formatting, which oxfmt owns.
+    "anti-slop/require-readable-spacing": "off",
     "anti-slop/require-safety-comment-for-type-assertion": "error",
 
     // Awesomeness: first-party rules shipped with this config.

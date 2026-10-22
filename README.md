@@ -2,7 +2,7 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-**558 rules** across **15 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+**558 rules** across **17 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
@@ -200,7 +200,7 @@ export default defineConfig({
 | node          | 9     | Node.js environment rules                      |
 | vitest        | 28    | Test correctness, in test files only           |
 
-Plus JS plugins: **perfectionist** (sorting), **react-hooks** + **React Compiler**, **no-only-tests**, **react-doctor** (431 diagnostics), **anti-slop** (vendored, low-evidence TypeScript patterns), and the first-party **awesomeness** plugin.
+Plus JS plugins: **perfectionist** (sorting), **@nkzw** (`useEffect` dependency arrays), **no-only-tests**, **react-doctor** (431 diagnostics), **anti-slop** (vendored, low-evidence TypeScript patterns), and the first-party **awesomeness** plugin.
 
 ## File-Type Overrides
 
@@ -8592,7 +8592,7 @@ Disallow `.only` in test files to prevent accidentally committing focused tests 
 
 ## Anti-Slop Rules
 
-Vendored from [dmmulroy/anti-slop](https://github.com/dmmulroy/anti-slop) (MIT) until upstream publishes to npm. These reject patterns that fake type evidence instead of establishing it: the assertion and widening escape hatches AI-generated code reaches for beyond plain `any`.
+Vendored from [dmmulroy/anti-slop](https://github.com/dmmulroy/anti-slop) (MIT), which is meant to be vendored and publishes no npm package. These reject patterns that fake type evidence instead of establishing it: the assertion and widening escape hatches AI-generated code reaches for beyond plain `any`.
 
 ### anti-slop/no-array-filter-map
 
@@ -8808,6 +8808,23 @@ use(status as "active");
 // good
 const status = "active";
 use(status);
+```
+
+### anti-slop/require-readable-spacing
+
+Require blank lines around multi-line statements, control flow, and documented declarations. Severity: `off` in this config: blank-line padding is formatting, which oxfmt owns.
+
+```ts
+// what it would flag
+export const first = 1;
+/** Documentation stays attached to second. */
+export const second = 2;
+
+// what it wants
+export const first = 1;
+
+/** Documentation stays attached to second. */
+export const second = 2;
 ```
 
 ### anti-slop/require-safety-comment-for-type-assertion

@@ -212,7 +212,7 @@ describe("oxlint-config-awesomeness", () => {
     expect(config).toEqual(sourceConfig);
   });
 
-  it("registers the vendored anti-slop plugin and all 17 of its rules", async () => {
+  it("registers the vendored anti-slop plugin and all 18 of its rules", async () => {
     expect(config.jsPlugins).toContainEqual({
       name: "anti-slop",
       specifier: import.meta.resolve("oxlint-config-awesomeness/anti-slop"),
@@ -220,7 +220,7 @@ describe("oxlint-config-awesomeness", () => {
 
     const { default: plugin } = await import("oxlint-config-awesomeness/anti-slop");
     const ruleNames = Object.keys(plugin.rules).toSorted();
-    expect(ruleNames).toHaveLength(17);
+    expect(ruleNames).toHaveLength(18);
     for (const ruleName of ruleNames) {
       expect(config.rules).toHaveProperty(`anti-slop/${ruleName}`);
     }

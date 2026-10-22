@@ -77,7 +77,7 @@ Managed repositories import this config through their pnpm update cycle. Major a
 - `src/shadcn.ts` is the opt-in shadcn/ui preset (`oxlint-config-awesomeness/shadcn`); `dist/shadcn.js` is generated. `@shadcn/lint` is an optional peer dependency because only repos that extend the preset load it
 - `src/init.ts` is the CLI source; `dist/init.js` is generated. It scaffolds `oxlint.config.ts` in user repos via `npx oxlint-config-awesomeness init`
 - `bin/template.ts` is the file it copies
-- `anti-slop/index.js` is a committed vendored bundle; `pnpm build` does not regenerate it
+- `anti-slop/index.js` is a committed vendored bundle; `pnpm build` does not regenerate it. Its header records the upstream commit and the esbuild command that produced it, and upstream's third-party licenses ship beside it
 - Package exports keep the public imports stable while resolving first-party code from `dist/`
 - `index.test.js` is the smoke test — not in `files`, not published
 - CI and the pre-commit hook build before checking; `prepack` builds before publishing through Changesets
