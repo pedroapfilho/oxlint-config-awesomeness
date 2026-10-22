@@ -6,8 +6,10 @@ overrides:
 peerDependencyRules:
   allowedVersions:
     # typescript-eslint caps TypeScript at <6.1.0 and has no release that allows
-    # 7 yet. It arrives transitively via eslint-plugin-perfectionist, and this
-    # config requires TypeScript 7, so the range can never be satisfied.
+    # 7 yet. It arrives transitively via eslint-plugin-perfectionist and
+    # @shadcn/lint, and this config requires TypeScript 7, so the range can never
+    # be satisfied.
+    "@typescript-eslint/parser>typescript": "7"
     "@typescript-eslint/project-service>typescript": "7"
     "@typescript-eslint/tsconfig-utils>typescript": "7"
     "@typescript-eslint/typescript-estree>typescript": "7"
