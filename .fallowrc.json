@@ -11,7 +11,6 @@
   "ignoreDependencies": [
     "@nkzw/eslint-plugin",
     "eslint-plugin-no-only-tests",
-    "eslint-plugin-perfectionist",
-    "eslint-plugin-unused-imports"
+    "eslint-plugin-perfectionist"
   ]
 }

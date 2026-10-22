@@ -2,12 +2,12 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-**559 rules** across **16 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+**558 rules** across **15 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
 ```
-npm install -D oxlint-config-awesomeness eslint-plugin-no-only-tests eslint-plugin-perfectionist eslint-plugin-unused-imports oxlint-plugin-react-doctor oxlint-tsgolint
+npm install -D oxlint-config-awesomeness eslint-plugin-no-only-tests eslint-plugin-perfectionist oxlint-plugin-react-doctor oxlint-tsgolint
 ```
 
 > [!NOTE]
@@ -201,7 +201,7 @@ export default defineConfig({
 | node          | 9     | Node.js environment rules                      |
 | vitest        | 28    | Test correctness, in test files only           |
 
-Plus JS plugins: **perfectionist** (sorting), **react-hooks** + **React Compiler**, **no-only-tests**, **unused-imports**, **react-doctor** (431 diagnostics), **anti-slop** (vendored, low-evidence TypeScript patterns), and the first-party **awesomeness** plugin.
+Plus JS plugins: **perfectionist** (sorting), **react-hooks** + **React Compiler**, **no-only-tests**, **react-doctor** (431 diagnostics), **anti-slop** (vendored, low-evidence TypeScript patterns), and the first-party **awesomeness** plugin.
 
 ## File-Type Overrides
 
@@ -217,7 +217,7 @@ The config includes smart overrides so strict rules don't create noise in files 
 | `**/e2e/**`                              | `no-unnecessary-condition`, `rules-of-hooks`, all `no-unsafe-*`, the `anti-slop` assertion family, `strict-boolean-expressions`, `no-empty-pattern` (Playwright's `async ({}, use)` fixtures), `require-unicode-regexp` (Playwright rejects `v`-flagged regex)                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `*.ts`, `*.tsx` (all TypeScript)         | Rules handled natively by the TS compiler (`no-undef`, `no-redeclare`, etc.); `require-await` (the type-aware twin reports it); `new-cap` checks only `new` targets                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `*.d.ts`                                 | `consistent-type-definitions`, `consistent-indexed-object-style` (ambient declarations merge through `interface`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `*.astro`                                | `react-doctor/no-impure-call-at-module-scope`, `unused-imports/no-unused-imports` (imports used only in markup)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `*.astro`                                | `react-doctor/no-impure-call-at-module-scope`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `**/middleware.ts`, `**/proxy.ts`        | `unicorn/prefer-string-raw` (Next.js reads `config.matcher` as a plain string literal)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 
 ## Cherry-Picked Restriction Rules
@@ -2180,7 +2180,7 @@ class Foo {
 
 ### no-unused-vars
 
-Disallow unused variables.
+Disallow unused variables. `--fix` deletes unused imports.
 
 ```js
 // bad
@@ -8590,10 +8590,6 @@ Enforce that Hooks are only called at the top level of a function component or c
 ### no-only-tests/no-only-tests
 
 Disallow `.only` in test files to prevent accidentally committing focused tests that skip the rest of the suite.
-
-### unused-imports/no-unused-imports
-
-Automatically remove import statements that are not referenced anywhere in the file.
 
 ## Anti-Slop Rules
 

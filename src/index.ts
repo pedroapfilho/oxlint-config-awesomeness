@@ -125,7 +125,6 @@ const config: OxlintConfig = defineConfig({
     "@nkzw/eslint-plugin",
     "eslint-plugin-no-only-tests",
     "eslint-plugin-perfectionist",
-    "eslint-plugin-unused-imports",
     // React Doctor diagnostics (security, perf, correctness, RSC, TanStack Query).
     { name: "react-doctor", specifier: "oxlint-plugin-react-doctor" },
     // Anti-slop: rejects low-evidence TypeScript patterns. Vendored into this
@@ -375,13 +374,11 @@ const config: OxlintConfig = defineConfig({
         "require-unicode-regexp": "off",
       },
     },
-    // Astro components: the frontmatter runs per render, not at module init, and
-    // the JS-plugin unused-imports check cannot see imports used in the markup.
+    // Astro components: the frontmatter runs per render, not at module init.
     {
       files: ["**/*.astro"],
       rules: {
         "react-doctor/no-impure-call-at-module-scope": "off",
-        "unused-imports/no-unused-imports": "off",
       },
     },
     // Next.js middleware (`proxy.ts` since Next 16): `config.matcher` must be a
@@ -427,8 +424,13 @@ const config: OxlintConfig = defineConfig({
       { allow: ["_all", "_avg", "_count", "_max", "_min", "_sum"] },
     ],
     // `_`-prefixed names are the convention for deliberately unused bindings
-    // (ignored destructure slots, unused callback params).
-    "no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+    // (ignored destructure slots, unused callback params). `safe-fix` lets
+    // `--fix` delete unused imports; variables keep a suggestion-only fix, since
+    // deleting one can drop its initializer's side effects.
+    "no-unused-vars": [
+      "error",
+      { argsIgnorePattern: "^_", fix: { imports: "safe-fix" }, varsIgnorePattern: "^_" },
+    ],
     // Require the `v` flag on regex literals — opts into Unicode-aware matching with set notation.
     "eslint/require-unicode-regexp": ["error", { requireFlag: "v" }],
     // Block `@nocommit` markers from reaching main — a hard stop for WIP code.
@@ -896,11 +898,6 @@ const config: OxlintConfig = defineConfig({
 
     // `.only()` in a test file skips every other test — must never land on main.
     "no-only-tests/no-only-tests": "error",
-
-    // Unused imports
-
-    // Dead imports bloat bundles and mislead readers — remove them.
-    "unused-imports/no-unused-imports": "error",
 
     // Anti-slop (vendored, see anti-slop/index.js): reject patterns that fake
     // type evidence instead of establishing it, i.e. the assertion/widening
