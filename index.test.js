@@ -212,15 +212,15 @@ describe("oxlint-config-awesomeness", () => {
     expect(config).toEqual(sourceConfig);
   });
 
-  it("registers the vendored anti-slop plugin and all 17 of its rules", async () => {
+  it("registers the vendored anti-slop plugin and all 18 of its rules", async () => {
     expect(config.jsPlugins).toContainEqual({
       name: "anti-slop",
-      specifier: "oxlint-config-awesomeness/anti-slop",
+      specifier: import.meta.resolve("oxlint-config-awesomeness/anti-slop"),
     });
 
     const { default: plugin } = await import("oxlint-config-awesomeness/anti-slop");
     const ruleNames = Object.keys(plugin.rules).toSorted();
-    expect(ruleNames).toHaveLength(17);
+    expect(ruleNames).toHaveLength(18);
     for (const ruleName of ruleNames) {
       expect(config.rules).toHaveProperty(`anti-slop/${ruleName}`);
     }
@@ -229,7 +229,7 @@ describe("oxlint-config-awesomeness", () => {
   it("registers the first-party awesomeness plugin and its rules", async () => {
     expect(config.jsPlugins).toContainEqual({
       name: "awesomeness",
-      specifier: "oxlint-config-awesomeness/awesomeness",
+      specifier: import.meta.resolve("oxlint-config-awesomeness/awesomeness"),
     });
 
     const { default: plugin } = await import("oxlint-config-awesomeness/awesomeness");
@@ -365,6 +365,6 @@ describe("oxlint-config-awesomeness/shadcn", () => {
   });
 
   it("stays out of the base config, so repos without shadcn need no plugin", () => {
-    expect(config.jsPlugins).not.toContain("@shadcn/lint");
+    expect(JSON.stringify(config.jsPlugins)).not.toContain("@shadcn/lint");
   });
 });

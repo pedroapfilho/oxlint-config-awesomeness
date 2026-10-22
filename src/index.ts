@@ -121,19 +121,23 @@ const config: OxlintConfig = defineConfig({
     node: true,
   },
   // JS-plugin bridge for ESLint plugins oxlint doesn't yet implement natively.
+  // Oxlint resolves a bare specifier from the consumer's project root, where
+  // pnpm does not link this package's dependencies, so each one is resolved here.
   jsPlugins: [
-    "@nkzw/eslint-plugin",
-    "eslint-plugin-no-only-tests",
-    "eslint-plugin-perfectionist",
-    "eslint-plugin-unused-imports",
+    { name: "@nkzw", specifier: import.meta.resolve("@nkzw/eslint-plugin") },
+    { name: "no-only-tests", specifier: import.meta.resolve("eslint-plugin-no-only-tests") },
+    { name: "perfectionist", specifier: import.meta.resolve("eslint-plugin-perfectionist") },
     // React Doctor diagnostics (security, perf, correctness, RSC, TanStack Query).
-    { name: "react-doctor", specifier: "oxlint-plugin-react-doctor" },
+    { name: "react-doctor", specifier: import.meta.resolve("oxlint-plugin-react-doctor") },
     // Anti-slop: rejects low-evidence TypeScript patterns. Vendored into this
-    // package (anti-slop/index.js) because upstream is source-distributed and
-    // not on npm yet; the specifier resolves via this package's exports map.
-    { name: "anti-slop", specifier: "oxlint-config-awesomeness/anti-slop" },
+    // package (anti-slop/index.js) because upstream is meant to be vendored and
+    // publishes no npm package.
+    { name: "anti-slop", specifier: import.meta.resolve("oxlint-config-awesomeness/anti-slop") },
     // First-party rules that ship with this config (dist/awesomeness.js).
-    { name: "awesomeness", specifier: "oxlint-config-awesomeness/awesomeness" },
+    {
+      name: "awesomeness",
+      specifier: import.meta.resolve("oxlint-config-awesomeness/awesomeness"),
+    },
   ],
   // Type-aware linting via tsgolint (stable since oxlint-tsgolint v7). Turns on
   // the 59 typescript-eslint rules that need a type checker; the `@typescript-eslint`
@@ -375,13 +379,11 @@ const config: OxlintConfig = defineConfig({
         "require-unicode-regexp": "off",
       },
     },
-    // Astro components: the frontmatter runs per render, not at module init, and
-    // the JS-plugin unused-imports check cannot see imports used in the markup.
+    // Astro components: the frontmatter runs per render, not at module init.
     {
       files: ["**/*.astro"],
       rules: {
         "react-doctor/no-impure-call-at-module-scope": "off",
-        "unused-imports/no-unused-imports": "off",
       },
     },
     // Next.js middleware (`proxy.ts` since Next 16): `config.matcher` must be a
@@ -427,8 +429,13 @@ const config: OxlintConfig = defineConfig({
       { allow: ["_all", "_avg", "_count", "_max", "_min", "_sum"] },
     ],
     // `_`-prefixed names are the convention for deliberately unused bindings
-    // (ignored destructure slots, unused callback params).
-    "no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+    // (ignored destructure slots, unused callback params). `safe-fix` lets
+    // `--fix` delete unused imports; variables keep a suggestion-only fix, since
+    // deleting one can drop its initializer's side effects.
+    "no-unused-vars": [
+      "error",
+      { argsIgnorePattern: "^_", fix: { imports: "safe-fix" }, varsIgnorePattern: "^_" },
+    ],
     // Require the `v` flag on regex literals — opts into Unicode-aware matching with set notation.
     "eslint/require-unicode-regexp": ["error", { requireFlag: "v" }],
     // Block `@nocommit` markers from reaching main — a hard stop for WIP code.
@@ -897,11 +904,6 @@ const config: OxlintConfig = defineConfig({
     // `.only()` in a test file skips every other test — must never land on main.
     "no-only-tests/no-only-tests": "error",
 
-    // Unused imports
-
-    // Dead imports bloat bundles and mislead readers — remove them.
-    "unused-imports/no-unused-imports": "error",
-
     // Anti-slop (vendored, see anti-slop/index.js): reject patterns that fake
     // type evidence instead of establishing it, i.e. the assertion/widening
     // escape hatches AI-generated code reaches for beyond plain `any`.
@@ -948,6 +950,8 @@ const config: OxlintConfig = defineConfig({
     "anti-slop/no-unsafe-dictionary-type": "warn",
     // Widening a known value and asserting it back is a two-step type lie.
     "anti-slop/no-widen-then-assert": "error",
+    // Blank-line padding is formatting, which oxfmt owns.
+    "anti-slop/require-readable-spacing": "off",
     "anti-slop/require-safety-comment-for-type-assertion": "error",
 
     // Awesomeness: first-party rules shipped with this config.

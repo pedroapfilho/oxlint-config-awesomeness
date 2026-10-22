@@ -1,4 +1,4 @@
-/* Vendored from https://github.com/dmmulroy/anti-slop (MIT, see ./LICENSE), commit 95a56e5. Bundled with esbuild and leaves @oxlint/plugins external. */
+/* Vendored from https://github.com/dmmulroy/anti-slop (MIT, see ./LICENSE), commit 13909c9, which carries code from ESLint Stylistic (MIT, see ./LICENSE-eslint-stylistic). Bundled with `esbuild src/index.ts --bundle --format=esm --platform=node --external:@oxlint/plugins`. */
 
 // src/index.ts
 import { eslintCompatPlugin } from "@oxlint/plugins";
@@ -790,14 +790,7 @@ function functionParameterBindingName(parameter, sourceCode) {
   return annotationStart === void 0 ? sourceText : sourceText.slice(0, annotationStart - parameter.start).trimEnd();
 }
 
-// src/rules/no-known-value-widening.ts
-function unwrapExpression(expression) {
-  let current = expression;
-  while (current.type === "ParenthesizedExpression" || current.type === "TSAsExpression" || current.type === "TSSatisfiesExpression" || current.type === "TSTypeAssertion" || current.type === "TSNonNullExpression") {
-    current = current.expression;
-  }
-  return current;
-}
+// src/shared/scope.ts
 function resolveVariable(sourceCode, identifier) {
   let scope = sourceCode.getScope(identifier);
   while (scope !== null) {
@@ -806,6 +799,15 @@ function resolveVariable(sourceCode, identifier) {
     scope = scope.upper;
   }
   return null;
+}
+
+// src/rules/no-known-value-widening.ts
+function unwrapExpression(expression) {
+  let current = expression;
+  while (current.type === "ParenthesizedExpression" || current.type === "TSAsExpression" || current.type === "TSSatisfiesExpression" || current.type === "TSTypeAssertion" || current.type === "TSNonNullExpression") {
+    current = current.expression;
+  }
+  return current;
 }
 function variableDeclarator(variable) {
   if (variable.defs.length !== 1) return null;
@@ -1099,15 +1101,6 @@ var noKnownValueWideningRule = defineRule5({
 // src/rules/no-module-mocking.ts
 import { defineRule as defineRule6 } from "@oxlint/plugins";
 var moduleMockMethods = /* @__PURE__ */ new Set(["doMock", "mock", "unstable_mockModule"]);
-function resolveVariable2(sourceCode, identifier) {
-  let scope = sourceCode.getScope(identifier);
-  while (scope !== null) {
-    const variable = scope.set.get(identifier.name);
-    if (variable !== void 0) return variable;
-    scope = scope.upper;
-  }
-  return null;
-}
 function importedName(node) {
   if (node.type !== "ImportSpecifier") return null;
   return node.imported.type === "Identifier" ? node.imported.name : node.imported.value;
@@ -1117,7 +1110,7 @@ function isTestFrameworkObject(sourceCode, expression) {
   if ((expression.name === "vi" || expression.name === "jest") && sourceCode.isGlobalReference(expression)) {
     return true;
   }
-  const variable = resolveVariable2(sourceCode, expression);
+  const variable = resolveVariable(sourceCode, expression);
   if (variable === null || variable.defs.length === 0) {
     return expression.name === "vi" || expression.name === "jest";
   }
@@ -1217,19 +1210,10 @@ var noObjectParametersRule = defineRule7({
 import { defineRule as defineRule8 } from "@oxlint/plugins";
 
 // src/shared/reflect-method.ts
-function resolveVariable3(sourceCode, identifier) {
-  let scope = sourceCode.getScope(identifier);
-  while (scope !== null) {
-    const variable = scope.set.get(identifier.name);
-    if (variable !== void 0) return variable;
-    scope = scope.upper;
-  }
-  return null;
-}
 function isGlobalReflect(sourceCode, expression) {
   if (expression.type !== "Identifier" || expression.name !== "Reflect") return false;
   if (sourceCode.isGlobalReference(expression)) return true;
-  const variable = resolveVariable3(sourceCode, expression);
+  const variable = resolveVariable(sourceCode, expression);
   return variable === null || variable.defs.length === 0;
 }
 function isGlobalReflectMethodCall(sourceCode, callee, methodName) {
@@ -1873,6 +1857,594 @@ var noWidenThenAssertRule = defineRule16({
   }
 });
 
+// src/vendor/eslint-stylistic/padding-line-ast.ts
+var LINEBREAKS = /* @__PURE__ */ new Set(["\r\n", "\r", "\n", "\u2028", "\u2029"]);
+var isClosingBraceToken = (token) => token.type === "Punctuator" && token.value === "}";
+var isSemicolonToken = (token) => token.type === "Punctuator" && token.value === ";";
+var isNotSemicolonToken = (token) => !isSemicolonToken(token);
+var isTokenOnSameLine = (left, right) => left.loc.end.line === right.loc.start.line;
+var isFunction = (node) => node.type === "FunctionDeclaration" || node.type === "FunctionExpression" || node.type === "ArrowFunctionExpression";
+var isSingleLine = (node) => node.loc.start.line === node.loc.end.line;
+var skipChainExpression = (node) => node.type === "ChainExpression" ? node.expression : node;
+var isTopLevelExpressionStatement = (node) => node.type === "ExpressionStatement" && (node.parent.type === "Program" || node.parent.type === "BlockStatement" && isFunction(node.parent.parent));
+function isParenthesized(node, sourceCode) {
+  const before = sourceCode.getTokenBefore(node);
+  const after = sourceCode.getTokenAfter(node);
+  return before?.value === "(" && after?.value === ")";
+}
+
+// src/vendor/eslint-stylistic/padding-line-between-statements.ts
+var CJS_EXPORT = /^(?:module\s*\.\s*)?exports(?:\s*\.|\s*\[|$)/u;
+var CJS_IMPORT = /^require\(/u;
+var LT = `[${Array.from(LINEBREAKS).join("")}]`;
+var PADDING_LINE_SEQUENCE = new RegExp(
+  String.raw`^(\s*?${LT})\s*${LT}(\s*;?)$`,
+  "u"
+);
+function isSelectorOption(option) {
+  return typeof option === "object" && !Array.isArray(option);
+}
+function newKeywordTester(type, keyword) {
+  return {
+    test(node, sourceCode) {
+      const isSameKeyword = sourceCode.getFirstToken(node)?.value === keyword;
+      const isSameType = Array.isArray(type) ? type.includes(node.type) : type === node.type;
+      return isSameKeyword && isSameType;
+    }
+  };
+}
+function newNodeTypeTester(type) {
+  return {
+    test: (node) => node.type === type
+  };
+}
+function isIIFEStatement(node) {
+  if (node.type === "ExpressionStatement") {
+    let expression = skipChainExpression(node.expression);
+    if (expression.type === "UnaryExpression")
+      expression = skipChainExpression(expression.argument);
+    if (expression.type === "CallExpression") {
+      let node2 = expression.callee;
+      while (node2.type === "SequenceExpression") {
+        const lastExpression = node2.expressions.at(-1);
+        if (lastExpression === void 0)
+          throw new Error("Padding rule invariant: sequence expression is empty");
+        node2 = lastExpression;
+      }
+      return isFunction(node2);
+    }
+  }
+  return false;
+}
+function isCJSRequire(node) {
+  if (node.type === "VariableDeclaration") {
+    const declaration = node.declarations[0];
+    if (declaration?.init) {
+      let call = declaration?.init;
+      while (call.type === "MemberExpression")
+        call = call.object;
+      if (call.type === "CallExpression" && call.callee.type === "Identifier") {
+        return call.callee.name === "require";
+      }
+    }
+  }
+  return false;
+}
+function isBlockLikeStatement(node, sourceCode) {
+  if (node.type === "DoWhileStatement" && node.body.type === "BlockStatement") {
+    return true;
+  }
+  if (isIIFEStatement(node))
+    return true;
+  const lastToken = sourceCode.getLastToken(node, isNotSemicolonToken);
+  const belongingNode = lastToken && isClosingBraceToken(lastToken) ? sourceCode.getNodeByRangeIndex(lastToken.range[0]) : null;
+  return !!belongingNode && (belongingNode.type === "BlockStatement" || belongingNode.type === "SwitchStatement");
+}
+function isDirective(node, sourceCode) {
+  return isTopLevelExpressionStatement(node) && node.expression.type === "Literal" && typeof node.expression.value === "string" && !isParenthesized(node.expression, sourceCode);
+}
+function isDirectivePrologue(node, sourceCode) {
+  if (isDirective(node, sourceCode) && node.parent && "body" in node.parent && Array.isArray(node.parent.body)) {
+    for (const sibling of node.parent.body) {
+      if (sibling === node)
+        break;
+      if (!isDirective(sibling, sourceCode))
+        return false;
+    }
+    return true;
+  }
+  return false;
+}
+function isCJSExport(node) {
+  if (node.type === "ExpressionStatement") {
+    const expression = node.expression;
+    if (expression.type === "AssignmentExpression") {
+      let left = expression.left;
+      if (left.type === "MemberExpression") {
+        while (left.object.type === "MemberExpression")
+          left = left.object;
+        return left.object.type === "Identifier" && (left.object.name === "exports" || left.object.name === "module" && left.property.type === "Identifier" && left.property.name === "exports");
+      }
+    }
+  }
+  return false;
+}
+function isExpression(node, sourceCode) {
+  return node.type === "ExpressionStatement" && !isDirectivePrologue(node, sourceCode);
+}
+function getActualLastToken(node, sourceCode) {
+  const semiToken = sourceCode.getLastToken(node);
+  const prevToken = sourceCode.getTokenBefore(semiToken);
+  const nextToken = sourceCode.getTokenAfter(semiToken);
+  const isSemicolonLessStyle = prevToken && nextToken && prevToken.range[0] >= node.range[0] && isSemicolonToken(semiToken) && !isTokenOnSameLine(prevToken, semiToken) && isTokenOnSameLine(semiToken, nextToken);
+  return isSemicolonLessStyle ? prevToken : semiToken;
+}
+function replacerToRemovePaddingLines(_, trailingSpaces, indentSpaces) {
+  return trailingSpaces + indentSpaces;
+}
+function getReportLoc(node, sourceCode) {
+  if (isSingleLine(node))
+    return node.loc;
+  const line = node.loc.start.line;
+  const sourceLine = sourceCode.lines[line - 1];
+  if (sourceLine === void 0)
+    throw new Error("Padding rule invariant: statement source line is missing");
+  return {
+    start: node.loc.start,
+    end: {
+      line,
+      column: sourceLine.length
+    }
+  };
+}
+function verifyForAny() {
+}
+function verifyForNever(context, _, nextNode, paddingLines) {
+  if (paddingLines.length === 0)
+    return;
+  context.report({
+    node: nextNode,
+    messageId: "unexpectedBlankLine",
+    loc: getReportLoc(nextNode, context.sourceCode),
+    fix(fixer) {
+      if (paddingLines.length >= 2)
+        return null;
+      const paddingPair = paddingLines[0];
+      if (paddingPair === void 0)
+        throw new Error("Padding rule invariant: reported padding pair is missing");
+      const [prevToken, nextToken] = paddingPair;
+      const start = prevToken.range[1];
+      const end = nextToken.range[0];
+      const text = context.sourceCode.text.slice(start, end).replace(PADDING_LINE_SEQUENCE, replacerToRemovePaddingLines);
+      return fixer.replaceTextRange([start, end], text);
+    }
+  });
+}
+function verifyForAlways(context, prevNode, nextNode, paddingLines) {
+  if (paddingLines.length > 0)
+    return;
+  context.report({
+    node: nextNode,
+    messageId: "expectedBlankLine",
+    loc: getReportLoc(nextNode, context.sourceCode),
+    fix(fixer) {
+      const sourceCode = context.sourceCode;
+      let prevToken = getActualLastToken(prevNode, sourceCode);
+      const nextToken = sourceCode.getFirstTokenBetween(prevToken, nextNode, {
+        includeComments: true,
+        /**
+         * Skip the trailing comments of the previous node.
+         * This inserts a blank line after the last trailing comment.
+         *
+         * For example:
+         *
+         *     foo(); // trailing comment.
+         *     // comment.
+         *     bar();
+         *
+         * Get fixed to:
+         *
+         *     foo(); // trailing comment.
+         *
+         *     // comment.
+         *     bar();
+         * @param token The token to check.
+         * @returns `true` if the token is not a trailing comment.
+         * @private
+         */
+        filter(token) {
+          if (isTokenOnSameLine(prevToken, token)) {
+            prevToken = token;
+            return false;
+          }
+          return true;
+        }
+      }) || nextNode;
+      const insertText = isTokenOnSameLine(prevToken, nextToken) ? "\n\n" : "\n";
+      return fixer.insertTextAfter(prevToken, insertText);
+    }
+  });
+}
+var PaddingTypes = {
+  any: { verify: verifyForAny },
+  never: { verify: verifyForNever },
+  always: { verify: verifyForAlways }
+};
+var MaybeMultilineStatementType = {
+  "block-like": { test: isBlockLikeStatement },
+  "expression": { test: isExpression },
+  "return": newKeywordTester("ReturnStatement", "return"),
+  "export": newKeywordTester(
+    [
+      "ExportAllDeclaration",
+      "ExportDefaultDeclaration",
+      "ExportNamedDeclaration"
+    ],
+    "export"
+  ),
+  "var": newKeywordTester("VariableDeclaration", "var"),
+  "let": newKeywordTester("VariableDeclaration", "let"),
+  "const": newKeywordTester("VariableDeclaration", "const"),
+  "using": {
+    test: (node) => node.type === "VariableDeclaration" && (node.kind === "using" || node.kind === "await using")
+  },
+  "type": newKeywordTester("TSTypeAliasDeclaration", "type")
+};
+var StatementTypes = {
+  "*": { test: () => true },
+  "exports": { test: isCJSExport },
+  "require": { test: isCJSRequire },
+  "directive": { test: isDirectivePrologue },
+  "iife": { test: isIIFEStatement },
+  "block": newNodeTypeTester("BlockStatement"),
+  "empty": newNodeTypeTester("EmptyStatement"),
+  "function": newNodeTypeTester("FunctionDeclaration"),
+  "ts-method": newNodeTypeTester("TSMethodSignature"),
+  "break": newKeywordTester("BreakStatement", "break"),
+  "case": newKeywordTester("SwitchCase", "case"),
+  "class": newKeywordTester("ClassDeclaration", "class"),
+  "continue": newKeywordTester("ContinueStatement", "continue"),
+  "debugger": newKeywordTester("DebuggerStatement", "debugger"),
+  "default": newKeywordTester(
+    ["SwitchCase", "ExportDefaultDeclaration"],
+    "default"
+  ),
+  "do": newKeywordTester("DoWhileStatement", "do"),
+  "for": newKeywordTester(
+    [
+      "ForStatement",
+      "ForInStatement",
+      "ForOfStatement"
+    ],
+    "for"
+  ),
+  "if": newKeywordTester("IfStatement", "if"),
+  "import": newKeywordTester("ImportDeclaration", "import"),
+  "switch": newKeywordTester("SwitchStatement", "switch"),
+  "throw": newKeywordTester("ThrowStatement", "throw"),
+  "try": newKeywordTester("TryStatement", "try"),
+  "while": newKeywordTester(
+    ["WhileStatement", "DoWhileStatement"],
+    "while"
+  ),
+  "with": newKeywordTester("WithStatement", "with"),
+  "cjs-export": {
+    test: (node, sourceCode) => node.type === "ExpressionStatement" && node.expression.type === "AssignmentExpression" && CJS_EXPORT.test(sourceCode.getText(node.expression.left))
+  },
+  "cjs-import": {
+    test: (node, sourceCode) => node.type === "VariableDeclaration" && node.declarations.length > 0 && node.declarations[0]?.init != null && CJS_IMPORT.test(sourceCode.getText(node.declarations[0].init))
+  },
+  "enum": newKeywordTester(
+    "TSEnumDeclaration",
+    "enum"
+  ),
+  "interface": newKeywordTester(
+    "TSInterfaceDeclaration",
+    "interface"
+  ),
+  "function-overload": newNodeTypeTester("TSDeclareFunction"),
+  ...Object.fromEntries(
+    Object.entries(MaybeMultilineStatementType).flatMap(([key, value]) => [
+      [key, value],
+      [
+        `singleline-${key}`,
+        {
+          ...value,
+          test: (node, sourceCode) => value.test(node, sourceCode) && isSingleLine(node)
+        }
+      ],
+      [
+        `multiline-${key}`,
+        {
+          ...value,
+          test: (node, sourceCode) => value.test(node, sourceCode) && !isSingleLine(node)
+        }
+      ]
+    ])
+  )
+};
+function createPaddingLineRule(options, statementTypes) {
+  const customStatementTypes = statementTypes ?? {};
+  return {
+    meta: {
+      type: "layout",
+      docs: {
+        description: "Require or disallow padding lines between statements"
+      },
+      fixable: "whitespace",
+      hasSuggestions: false,
+      // This is intentionally an array schema as you can pass 0..n config objects
+      schema: {
+        $defs: {
+          paddingType: {
+            type: "string",
+            enum: Object.keys(PaddingTypes)
+          },
+          statementType: {
+            type: "string",
+            enum: Object.keys(StatementTypes)
+          },
+          selectorOption: {
+            type: "object",
+            properties: {
+              selector: {
+                type: "string"
+              },
+              lineMode: {
+                type: "string",
+                enum: ["any", "singleline", "multiline"]
+              }
+            },
+            required: ["selector"],
+            additionalProperties: false
+          },
+          statementMatcher: {
+            anyOf: [
+              { $ref: "#/$defs/statementType" },
+              { $ref: "#/$defs/selectorOption" }
+            ]
+          },
+          statementOption: {
+            anyOf: [
+              { $ref: "#/$defs/statementMatcher" },
+              {
+                type: "array",
+                items: { $ref: "#/$defs/statementMatcher" },
+                minItems: 1,
+                uniqueItems: true,
+                additionalItems: false
+              }
+            ]
+          }
+        },
+        type: "array",
+        additionalItems: false,
+        items: {
+          type: "object",
+          properties: {
+            blankLine: { $ref: "#/$defs/paddingType" },
+            prev: { $ref: "#/$defs/statementOption" },
+            next: { $ref: "#/$defs/statementOption" }
+          },
+          additionalProperties: false,
+          required: ["blankLine", "prev", "next"]
+        }
+      },
+      messages: {
+        unexpectedBlankLine: "Unexpected blank line before this statement.",
+        expectedBlankLine: "Expected blank line before this statement."
+      }
+    },
+    create(context) {
+      const sourceCode = context.sourceCode;
+      const selectorMatchedNodes = /* @__PURE__ */ new Map();
+      const pendingPairs = [];
+      function collectSelectorOption(option) {
+        if (Array.isArray(option)) {
+          for (const item of option)
+            collectSelectorOption(item);
+          return;
+        }
+        if (!isSelectorOption(option))
+          return;
+        selectorMatchedNodes.set(option.selector, /* @__PURE__ */ new Set());
+      }
+      for (const configure of options) {
+        collectSelectorOption(configure.prev);
+        collectSelectorOption(configure.next);
+      }
+      let scopeInfo = null;
+      function enterScope() {
+        scopeInfo = {
+          upper: scopeInfo,
+          prevNode: null
+        };
+      }
+      function exitScope() {
+        if (scopeInfo)
+          scopeInfo = scopeInfo.upper;
+      }
+      function match(node, type) {
+        let innerStatementNode = node;
+        while (innerStatementNode.type === "LabeledStatement")
+          innerStatementNode = innerStatementNode.body;
+        if (Array.isArray(type))
+          return type.some(match.bind(null, innerStatementNode));
+        if (isSelectorOption(type)) {
+          const matchedNodes = selectorMatchedNodes.get(type.selector);
+          if (!matchedNodes?.has(innerStatementNode))
+            return false;
+          const lineMode = type.lineMode;
+          if (lineMode === "singleline")
+            return isSingleLine(innerStatementNode);
+          else if (lineMode === "multiline")
+            return !isSingleLine(innerStatementNode);
+          return true;
+        } else {
+          const statementType = customStatementTypes[type] ?? StatementTypes[type];
+          if (statementType === void 0)
+            throw new Error(`Padding rule invariant: unsupported statement type ${type}`);
+          return statementType.test(innerStatementNode, sourceCode);
+        }
+      }
+      function getPaddingType(prevNode, nextNode) {
+        for (let i = options.length - 1; i >= 0; --i) {
+          const configure = options[i];
+          if (configure === void 0)
+            throw new Error("Padding rule invariant: configuration entry is missing");
+          if (match(prevNode, configure.prev) && match(nextNode, configure.next)) {
+            return PaddingTypes[configure.blankLine];
+          }
+        }
+        return PaddingTypes.any;
+      }
+      function getPaddingLineSequences(prevNode, nextNode) {
+        const pairs = [];
+        let prevToken = getActualLastToken(prevNode, sourceCode);
+        if (nextNode.loc.start.line - prevToken.loc.end.line >= 2) {
+          do {
+            const token = sourceCode.getTokenAfter(prevToken, {
+              includeComments: true
+            });
+            if (token.loc.start.line - prevToken.loc.end.line >= 2)
+              pairs.push([prevToken, token]);
+            prevToken = token;
+          } while (prevToken.range[0] < nextNode.range[0]);
+        }
+        return pairs;
+      }
+      function verify(node) {
+        if (!node.parent || ![
+          "BlockStatement",
+          "Program",
+          "StaticBlock",
+          "SwitchCase",
+          "SwitchStatement",
+          "TSInterfaceBody",
+          "TSModuleBlock",
+          "TSTypeLiteral"
+        ].includes(node.parent.type)) {
+          return;
+        }
+        const prevNode = scopeInfo.prevNode;
+        if (prevNode)
+          pendingPairs.push({ prevNode, nextNode: node });
+        scopeInfo.prevNode = node;
+      }
+      function verifyPendingPairs() {
+        for (const { prevNode, nextNode } of pendingPairs) {
+          const type = getPaddingType(prevNode, nextNode);
+          const paddingLines = getPaddingLineSequences(prevNode, nextNode);
+          type.verify(context, prevNode, nextNode, paddingLines);
+        }
+      }
+      function verifyThenEnterScope(node) {
+        verify(node);
+        enterScope();
+      }
+      const selectorMatchListeners = Object.fromEntries(
+        Array.from(selectorMatchedNodes.keys(), (selector) => [
+          selector,
+          (node) => {
+            selectorMatchedNodes.get(selector)?.add(node);
+          }
+        ])
+      );
+      return {
+        "Program": enterScope,
+        "Program:exit": () => {
+          verifyPendingPairs();
+          exitScope();
+        },
+        "BlockStatement": enterScope,
+        "BlockStatement:exit": exitScope,
+        "SwitchStatement": enterScope,
+        "SwitchStatement:exit": exitScope,
+        "SwitchCase": verifyThenEnterScope,
+        "SwitchCase:exit": exitScope,
+        "StaticBlock": enterScope,
+        "StaticBlock:exit": exitScope,
+        "TSInterfaceBody": enterScope,
+        "TSInterfaceBody:exit": exitScope,
+        "TSModuleBlock": enterScope,
+        "TSModuleBlock:exit": exitScope,
+        "TSTypeLiteral": enterScope,
+        "TSTypeLiteral:exit": exitScope,
+        "TSDeclareFunction": verifyThenEnterScope,
+        "TSDeclareFunction:exit": exitScope,
+        "TSMethodSignature": verifyThenEnterScope,
+        "TSMethodSignature:exit": exitScope,
+        ":statement": verify,
+        ...selectorMatchListeners
+      };
+    }
+  };
+}
+
+// src/rules/require-readable-spacing.ts
+function isSinglelineBinding(node) {
+  const declaration = node.type === "ExportNamedDeclaration" ? node.declaration : node;
+  return declaration?.type === "VariableDeclaration" && node.loc.start.line === node.loc.end.line;
+}
+function hasLeadingComment(node, sourceCode) {
+  const previousLine = sourceCode.getTokenBefore(node)?.loc.end.line;
+  return sourceCode.getCommentsBefore(node).some((comment) => comment.loc.start.line !== previousLine);
+}
+var singlelineBinding = {
+  test: (node) => isSinglelineBinding(node)
+};
+var undocumentedSinglelineBinding = {
+  test: (node, sourceCode) => isSinglelineBinding(node) && !hasLeadingComment(node, sourceCode)
+};
+var paddingRule = createPaddingLineRule(
+  [
+    { blankLine: "always", prev: "import", next: "*" },
+    { blankLine: "always", prev: "*", next: { selector: "Program > :not(ImportDeclaration)" } },
+    { blankLine: "always", prev: { selector: "Program > :not(ImportDeclaration)" }, next: "*" },
+    { blankLine: "always", prev: "*", next: ["function", "class", "interface", "type"] },
+    { blankLine: "always", prev: ["function", "class", "interface", "type"], next: "*" },
+    {
+      blankLine: "always",
+      prev: "*",
+      next: ["multiline-const", "multiline-let", "multiline-var", "multiline-using"]
+    },
+    {
+      blankLine: "always",
+      prev: ["multiline-const", "multiline-let", "multiline-var", "multiline-using"],
+      next: "*"
+    },
+    { blankLine: "always", prev: "*", next: ["return", "if", "switch", "try", "for", "while", "do"] },
+    { blankLine: "always", prev: "block-like", next: "*" },
+    { blankLine: "any", prev: "import", next: "import" },
+    // Consecutive single-line bindings form one group at any scope, including
+    // module scope. A binding with its own leading comment starts a new group.
+    { blankLine: "any", prev: "singleline-binding", next: "undocumented-singleline-binding" },
+    {
+      blankLine: "any",
+      prev: {
+        selector: ':matches(TSDeclareFunction, ExportNamedDeclaration[declaration.type="TSDeclareFunction"])'
+      },
+      next: {
+        selector: ':matches(TSDeclareFunction, FunctionDeclaration, ExportNamedDeclaration[declaration.type="TSDeclareFunction"], ExportNamedDeclaration[declaration.type="FunctionDeclaration"])'
+      }
+    }
+  ],
+  {
+    "singleline-binding": singlelineBinding,
+    "undocumented-singleline-binding": undocumentedSinglelineBinding
+  }
+);
+var requireReadableSpacingRule = {
+  ...paddingRule,
+  meta: {
+    ...paddingRule.meta,
+    docs: {
+      description: "Require readable spacing between declarations and logical statement groups."
+    },
+    schema: []
+  }
+};
+
 // src/rules/require-safety-comment-for-type-assertion.ts
 import { defineRule as defineRule17 } from "@oxlint/plugins";
 var DEFAULT_SAFETY_MARKERS = ["SAFETY"];
@@ -1988,10 +2560,11 @@ var antiSlopPlugin = eslintCompatPlugin({
     "no-unknown-returns": noUnknownReturnsRule,
     "no-unknown-type-aliases": noUnknownTypeAliasesRule,
     "no-widen-then-assert": noWidenThenAssertRule,
+    "require-readable-spacing": requireReadableSpacingRule,
     "require-safety-comment-for-type-assertion": requireSafetyCommentForTypeAssertionRule
   }
 });
-var index_default = antiSlopPlugin;
+var src_default = antiSlopPlugin;
 export {
-  index_default as default
+  src_default as default
 };

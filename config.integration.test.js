@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -13,11 +14,11 @@ const OXLINT = fileURLToPath(
 let cwd;
 
 beforeEach(() => {
-  // Keep package self-references and peer plugins resolvable from the fixture config.
-  cwd = mkdtempSync(join(import.meta.dirname, ".oxlint-fixtures-"));
+  // Outside the repo, so a plugin resolved from the project root fails to load.
+  cwd = mkdtempSync(join(tmpdir(), "oxlint-fixtures-"));
   writeFileSync(
     join(cwd, "oxlint.config.mjs"),
-    `import config from "oxlint-config-awesomeness";
+    `import config from ${JSON.stringify(import.meta.resolve("oxlint-config-awesomeness"))};
 export default {
   extends: [config],
   options: { typeAware: false, typeCheck: false },
