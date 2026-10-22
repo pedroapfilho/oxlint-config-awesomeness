@@ -7,7 +7,7 @@
     "src/init.ts",
     "src/shadcn.ts"
   ],
-  "ignorePatterns": ["bin/template.ts", ".github/ci/*.mjs"],
+  "ignorePatterns": ["anti-slop/index.js", "bin/template.ts", ".github/ci/*.mjs"],
   "ignoreDependencies": [
     "@nkzw/eslint-plugin",
     "eslint-plugin-no-only-tests",
