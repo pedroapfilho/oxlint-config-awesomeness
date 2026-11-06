@@ -2,7 +2,7 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-**559 rules** across **17 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+All five oxlint rule categories at `error`, plus **559 rules** enabled by name, across **17 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
@@ -16,8 +16,9 @@ npm install -D oxlint-config-awesomeness oxlint-plugin-react-doctor oxlint-tsgol
 > load even where your package manager keeps them out of the root `node_modules`.
 
 > [!TIP]
-> `eslint-plugin-perfectionist` pulls in `@typescript-eslint/utils`, which still
-> caps TypeScript at `<6.1.0` and has no release allowing 7 yet. Since this config
+> `eslint-plugin-perfectionist` pulls in `@typescript-eslint/utils`, and the
+> shadcn preset's `@shadcn/lint` pulls in `@typescript-eslint/parser`. Both still
+> cap TypeScript at `<6.1.0` and have no release allowing 7 yet. Since this config
 > requires TypeScript 7, that range can never be satisfied and pnpm reports an
 > unmet peer. Installs still succeed; only `strict-peer-dependencies` repos fail.
 > To silence it, add to your `pnpm-workspace.yaml`:
@@ -26,6 +27,7 @@ npm install -D oxlint-config-awesomeness oxlint-plugin-react-doctor oxlint-tsgol
 > peerDependencyRules:
 >   allowedVersions:
 >     "@typescript-eslint/utils>typescript": "7"
+>     "@typescript-eslint/parser>typescript": "7"
 >     "@typescript-eslint/typescript-estree>typescript": "7"
 >     "@typescript-eslint/project-service>typescript": "7"
 >     "@typescript-eslint/tsconfig-utils>typescript": "7"
@@ -33,7 +35,7 @@ npm install -D oxlint-config-awesomeness oxlint-plugin-react-doctor oxlint-tsgol
 
 ### Type-aware linting
 
-This config sets `options.typeAware`, which turns on the 59 typescript-eslint rules that need a type checker (`no-floating-promises`, `no-misused-promises`, `no-unnecessary-condition`, and the rest). Those rules run through `oxlint-tsgolint`, which is why it is in the install line above.
+This config sets `options.typeAware`, which turns on the typescript-eslint rules that need a type checker (`no-floating-promises`, `no-misused-promises`, `no-unnecessary-condition`, and the rest). Those rules run through `oxlint-tsgolint`, which is why it is in the install line above.
 
 `oxlint-tsgolint` is only an _optional_ peer of oxlint itself, so if it is missing you do not get an error: type-aware rules are skipped silently and your lint still exits zero. If you want to confirm they are running, add a floating promise to a file and check that `typescript(no-floating-promises)` fires.
 
@@ -62,7 +64,7 @@ export default defineConfig({
 });
 ```
 
-Type-aware rules only see types for files inside your tsconfig program. Plain `.js`, `.jsx`, `.mjs`, and `.cjs` files are usually outside it, where every expression resolves to `any` and the `no-unsafe-*` family would fire on every line, so this config turns those rules off for JavaScript. `typeCheck` is left off as well, since it reports TypeScript compiler diagnostics through the linter and every repo here already runs `tsc` separately.
+Type-aware rules only see types for files inside your tsconfig program. Plain `.js`, `.jsx`, `.mjs`, and `.cjs` files are usually outside it, where every expression resolves to `any` and the `no-unsafe-*` family would fire on every line, so this config turns those rules off for JavaScript.
 
 ### Unused suppressions
 
@@ -119,38 +121,6 @@ export default defineConfig({
 
 `@shadcn/lint` is an optional peer dependency, so projects that skip the preset never load it. To give specific components more room, redefine `shadcn/no-restyle` with `contracts`; your setting replaces the preset's.
 
-## Upgrading from 2.x
-
-3.0 adds **28 new restriction-level rules** that error on patterns AI-generated code routinely produces. Existing 2.x codebases may see new lint errors on upgrade — this is intentional; each rule catches a real failure mode.
-
-**What's newly enforced:**
-
-- **TypeScript escape hatches** — `no-explicit-any`, `no-non-null-assertion`, `no-non-null-asserted-nullish-coalescing`, `no-require-imports`, `no-var-requires`, `no-import-type-side-effects`, `use-unknown-in-catch-callback-variable`, `promise-function-async`, `no-dynamic-delete`, `no-invalid-void-type`, `no-empty-object-type`
-- **React correctness** — `button-has-type` (defaults silently submit forms), `no-danger` (XSS vector), `no-unknown-property`; `react/jsx-no-useless-fragment` re-enabled via `pedantic`
-- **Modern JS / Node hygiene** — `unicorn/prefer-node-protocol`, `unicorn/prefer-number-properties`, `unicorn/prefer-modern-math-apis`, `unicorn/no-document-cookie`, `unicorn/no-process-exit`, `unicorn/no-abusive-eslint-disable`, `node/handle-callback-err`, `node/no-new-require`, `node/no-path-concat`, `promise/catch-or-return`
-- **Core ESLint** — `no-var`, `no-use-before-define`, `no-empty`
-- **Import graph** — `import/no-cycle`
-- **Accessibility** — `jsx-a11y/anchor-ambiguous-text`
-
-**What changed in overrides:**
-
-- New `bin/**` and `scripts/**` override turns off `no-console` and `unicorn/no-process-exit` for CLI entry points.
-- Test override extended: the new strict rules that produce noise in tests (`no-require-imports`, `no-var-requires`, `promise-function-async`, `no-non-null-asserted-nullish-coalescing`, `import/no-cycle`, `no-empty`, `no-use-before-define`) are off inside tests.
-
-**Fixing common failures:**
-
-| Error                         | Fix                                                      |
-| ----------------------------- | -------------------------------------------------------- |
-| `: any` / `as any`            | Use `unknown` + narrowing, or a real type.               |
-| `value!`                      | Narrow with a type guard or throw explicitly.            |
-| `<button onClick={...}>`      | Add `type="button"` (or `"submit"`/`"reset"` as needed). |
-| `import fs from 'fs'`         | `import fs from 'node:fs'`.                              |
-| `require(...)` in TS          | Convert to ESM `import`.                                 |
-| `fn(): Promise<T>`            | Add `async` to the function.                             |
-| `catch((err) => err.message)` | `err` is `unknown` — narrow with `err instanceof Error`. |
-
-Every rule has inline code documentation with bad/good examples in the [All Rules](#all-rules) section below.
-
 ## FAQ
 
 ### I installed the package but no `.oxlintrc.json` was created. What did I miss?
@@ -177,8 +147,8 @@ export default defineConfig({
 
 ## Philosophy
 
-- **Error, Never Warn.** Warnings are noise. Either it's an issue, or it isn't.
-- **Category-Based, Future-Proof.** Five rule categories (`correctness`, `suspicious`, `pedantic`, `perf`, `style`) are enabled at `error`. Restriction rules are cherry-picked individually. New rules from categories are automatically included as oxlint evolves.
+- **Error by Default.** A rule warns only where the config source says why: an advisory upstream severity, a heuristic with known false positives, or a rollout the managed repos have not finished.
+- **Category-Based, Future-Proof.** Five rule categories (`correctness`, `suspicious`, `pedantic`, `perf`, `style`) are enabled at `error`. Restriction and nursery rules are enabled by name, each with its own section under [All Rules](#all-rules). New rules from categories are automatically included as oxlint evolves.
 - **Opinionated for Consistency.** When multiple approaches exist, this config enforces the strictest option. All apps in your organization will feel the same.
 - **Smart Overrides.** Test files, Storybook stories, seed scripts, config files, and E2E fixtures get relaxed rules where strict enforcement creates noise.
 - **Formatter-Safe.** No rule fights the formatter. Pair with [Oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) for formatting.
@@ -186,100 +156,65 @@ export default defineConfig({
 
 ## Plugins
 
-| Plugin        | Rules | Description                                    |
-| ------------- | ----- | ---------------------------------------------- |
-| eslint (core) | 151   | JavaScript best practices and error prevention |
-| unicorn       | 121   | Modern JavaScript patterns and idioms          |
-| typescript    | 98    | Strict type safety and TypeScript conventions  |
-| react         | 59    | React component rules, hooks, and performance  |
-| jsx-a11y      | 36    | Accessibility enforcement for JSX              |
-| oxc           | 22    | Bug-catching rules unique to oxlint            |
-| nextjs        | 21    | Next.js framework best practices               |
-| import        | 13    | Module hygiene and import/export conventions   |
-| promise       | 12    | Async/promise handling                         |
-| node          | 9     | Node.js environment rules                      |
-| vitest        | 28    | Test correctness, in test files only           |
+| Plugin        | Description                                                 |
+| ------------- | ----------------------------------------------------------- |
+| eslint (core) | JavaScript best practices and error prevention              |
+| unicorn       | Modern JavaScript patterns and idioms                       |
+| typescript    | Strict type safety and TypeScript conventions               |
+| react         | React component rules, hooks, and the React Compiler checks |
+| jsx-a11y      | Accessibility enforcement for JSX                           |
+| oxc           | Bug-catching rules unique to oxlint                         |
+| nextjs        | Next.js framework best practices                            |
+| import        | Module hygiene and import/export conventions                |
+| promise       | Async/promise handling                                      |
+| node          | Node.js environment rules                                   |
+| vitest        | Test correctness, in test files only                        |
 
-Plus JS plugins: **perfectionist** (sorting), **@nkzw** (`useEffect` dependency arrays), **no-only-tests**, **react-doctor** (431 diagnostics), **anti-slop** (vendored, low-evidence TypeScript patterns), and the first-party **awesomeness** plugin.
+Plus JS plugins: **perfectionist** (sorting), **@nkzw** (`useEffect` dependency arrays), **no-only-tests**, **react-doctor** (React, Next.js, security, and performance diagnostics), **anti-slop** (vendored, low-evidence TypeScript patterns), and the first-party **awesomeness** plugin.
 
 ## File-Type Overrides
 
-The config includes smart overrides so strict rules don't create noise in files that need flexibility:
+The config includes smart overrides so strict rules don't create noise in files that need flexibility. Each row names the main changes; `src/index.ts` has the full list:
 
-| Files                                    | Relaxed Rules                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `*.test.*`, `*.spec.*`, `__tests__/**`   | Adds the **vitest** plugin (its correctness rules, `expect-expect` with assertion helpers, and the style rules the repos already follow). Relaxes `no-unnecessary-condition`, `no-explicit-any`, `no-non-null-assertion` (+ asserted-nullish variant), `no-require-imports`, `no-var-requires`, `promise-function-async`, all `no-unsafe-*`, `import/no-cycle`, `max-lines`, `max-lines-per-function`, `max-nested-callbacks`, `max-statements`, `no-empty`, `no-empty-function`, `no-use-before-define`, the `anti-slop` assertion family (`no-chained-type-assertions`, `no-known-value-widening`, `no-unknown-type-aliases`, `no-unsafe-dictionary-type`, `no-widen-then-assert`, `require-safety-comment-for-type-assertion`) |
-| `*.stories.tsx`                          | `no-console`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `**/seed.ts`, `**/migrate.ts`            | `no-console`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `**/bin/**`, `**/scripts/**`, `tools/**` | `no-console`, `unicorn/no-process-exit`, `node/no-sync`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `*.config.ts`, `next.config.*`, etc.     | `max-lines`, `no-anonymous-default-export`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `**/e2e/**`                              | `no-unnecessary-condition`, `rules-of-hooks`, all `no-unsafe-*`, the `anti-slop` assertion family, `strict-boolean-expressions`, `no-empty-pattern` (Playwright's `async ({}, use)` fixtures), `require-unicode-regexp` (Playwright rejects `v`-flagged regex)                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `*.ts`, `*.tsx` (all TypeScript)         | Rules handled natively by the TS compiler (`no-undef`, `no-redeclare`, etc.); `require-await` (the type-aware twin reports it); `new-cap` checks only `new` targets                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `*.d.ts`                                 | `consistent-type-definitions`, `consistent-indexed-object-style` (ambient declarations merge through `interface`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `*.astro`                                | `react-doctor/no-impure-call-at-module-scope`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `**/middleware.ts`, `**/proxy.ts`        | `unicorn/prefer-string-raw` (Next.js reads `config.matcher` as a plain string literal)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-
-## Cherry-Picked Restriction Rules
-
-Instead of enabling the entire `restriction` category (which includes rules like `no-bitwise`, `no-plusplus`, `capitalized-comments` that cause daily friction), this config cherry-picks the most valuable restriction rules, grouped by plugin:
-
-**Core ESLint**
-`curly`, `default-case`, `eqeqeq`, `grouped-accessor-pairs`, `max-classes-per-file`, `max-depth`, `max-lines`, `max-nested-callbacks`, `max-params`, `no-alert`, `no-caller`, `no-console`, `no-empty`, `no-eval`, `no-extend-native`, `no-implicit-coercion`, `no-new-func`, `no-new-wrappers`, `no-object-constructor`, `no-param-reassign`, `no-proto`, `no-regex-spaces`, `no-return-assign`, `no-script-url`, `no-sequences`, `no-shadow`, `no-throw-literal`, `no-unreachable-loop`, `no-use-before-define`, `no-var`, `no-void`, `prefer-promise-reject-errors`, `prefer-template`, `unicode-bom`
-
-**TypeScript** — blocks escape hatches (`any`, `!`, `require`) that AI-generated code routinely produces:
-`@typescript-eslint/no-dynamic-delete`, `no-empty-object-type`, `no-explicit-any`, `no-import-type-side-effects`, `no-invalid-void-type`, `no-namespace`, `no-non-null-asserted-nullish-coalescing`, `no-non-null-assertion`, `no-require-imports`, `no-var-requires`, `prefer-literal-enum-member`, `promise-function-async`, `use-unknown-in-catch-callback-variable`
-
-**React**
-`react/button-has-type`, `react/no-clone-element`, `react/no-danger`, `react/no-unknown-property`, `react/rule-suppression`
-
-**Import graph**
-`import/no-amd`, `import/no-cycle`, `import/no-webpack-loader-syntax`
-
-**Unicorn** (modern JS + anti-escape-hatch)
-`unicorn/no-abusive-eslint-disable`, `unicorn/no-document-cookie`, `unicorn/no-length-as-slice-end`, `unicorn/no-process-exit`, `unicorn/no-useless-error-capture-stack-trace`, `unicorn/prefer-modern-math-apis`, `unicorn/prefer-node-protocol`, `unicorn/prefer-number-properties`
-
-**Promise / Node**
-`promise/catch-or-return`, `promise/no-return-in-finally`, `promise/spec-only`, `node/handle-callback-err`, `node/no-new-require`, `node/no-path-concat`
-
-**Oxc**
-`oxc/bad-bitwise-operator`
-
-**Accessibility**
-`jsx-a11y/anchor-ambiguous-text`
+| Files                                                                                             | What changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `**/*.ts`, `**/*.tsx`, `**/*.mts`, `**/*.cts`                                                     | Rules the TypeScript compiler already enforces are off (`no-undef`, `no-redeclare`, `no-dupe-keys`, and the rest); `require-await` is off because its type-aware twin reports the same functions; `new-cap` checks only `new` targets                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `**/*.d.ts`                                                                                       | `@typescript-eslint/consistent-type-definitions` and `@typescript-eslint/consistent-indexed-object-style` are off, since ambient declarations merge through `interface`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `**/*.js`, `**/*.jsx`, `**/*.mjs`, `**/*.cjs`                                                     | Type-aware rules that report on `any` are off (the `no-unsafe-*` family, `@typescript-eslint/strict-boolean-expressions`, `@typescript-eslint/no-confusing-void-expression`, `@typescript-eslint/strict-void-return`): outside the tsconfig program every expression is `any`                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `**/*.test.*`, `**/*.spec.*`, `**/__tests__/**`                                                   | Adds the **vitest** plugin: its correctness rules, `vitest/expect-expect` with assertion helpers, and `vitest/require-to-throw-message` as a warning. Relaxes the `no-unsafe-*` family, the anti-slop assertion family, the React Compiler checks, `@typescript-eslint/no-unnecessary-condition`, `@typescript-eslint/no-explicit-any`, `@typescript-eslint/no-non-null-assertion`, `@typescript-eslint/no-require-imports`, `@typescript-eslint/no-var-requires`, `@typescript-eslint/promise-function-async`, `@typescript-eslint/no-non-null-asserted-nullish-coalescing`, `import/no-cycle`, `max-lines`, `max-nested-callbacks`, `node/no-sync`, `require-unicode-regexp`, `no-empty`, `no-empty-function`, and `no-use-before-define` |
+| `**/*.stories.ts`, `**/*.stories.tsx`                                                             | `no-console` is allowed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `**/seed.ts`, `**/seed.js`, `**/migrate.ts`, `**/migrate.js`                                      | `no-console` is allowed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `**/bin/**`, `**/scripts/**`, `tools/**`                                                          | CLI code: `no-console`, `unicorn/no-process-exit`, `node/no-sync`, `require-unicode-regexp`, `@typescript-eslint/no-unsafe-type-assertion`, and the anti-slop assertion family are off                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `*.config.ts`, `*.config.js`, `*.config.mjs`, `*.config.mts`, `next.config.*`, `**/.storybook/**` | `@typescript-eslint/strict-boolean-expressions` (configs branch on optional env vars), `max-lines`, `node/no-sync`, and `require-unicode-regexp` are off                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `**/e2e/**/fixtures/**`, `**/e2e/**/*.ts`                                                         | Relaxes the `no-unsafe-*` family, the anti-slop assertion family, the React Compiler checks, `@typescript-eslint/no-unnecessary-condition`, `@typescript-eslint/strict-boolean-expressions`, `react-hooks/rules-of-hooks`, `no-empty-pattern` (Playwright's `async ({}, use)` fixtures), and `require-unicode-regexp` (Playwright rejects `v`-flagged regex)                                                                                                                                                                                                                                                                                                                                                                                |
+| `**/*.astro`                                                                                      | `react-doctor/no-impure-call-at-module-scope` is off: the frontmatter runs per render, not at module init                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `**/middleware.ts`, `**/middleware.js`, `**/proxy.ts`, `**/proxy.js`                              | `unicorn/prefer-string-raw` is off: Next.js reads `config.matcher` as a plain string literal                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 ## Disabled by Intent
 
-The five categories are enabled at `error`, but a small set of category-included rules are explicitly disabled because they fight modern React, Next.js, and ESM conventions:
+The five categories are enabled at `error`, and the config turns these rules off by name because they fight modern React, Next.js, and ESM conventions:
 
-| Category of fight                                                                        | Rules off                                                                                                                                                                                                                                                                                                                  |
-| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **React 17+ JSX transform / composition**                                                | `react/react-in-jsx-scope`, `react/jsx-props-no-spreading`, `react/jsx-max-depth`, `react/no-array-index-key`, `react/jsx-no-constructed-context-values`                                                                                                                                                                   |
-| **Modern ESM (named exports, side-effect imports, namespace imports, `node:` protocol)** | `import/no-named-export`, `import/prefer-default-export`, `import/group-exports`, `import/exports-last`, `import/no-anonymous-default-export`, `import/no-nodejs-modules`, `import/no-unassigned-import`, `import/no-namespace`, `import/max-dependencies`, `import/first`, `import/consistent-type-specifier-style`       |
-| **Pedantic style preferences**                                                           | `no-magic-numbers`, `no-ternary`, `no-inline-comments`, `capitalized-comments`, `arrow-body-style`, `func-style`, `func-names`, `init-declarations`, `no-inferrable-types`, `prefer-destructuring`, `no-negated-condition`, `no-continue`, `parameter-properties`, `max-statements`, `max-lines-per-function`, `id-length` |
-| **Unicorn overreach**                                                                    | `unicorn/prefer-global-this`, `unicorn/no-useless-undefined`, `unicorn/no-nested-ternary`, `unicorn/explicit-length-check`, `unicorn/custom-error-definition`, `unicorn/no-zero-fractions`, `unicorn/escape-case`, `unicorn/no-array-callback-reference`, `unicorn/no-array-for-each`, `unicorn/no-array-reduce`           |
-| **Sequential awaits by design** (pagination, rate limits, one transaction connection)    | `no-await-in-loop`, `react-doctor/async-await-in-loop`                                                                                                                                                                                                                                                                     |
-| **Promise rules with broken assumptions**                                                | `promise/prefer-await-to-callbacks`, `promise/avoid-new`, `promise/param-names`                                                                                                                                                                                                                                            |
+| Category of fight                                                                        | Rules off                                                                                                                                                                                                                                                                                                                                                                       |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **React 17+ JSX transform / composition**                                                | `react/react-in-jsx-scope`, `react/jsx-props-no-spreading`, `react/jsx-max-depth`, `react/no-array-index-key`, `react/jsx-no-constructed-context-values`, `react/hook-use-state` (its naming demands deadlock with the unused-variable check)                                                                                                                                   |
+| **React Compiler checks React ships off** (each misfires on non-React code)              | `react/capitalized-calls`, `react/exhaustive-effect-dependencies`, `react/hooks`, `react/memo-dependencies`, `react/no-deriving-state-in-effects`                                                                                                                                                                                                                               |
+| **Type-aware rules that fight library signatures**                                       | `@typescript-eslint/prefer-readonly-parameter-types`, `@typescript-eslint/unbound-method`                                                                                                                                                                                                                                                                                       |
+| **Modern ESM (named exports, side-effect imports, namespace imports, `node:` protocol)** | `import/no-named-export`, `import/prefer-default-export`, `import/group-exports`, `import/exports-last`, `import/no-anonymous-default-export`, `import/no-nodejs-modules`, `import/no-unassigned-import`, `import/no-namespace`, `import/max-dependencies`, `import/first`, `import/consistent-type-specifier-style`                                                            |
+| **Pedantic style preferences**                                                           | `no-magic-numbers`, `no-ternary`, `no-inline-comments`, `capitalized-comments`, `arrow-body-style`, `func-style`, `func-names`, `init-declarations`, `no-inferrable-types`, `prefer-destructuring`, `no-negated-condition`, `no-continue`, `parameter-properties`, `max-statements`, `max-lines-per-function`, `id-length`, `one-var`                                           |
+| **Unicorn overreach**                                                                    | `unicorn/prefer-global-this`, `unicorn/no-useless-undefined`, `unicorn/no-nested-ternary`, `unicorn/explicit-length-check`, `unicorn/custom-error-definition`, `unicorn/no-zero-fractions`, `unicorn/escape-case`, `unicorn/no-array-callback-reference`, `unicorn/no-array-for-each`, `unicorn/no-array-reduce`, `unicorn/no-null` (APIs, JSON, and the DOM all return `null`) |
+| **Owned by oxfmt and perfectionist**                                                     | `sort-imports`, `sort-keys`, `sort-vars`, `unicorn/number-literal-case` (oxfmt lowercases hex digits; the rule demands uppercase)                                                                                                                                                                                                                                               |
+| **Sequential awaits by design** (pagination, rate limits, one transaction connection)    | `no-await-in-loop`, `react-doctor/async-await-in-loop`                                                                                                                                                                                                                                                                                                                          |
+| **Anti-slop rules that flag sound code**                                                 | `anti-slop/no-runtime-typeof` (it flags every `typeof`, including the `typeof window` SSR guards other enabled rules steer toward and ordinary `typeof x === "string"` narrowing)                                                                                                                                                                                               |
+| **Promise rules with broken assumptions**                                                | `promise/prefer-await-to-callbacks`, `promise/avoid-new`, `promise/param-names`                                                                                                                                                                                                                                                                                                 |
 
 A few of these are particularly worth calling out because they form **contradictory pairs** when both fire on the same code:
 
 - `unicorn/explicit-length-check` ↔ `no-magic-numbers` — the first asks you to write `arr.length === 0`, the second then flags the `0`. No way to satisfy both.
-- `import/no-named-export` ↔ `import/prefer-default-export` — exact opposites; one of them is always going to complain.
+- `import/no-named-export` and `import/prefer-default-export` — both push toward default exports, against the named exports modern ESM code uses.
 - `import/no-namespace` ↔ canonical patterns from Sentry, Prisma, lodash that recommend namespace imports — the rule doesn't know about library conventions.
 - `unicorn/no-zero-fractions` ↔ float-math code that uses `1.0` for type-clarity intent — the rule has no signal about why the `.0` is there.
 
 If you want any of these back on for your project, add them to your `oxlint.config.ts` overrides.
-
-## Sorting Rules Disabled
-
-`sort-imports`, `sort-keys`, and `sort-vars` are disabled because sorting is handled by **perfectionist** (for objects, enums, interfaces, JSX props) and **oxfmt** (for import ordering).
-
-## Unicorn Overrides
-
-| Rule                          | Setting                            | Reason                                                  |
-| ----------------------------- | ---------------------------------- | ------------------------------------------------------- |
-| `unicorn/filename-case`       | kebab-case with Next.js exceptions | Allows `[slug]`, `[...catchAll]`, `_app` patterns       |
-| `unicorn/no-null`             | off                                | APIs, JSON, and DOM all return `null`                   |
-| `unicorn/number-literal-case` | off                                | oxfmt lowercases hex digits; the rule demands uppercase |
 
 ## Suggestions
 
@@ -297,7 +232,7 @@ Based on [`@nkzw/oxlint-config`](https://github.com/nkzw-tech/oxlint-config) by 
 
 ## All Rules
 
-Every active rule is listed below with a description and code example.
+Rules this config runs, each with a description and an example. Every rule the config enables by name has a section, and every rule it turns off by name is in [Disabled by Intent](#disabled-by-intent). `pnpm check:readme` fails on a section for a rule that does not run.
 
 ## ESLint Core Rules
 
@@ -338,20 +273,6 @@ Enforce return statements in array method callbacks.
 [1, 2, 3].map((x) => x * 2);
 ```
 
-### arrow-body-style
-
-Enforce braces in arrow functions only when needed.
-
-```js
-// bad
-const fn = () => {
-  return true;
-};
-
-// good
-const fn = () => true;
-```
-
 ### block-scoped-var
 
 Enforce that `var` declarations are used within their defined scope.
@@ -367,64 +288,6 @@ console.log(x);
 if (true) {
   let x = 1;
   console.log(x);
-}
-```
-
-### capitalized-comments
-
-Require the first letter of a comment to be capitalized.
-
-```js
-// bad
-// this is a comment
-
-// good
-// This is a comment
-```
-
-### class-methods-use-this
-
-Require class methods to use `this` or be made static.
-
-```js
-// bad
-class Foo {
-  greet() {
-    return "hello";
-  }
-}
-
-// good
-class Foo {
-  greet() {
-    return this.name;
-  }
-}
-```
-
-### complexity
-
-Enforce a maximum cyclomatic complexity for functions.
-
-```js
-// bad
-function check(a, b, c, d, e) {
-  if (a) {
-    if (b) {
-      if (c) {
-        if (d) {
-          if (e) {
-          }
-        }
-      }
-    }
-  }
-}
-
-// good
-function check(a) {
-  if (!a) return;
-  handle(a);
 }
 ```
 
@@ -550,30 +413,6 @@ for (let i = 0; i < 10; i--) {}
 for (let i = 0; i < 10; i++) {}
 ```
 
-### func-names
-
-Require named function expressions for better stack traces.
-
-```js
-// bad
-const foo = function () {};
-
-// good
-const foo = function foo() {};
-```
-
-### func-style
-
-Enforce the use of function expressions over declarations.
-
-```js
-// bad
-function foo() {}
-
-// good
-const foo = function () {};
-```
-
 ### grouped-accessor-pairs
 
 Require getter and setter pairs to be adjacent in objects.
@@ -608,31 +447,6 @@ for (const key in obj) {
 for (const key in obj) {
   if (Object.hasOwn(obj, key)) doSomething(key);
 }
-```
-
-### id-length
-
-Enforce minimum and maximum identifier length.
-
-```js
-// bad
-const x = 1;
-
-// good
-const count = 1;
-```
-
-### init-declarations
-
-Require variables to be initialized at declaration.
-
-```js
-// bad
-let count;
-count = 0;
-
-// good
-let count = 0;
 ```
 
 ### max-classes-per-file
@@ -683,22 +497,6 @@ Enforce a maximum of 400 lines per file (excluding blanks and comments).
 // Split into focused modules under 400 lines
 ```
 
-### max-lines-per-function
-
-Enforce a maximum number of lines per function.
-
-```js
-// bad
-function bigFn() {
-  // ... 300 lines of logic
-}
-
-// good
-function smallFn() {
-  // ... focused, under the limit
-}
-```
-
 ### max-nested-callbacks
 
 Enforce a maximum of 3 nested callbacks.
@@ -729,22 +527,6 @@ function fn(a, b, c, d, e) {}
 
 // good
 function fn({ a, b, c, d, e }) {}
-```
-
-### max-statements
-
-Enforce a maximum number of statements per function.
-
-```js
-// bad
-function fn() {
-  // ... 50 statements
-}
-
-// good
-function fn() {
-  // ... focused, fewer statements
-}
 ```
 
 ### new-cap
@@ -795,32 +577,6 @@ const p = new Promise(async (resolve) => {
 
 // good
 const p = fetch(url);
-```
-
-### no-await-in-loop
-
-Disallow `await` inside loops. Use `Promise.all` instead.
-
-```js
-// bad
-for (const url of urls) {
-  await fetch(url);
-}
-
-// good
-await Promise.all(urls.map((url) => fetch(url)));
-```
-
-### no-bitwise
-
-Disallow bitwise operators.
-
-```js
-// bad
-const flags = a | b;
-
-// good
-const flags = a || b;
 ```
 
 ### no-caller
@@ -972,23 +728,6 @@ class Foo {
 }
 ```
 
-### no-continue
-
-Disallow `continue` statements.
-
-```js
-// bad
-for (const x of items) {
-  if (!x) continue;
-  process(x);
-}
-
-// good
-for (const x of items) {
-  if (x) process(x);
-}
-```
-
 ### no-control-regex
 
 Disallow control characters in regular expressions.
@@ -1025,18 +764,6 @@ delete x;
 // good
 let x = 1;
 x = undefined;
-```
-
-### no-div-regex
-
-Disallow division operators at the start of regular expressions.
-
-```js
-// bad
-const re = /=foo/;
-
-// good
-const re = /[=]foo/;
 ```
 
 ### no-dupe-class-members
@@ -1166,20 +893,6 @@ const re = /abc[]/;
 const re = /abc[a-z]/;
 ```
 
-### no-empty-function
-
-Disallow empty functions.
-
-```js
-// bad
-function noop() {}
-
-// good
-function noop() {
-  /* Intentionally empty */
-}
-```
-
 ### no-empty-pattern
 
 Disallow empty destructuring patterns.
@@ -1207,20 +920,6 @@ class Foo {
   static {
     this.count = 0;
   }
-}
-```
-
-### no-eq-null
-
-Disallow `== null` comparisons.
-
-```js
-// bad
-if (x == null) {
-}
-
-// good
-if (x === null || x === undefined) {
 }
 ```
 
@@ -1390,19 +1089,6 @@ x = 1;
 // good
 import { x } from "mod";
 const y = 1;
-```
-
-### no-inline-comments
-
-Disallow inline comments after code.
-
-```js
-// bad
-const x = 1; // inline comment
-
-// good
-// Comment above
-const x = 1;
 ```
 
 ### no-inner-declarations
@@ -1591,26 +1277,6 @@ line2";
 const str = "line1\nline2";
 ```
 
-### no-negated-condition
-
-Disallow negated conditions when an `else` is present.
-
-```js
-// bad
-if (!x) {
-  a();
-} else {
-  b();
-}
-
-// good
-if (x) {
-  b();
-} else {
-  a();
-}
-```
-
 ### no-nested-ternary
 
 Disallow nested ternary expressions.
@@ -1724,20 +1390,6 @@ function fn(x) {
 }
 ```
 
-### no-plusplus
-
-Disallow the unary `++` and `--` operators.
-
-```js
-// bad
-let i = 0;
-i++;
-
-// good
-let i = 0;
-i += 1;
-```
-
 ### no-promise-executor-return
 
 Disallow returning values from Promise executor functions.
@@ -1800,32 +1452,6 @@ const re = /foo   bar/;
 
 // good
 const re = /foo {3}bar/;
-```
-
-### no-restricted-globals
-
-Disallow specified global variables.
-
-```js
-// bad
-event.preventDefault();
-
-// good
-function handler(event) {
-  event.preventDefault();
-}
-```
-
-### no-restricted-imports
-
-Disallow specified modules when loaded by `import`.
-
-```js
-// bad
-import _ from "lodash";
-
-// good
-import groupBy from "lodash/groupBy";
 ```
 
 ### no-return-assign
@@ -2350,14 +1976,15 @@ const x = 1;
 
 ### no-void
 
-Disallow the `void` operator.
+Disallow the `void` operator in expressions. As a statement it stays allowed, to mark a promise as deliberately ignored.
 
 ```js
 // bad
-void 0;
+const nothing = void 0;
 
 // good
-undefined;
+const nothing = undefined;
+void sendAnalytics(event);
 ```
 
 ### no-warning-comments
@@ -2409,20 +2036,6 @@ let x = 1;
 
 // good
 const x = 1;
-```
-
-### prefer-destructuring
-
-Require destructuring from arrays and objects.
-
-```js
-// bad
-const x = arr[0];
-const y = obj.y;
-
-// good
-const [x] = arr;
-const { y } = obj;
 ```
 
 ### prefer-exponentiation-operator
@@ -2818,76 +2431,6 @@ import { User } from "./types";
 import type { User } from "./types";
 ```
 
-### @typescript-eslint/default-param-last
-
-Enforce default parameters to be last (TypeScript version).
-
-```ts
-// bad
-function fn(a: number = 1, b: number) {}
-
-// good
-function fn(b: number, a: number = 1) {}
-```
-
-### @typescript-eslint/explicit-function-return-type
-
-Require explicit return types on functions and class methods.
-
-```ts
-// bad
-const fn = () => "hello";
-
-// good
-const fn = (): string => "hello";
-```
-
-### @typescript-eslint/explicit-member-accessibility
-
-Require explicit accessibility modifiers on class properties and methods.
-
-```ts
-// bad
-class Foo {
-  x = 1;
-}
-
-// good
-class Foo {
-  public x = 1;
-}
-```
-
-### @typescript-eslint/explicit-module-boundary-types
-
-Require explicit return and argument types on exported functions.
-
-```ts
-// bad
-export const fn = (x) => x + 1;
-
-// good
-export const fn = (x: number): number => x + 1;
-```
-
-### @typescript-eslint/member-ordering
-
-Enforce a consistent member declaration order.
-
-```ts
-// bad
-class Foo {
-  method() {}
-  public x = 1;
-}
-
-// good
-class Foo {
-  public x = 1;
-  method() {}
-}
-```
-
 ### @typescript-eslint/method-signature-style
 
 Enforce using property-style method signatures.
@@ -2902,20 +2445,6 @@ type Foo = {
 type Foo = {
   bar: (x: number) => void;
 };
-```
-
-### @typescript-eslint/naming-convention
-
-Enforce naming conventions for identifiers.
-
-```ts
-// bad
-const my_var = 1;
-type myType = string;
-
-// good
-const myVar = 1;
-type MyType = string;
 ```
 
 ### @typescript-eslint/no-confusing-non-null-assertion
@@ -2956,24 +2485,6 @@ oldFn();
 newFn();
 ```
 
-### @typescript-eslint/no-dupe-class-members
-
-Disallow duplicate class members (TypeScript version).
-
-```ts
-// bad
-class Foo {
-  bar() {}
-  bar() {}
-}
-
-// good
-class Foo {
-  bar() {}
-  baz() {}
-}
-```
-
 ### @typescript-eslint/no-duplicate-enum-values
 
 Disallow duplicate enum member values.
@@ -3002,20 +2513,6 @@ delete obj[key];
 
 // good
 Reflect.deleteProperty(obj, key);
-```
-
-### @typescript-eslint/no-empty-function
-
-Disallow empty functions (TypeScript version).
-
-```ts
-// bad
-function noop(): void {}
-
-// good
-function noop(): void {
-  /* Intentionally empty */
-}
 ```
 
 ### @typescript-eslint/no-empty-interface
@@ -3118,18 +2615,6 @@ import type { A, B } from "mod";
 import { type A, type B } from "mod";
 ```
 
-### @typescript-eslint/no-inferrable-types
-
-Disallow explicit types where they can be trivially inferred.
-
-```ts
-// bad
-const x: number = 1;
-
-// good
-const x = 1;
-```
-
 ### @typescript-eslint/no-invalid-void-type
 
 Disallow `void` outside of return types and generic type arguments.
@@ -3141,39 +2626,6 @@ const log = (message: void) => {};
 // good
 const log = (message: string): void => {};
 ```
-
-### @typescript-eslint/no-loop-func
-
-Disallow functions created inside loops (TypeScript version).
-
-```ts
-// bad
-for (let i = 0; i < 5; i++) {
-  fns.push(() => i);
-}
-
-// good
-const makeFn = (i: number) => () => i;
-for (let i = 0; i < 5; i++) {
-  fns.push(makeFn(i));
-}
-```
-
-### @typescript-eslint/no-loss-of-precision
-
-Disallow number literals that lose precision (TypeScript version).
-
-```ts
-// bad
-const x = 9007199254740993;
-
-// good
-const x = 9007199254740992n;
-```
-
-### @typescript-eslint/no-magic-numbers
-
-Disallow magic numbers. _Disabled in this config._
 
 ### @typescript-eslint/no-meaningless-void-operator
 
@@ -3285,20 +2737,6 @@ const x = value!;
 const x = value ?? fallback;
 ```
 
-### @typescript-eslint/no-redeclare
-
-Disallow variable redeclaration (TypeScript version).
-
-```ts
-// bad
-let x = 1;
-let x = 2;
-
-// good
-let x = 1;
-x = 2;
-```
-
 ### @typescript-eslint/no-require-imports
 
 Disallow `require()` calls.
@@ -3311,36 +2749,6 @@ const fs = require("fs");
 import fs from "fs";
 ```
 
-### @typescript-eslint/no-restricted-imports
-
-Disallow specified modules when loaded by `import` (TypeScript version).
-
-```ts
-// bad
-import _ from "lodash";
-
-// good
-import groupBy from "lodash/groupBy";
-```
-
-### @typescript-eslint/no-shadow
-
-Disallow variable shadowing (TypeScript version).
-
-```ts
-// bad
-const x = 1;
-const fn = () => {
-  const x = 2;
-};
-
-// good
-const x = 1;
-const fn = () => {
-  const y = 2;
-};
-```
-
 ### @typescript-eslint/no-this-alias
 
 Disallow aliasing `this`.
@@ -3351,18 +2759,6 @@ const self = this;
 
 // good
 const fn = () => this.value;
-```
-
-### @typescript-eslint/no-type-alias
-
-Disallow type aliases in favor of interfaces. _Superseded by consistent-type-definitions._
-
-```ts
-// bad
-type Name = string;
-
-// good
-type User = { name: string };
 ```
 
 ### @typescript-eslint/no-unnecessary-boolean-literal-compare
@@ -3574,61 +2970,6 @@ const x = 5;
 const y = -x;
 ```
 
-### @typescript-eslint/no-unused-expressions
-
-Disallow unused expressions (TypeScript version).
-
-```ts
-// bad
-x + 1;
-
-// good
-const result = x + 1;
-```
-
-### @typescript-eslint/no-unused-vars
-
-Disallow unused variables (TypeScript version).
-
-```ts
-// bad
-const unused = 1;
-
-// good
-const used = 1;
-console.log(used);
-```
-
-### @typescript-eslint/no-use-before-define
-
-Disallow using variables before they are defined (TypeScript version).
-
-```ts
-// bad
-console.log(x);
-const x = 1;
-
-// good
-const x = 1;
-console.log(x);
-```
-
-### @typescript-eslint/no-useless-constructor
-
-Disallow unnecessary constructors (TypeScript version).
-
-```ts
-// bad
-class Foo {
-  constructor() {
-    super();
-  }
-}
-
-// good
-class Foo extends Bar {}
-```
-
 ### @typescript-eslint/no-useless-empty-export
 
 Disallow empty exports that do not change anything in a module file.
@@ -3640,18 +2981,6 @@ export {};
 
 // good
 export const x = 1;
-```
-
-### @typescript-eslint/no-useless-template-literals
-
-Disallow unnecessary template literals.
-
-```ts
-// bad
-const x = `hello`;
-
-// good
-const x = "hello";
 ```
 
 ### @typescript-eslint/no-var-requires
@@ -3678,18 +3007,6 @@ const fn = (x: String) => {};
 const fn = (x: string) => {};
 ```
 
-### @typescript-eslint/non-nullable-type-assertion-style
-
-Enforce non-null assertions over explicit type casts when possible.
-
-```ts
-// bad
-const x = value as string;
-
-// good
-const x = value!;
-```
-
 ### @typescript-eslint/only-throw-error
 
 Require throwing `Error` objects only (TypeScript version).
@@ -3700,25 +3017,6 @@ throw "error";
 
 // good
 throw new Error("error");
-```
-
-### @typescript-eslint/parameter-properties
-
-Require or disallow parameter properties in class constructors.
-
-```ts
-// bad
-class Foo {
-  x: number;
-  constructor(x: number) {
-    this.x = x;
-  }
-}
-
-// good
-class Foo {
-  constructor(public x: number) {}
-}
 ```
 
 ### @typescript-eslint/prefer-as-const
@@ -4049,32 +3347,6 @@ Disallow triple-slash reference directives.
 import foo from "foo";
 ```
 
-### @typescript-eslint/typedef
-
-Require type annotations in specific places.
-
-```ts
-// bad
-const fn = (x) => x;
-
-// good
-const fn = (x: number): number => x;
-```
-
-### @typescript-eslint/unbound-method
-
-Enforce that unbound methods are called with their expected scope.
-
-```ts
-// bad
-const fn = obj.method;
-fn();
-
-// good
-const fn = obj.method.bind(obj);
-fn();
-```
-
 ### @typescript-eslint/unified-signatures
 
 Enforce unified signatures for overloads that could be unified.
@@ -4126,22 +3398,6 @@ Require `onChange` or `readOnly` when `checked` is used.
 
 // good
 <input type="checkbox" checked={true} onChange={handleChange} />
-```
-
-### react/default-props-match-prop-types
-
-Require all defaultProps to have a corresponding non-required prop type.
-
-```tsx
-// bad
-type Props = { name: string };
-const Comp = ({ name }: Props) => <div>{name}</div>;
-Comp.defaultProps = { age: 25 };
-
-// good
-type Props = { name: string; age?: number };
-const Comp = ({ name, age }: Props) => <div>{name}</div>;
-Comp.defaultProps = { age: 25 };
 ```
 
 ### react/exhaustive-deps
@@ -4222,18 +3478,6 @@ Enforce curly braces or disallow unnecessary curly braces in JSX.
 <Component name="hello" />
 ```
 
-### react/jsx-filename-extension
-
-Restrict file extensions that may contain JSX.
-
-```tsx
-// bad
-// Button.js with JSX content
-
-// good
-// Button.tsx with JSX content
-```
-
 ### react/jsx-fragments
 
 Enforce shorthand Fragment syntax.
@@ -4258,31 +3502,6 @@ items.map((item) => <li>{item}</li>);
 items.map((item) => <li key={item.id}>{item.name}</li>);
 ```
 
-### react/jsx-max-depth
-
-Enforce maximum JSX depth.
-
-```tsx
-// bad
-<A><B><C><D><E><F /></E></D></C></B></A>
-
-// good
-<A><Content /></A>
-```
-
-### react/jsx-no-bind
-
-Disallow `.bind()` or arrow functions in JSX props.
-
-```tsx
-// bad
-<Button onClick={() => handleClick(id)} />;
-
-// good
-const handleButtonClick = useCallback(() => handleClick(id), [id]);
-<Button onClick={handleButtonClick} />;
-```
-
 ### react/jsx-no-comment-textnodes
 
 Disallow comments as text nodes in JSX.
@@ -4295,19 +3514,6 @@ Disallow comments as text nodes in JSX.
 <div>{/* comment */}</div>
 ```
 
-### react/jsx-no-constructed-context-values
-
-Prevent non-stable values from being used as context value.
-
-```tsx
-// bad
-<Ctx.Provider value={{ user, setUser }}>
-
-// good
-const value = useMemo(() => ({ user, setUser }), [user]);
-<Ctx.Provider value={value}>
-```
-
 ### react/jsx-no-duplicate-props
 
 Disallow duplicate props in JSX.
@@ -4318,22 +3524,6 @@ Disallow duplicate props in JSX.
 
 // good
 <Component name="a" title="b" />
-```
-
-### react/jsx-no-leaked-render
-
-Prevent problematic leaked values from being rendered.
-
-```tsx
-// bad
-{
-  count && <Items count={count} />;
-}
-
-// good
-{
-  count > 0 && <Items count={count} />;
-}
 ```
 
 ### react/jsx-no-script-url
@@ -4387,57 +3577,6 @@ Disallow unnecessary fragments.
 }
 ```
 
-### react/jsx-props-no-spread-key
-
-Disallow `key` being spread into JSX.
-
-```tsx
-// bad
-const props = { key: 'id', name: 'foo' };
-<Component {...props} />
-
-// good
-<Component key="id" name="foo" />
-```
-
-### react/jsx-sort-props
-
-Enforce alphabetical prop sorting. _Handled by perfectionist._
-
-### react/jsx-uses-vars
-
-Mark variables used in JSX as used.
-
-```tsx
-// good
-import { Component } from "./component";
-const App = () => <Component />;
-```
-
-### react/no-access-state-in-setstate
-
-Disallow accessing `this.state` inside `setState`.
-
-```tsx
-// bad
-this.setState({ count: this.state.count + 1 });
-
-// good
-this.setState((prev) => ({ count: prev.count + 1 }));
-```
-
-### react/no-array-index-key
-
-Disallow using array index as `key`.
-
-```tsx
-// bad
-items.map((item, i) => <li key={i}>{item}</li>);
-
-// good
-items.map((item) => <li key={item.id}>{item.name}</li>);
-```
-
 ### react/no-children-prop
 
 Disallow passing children as props.
@@ -4484,18 +3623,6 @@ Disallow `dangerouslySetInnerHTML` alongside `children`.
 
 // good
 <div dangerouslySetInnerHTML={{ __html: 'hi' }} />
-```
-
-### react/no-deprecated
-
-Disallow deprecated React methods.
-
-```tsx
-// bad
-ReactDOM.render(<App />, el);
-
-// good
-createRoot(el).render(<App />);
 ```
 
 ### react/no-did-mount-set-state
@@ -4676,55 +3803,6 @@ const Child = () => <div />;
 const Parent = () => <Child />;
 ```
 
-### react/no-unused-class-component-methods
-
-Disallow unused methods in class components.
-
-```tsx
-// bad
-class Foo extends Component {
-  unusedMethod() {}
-  render() {
-    return <div />;
-  }
-}
-
-// good
-class Foo extends Component {
-  render() {
-    return <div />;
-  }
-}
-```
-
-### react/no-unused-prop-types
-
-Disallow unused prop types.
-
-```tsx
-// bad
-type Props = { name: string; age: number };
-const Comp = ({ name }: Props) => <div>{name}</div>;
-
-// good
-type Props = { name: string };
-const Comp = ({ name }: Props) => <div>{name}</div>;
-```
-
-### react/no-unused-state
-
-Disallow unused state fields.
-
-```tsx
-// bad
-state = { count: 0, unused: '' };
-render() { return <div>{this.state.count}</div>; }
-
-// good
-state = { count: 0 };
-render() { return <div>{this.state.count}</div>; }
-```
-
 ### react/no-will-update-set-state
 
 Disallow `setState` in `componentWillUpdate`.
@@ -4749,22 +3827,6 @@ const Comp = createReactClass({ render() {} });
 class Comp extends Component {
   render() {}
 }
-```
-
-### react/prefer-stateless-function
-
-Encourage stateless functional components.
-
-```tsx
-// bad
-class Foo extends Component {
-  render() {
-    return <div>{this.props.name}</div>;
-  }
-}
-
-// good
-const Foo = ({ name }: Props) => <div>{name}</div>;
 ```
 
 ### react/require-render-return
@@ -4841,7 +3903,7 @@ Disallow children on void DOM elements.
 
 oxlint's native port of the React Compiler validation passes (oxlint 1.79+). These replace the `eslint-plugin-react-hooks` JS plugin: same passes, no JS bridge, and one less peer dependency to install.
 
-Severities follow React's own presets. Five rules that oxlint files under enabled categories are turned off here because React ships them off and each misfires on non-React code: `react/capitalized-calls` flags schema factories, `react/hooks` flags agent DSLs whose functions are named `use*`, `react/exhaustive-effect-dependencies` duplicates `react-hooks/exhaustive-deps`, plus `react/memo-dependencies` and `react/no-deriving-state-in-effects`. The whole family is also off in test files, where throwaway probe components legitimately capture render state into outer variables.
+Severities follow React's own presets. Five rules that oxlint files under enabled categories are turned off here because React ships them off and each misfires on non-React code: `react/capitalized-calls` flags schema factories, `react/hooks` flags agent DSLs whose functions are named `use*`, `react/exhaustive-effect-dependencies` duplicates `react-hooks/exhaustive-deps`, plus `react/memo-dependencies` and `react/no-deriving-state-in-effects`. The whole family is also off in test and e2e files, where throwaway probe components legitimately capture render state into outer variables.
 
 `config` and `gating` have no native port (oxlint uses fixed compiler options), and `component-hook-factories` was not ported.
 
@@ -5014,18 +4076,6 @@ useEffect(() => {
 
 ## Unicorn Rules
 
-### unicorn/better-regex
-
-Improve regexes by making them shorter and more readable.
-
-```js
-// bad
-const re = /[0-9]/;
-
-// good
-const re = /\d/;
-```
-
 ### unicorn/catch-error-name
 
 Enforce a specific parameter name in catch clauses.
@@ -5038,19 +4088,6 @@ try {
 // good
 try {
 } catch (error) {}
-```
-
-### unicorn/consistent-destructuring
-
-Enforce consistent style of destructured properties.
-
-```js
-// bad
-const { a } = obj;
-const b = obj.b;
-
-// good
-const { a, b } = obj;
 ```
 
 ### unicorn/consistent-empty-array-spread
@@ -5125,32 +4162,6 @@ throw new Error();
 throw new Error("Something went wrong");
 ```
 
-### unicorn/escape-case
-
-Require uppercase escape sequences.
-
-```js
-// bad
-const str = "\xa9";
-
-// good
-const str = "\xA9";
-```
-
-### unicorn/explicit-length-check
-
-Enforce explicitly comparing the `length` property.
-
-```js
-// bad
-if (arr.length) {
-}
-
-// good
-if (arr.length > 0) {
-}
-```
-
 ### unicorn/filename-case
 
 Enforce kebab-case filenames.
@@ -5161,18 +4172,6 @@ Enforce kebab-case filenames.
 
 // good
 // my-component.js
-```
-
-### unicorn/import-style
-
-Enforce specific import styles per module.
-
-```js
-// bad
-import * as path from "path";
-
-// good
-import path from "path";
 ```
 
 ### unicorn/new-for-builtins
@@ -5201,45 +4200,6 @@ Disallow `eslint-disable` without specifying rules.
 /* eslint-disable no-console */
 ```
 
-### unicorn/no-anonymous-default-export
-
-Disallow anonymous default exports.
-
-```js
-// bad
-export default () => {};
-
-// good
-const fn = () => {};
-export default fn;
-```
-
-### unicorn/no-array-callback-reference
-
-Disallow passing a function reference directly to array methods.
-
-```js
-// bad
-const nums = ["1", "2"].map(Number);
-
-// good
-const nums = ["1", "2"].map((x) => Number(x));
-```
-
-### unicorn/no-array-for-each
-
-Prefer `for...of` over `Array.forEach`.
-
-```js
-// bad
-items.forEach((item) => process(item));
-
-// good
-for (const item of items) {
-  process(item);
-}
-```
-
 ### unicorn/no-array-method-this-argument
 
 Disallow using the `thisArg` argument in array methods.
@@ -5250,34 +4210,6 @@ arr.map(fn, thisArg);
 
 // good
 arr.map((x) => fn.call(thisArg, x));
-```
-
-### unicorn/no-array-push-push
-
-Enforce combining multiple `push()` into one call.
-
-```js
-// bad
-arr.push(1);
-arr.push(2);
-
-// good
-arr.push(1, 2);
-```
-
-### unicorn/no-array-reduce
-
-Disallow `Array.reduce()` and `Array.reduceRight()`.
-
-```js
-// bad
-const sum = arr.reduce((a, b) => a + b, 0);
-
-// good
-let sum = 0;
-for (const n of arr) {
-  sum += n;
-}
 ```
 
 ### unicorn/no-await-expression-member
@@ -5341,19 +4273,6 @@ Disallow empty files.
 export const EMPTY = "";
 ```
 
-### unicorn/no-for-loop
-
-Prefer `for...of` over `for` loops with index access.
-
-```js
-// bad
-for (let i = 0; i < arr.length; i++) {}
-
-// good
-for (const item of arr) {
-}
-```
-
 ### unicorn/no-hex-escape
 
 Enforce using Unicode escapes instead of hexadecimal escapes.
@@ -5404,18 +4323,6 @@ el.removeEventListener("click", () => {});
 const handler = () => {};
 el.addEventListener("click", handler);
 el.removeEventListener("click", handler);
-```
-
-### unicorn/no-keyword-prefix
-
-Disallow identifiers starting with `new` or `class`.
-
-```js
-// bad
-const newValue = 1;
-
-// good
-const freshValue = 1;
 ```
 
 ### unicorn/no-length-as-slice-end
@@ -5494,19 +4401,6 @@ if (x !== y) {
 }
 ```
 
-### unicorn/no-nested-ternary
-
-Disallow nested ternary expressions.
-
-```js
-// bad
-const x = a ? (b ? c : d) : e;
-
-// good
-const inner = b ? c : d;
-const x = a ? inner : e;
-```
-
 ### unicorn/no-new-array
 
 Disallow `new Array()`.
@@ -5529,18 +4423,6 @@ const buf = new Buffer("abc");
 
 // good
 const buf = Buffer.from("abc");
-```
-
-### unicorn/no-null
-
-Prefer `undefined` over `null`.
-
-```js
-// bad
-const x = null;
-
-// good
-const x = undefined;
 ```
 
 ### unicorn/no-object-as-default-parameter
@@ -5643,18 +4525,6 @@ const x = await "hello";
 const x = "hello";
 ```
 
-### unicorn/no-unnecessary-polyfills
-
-Disallow unnecessary polyfills based on target environments.
-
-```js
-// bad
-import "array-flat-polyfill";
-
-// good
-// Native Array.flat is available in your target
-```
-
 ### unicorn/no-unreadable-array-destructuring
 
 Disallow unreadable array destructuring.
@@ -5678,20 +4548,6 @@ const x = (()=>({}=>{})(1))();
 // good
 const fn = () => {};
 const x = fn();
-```
-
-### unicorn/no-unused-properties
-
-Disallow unused object properties.
-
-```js
-// bad
-const obj = { used: 1, unused: 2 };
-console.log(obj.used);
-
-// good
-const obj = { used: 1 };
-console.log(obj.used);
 ```
 
 ### unicorn/no-useless-error-capture-stack-trace
@@ -5788,34 +4644,6 @@ switch (x) {
   default:
     handle();
 }
-```
-
-### unicorn/no-useless-undefined
-
-Disallow unnecessary `undefined`.
-
-```js
-// bad
-function fn() {
-  return undefined;
-}
-
-// good
-function fn() {
-  return;
-}
-```
-
-### unicorn/no-zero-fractions
-
-Disallow number literals with zero fractions.
-
-```js
-// bad
-const x = 1.0;
-
-// good
-const x = 1;
 ```
 
 ### unicorn/numeric-separators-style
@@ -6013,18 +4841,6 @@ class Bus extends EventEmitter {}
 class Bus extends EventTarget {}
 ```
 
-### unicorn/prefer-global-this
-
-Prefer `globalThis` over `window` or `global`.
-
-```js
-// bad
-window.setTimeout(fn, 100);
-
-// good
-globalThis.setTimeout(fn, 100);
-```
-
 ### unicorn/prefer-includes
 
 Prefer `includes()` over `indexOf() !== -1`.
@@ -6037,18 +4853,6 @@ if (arr.indexOf(x) !== -1) {
 // good
 if (arr.includes(x)) {
 }
-```
-
-### unicorn/prefer-json-parse-buffer
-
-Prefer reading JSON from a Buffer.
-
-```js
-// bad
-JSON.parse(fs.readFileSync(path, "utf8"));
-
-// good
-JSON.parse(fs.readFileSync(path));
 ```
 
 ### unicorn/prefer-keyboard-event-key
@@ -6123,18 +4927,6 @@ const hyp = Math.sqrt(x * x + y * y);
 
 // good
 const hyp = Math.hypot(x, y);
-```
-
-### unicorn/prefer-module
-
-Prefer ESM over CommonJS.
-
-```js
-// bad
-module.exports = foo;
-
-// good
-export default foo;
 ```
 
 ### unicorn/prefer-native-coercion-functions
@@ -6382,28 +5174,6 @@ const copy = JSON.parse(JSON.stringify(obj));
 const copy = structuredClone(obj);
 ```
 
-### unicorn/prefer-switch
-
-Prefer `switch` over multiple `if-else-if` on the same variable.
-
-```js
-// bad
-if (x === "a") {
-} else if (x === "b") {
-} else if (x === "c") {
-}
-
-// good
-switch (x) {
-  case "a":
-    break;
-  case "b":
-    break;
-  case "c":
-    break;
-}
-```
-
 ### unicorn/prefer-ternary
 
 Prefer ternary over simple `if-else` assignments.
@@ -6445,18 +5215,6 @@ if (typeof x !== "string") throw new Error("Expected string");
 
 // good
 if (typeof x !== "string") throw new TypeError("Expected string");
-```
-
-### unicorn/prevent-abbreviations
-
-Enforce full words in identifiers.
-
-```js
-// bad
-const btn = document.querySelector("button");
-
-// good
-const button = document.querySelector("button");
 ```
 
 ### unicorn/relative-url-style
@@ -6970,44 +5728,6 @@ export const x = 1;
 export const y = 2;
 ```
 
-### import/first
-
-Ensure all imports appear before other statements.
-
-```js
-// bad
-const x = 1;
-import { foo } from "mod";
-
-// good
-import { foo } from "mod";
-const x = 1;
-```
-
-### import/max-dependencies
-
-Limit the number of dependencies a module can have.
-
-```js
-// bad
-// A file importing from 30+ modules
-
-// good
-// Split into focused modules with fewer imports
-```
-
-### import/named
-
-Ensure named imports correspond to a named export.
-
-```js
-// bad
-import { notExported } from "./module";
-
-// good
-import { exported } from "./module";
-```
-
 ### import/namespace
 
 Ensure namespace imports do not dereference non-existent properties.
@@ -7046,18 +5766,6 @@ define(["dep"], (dep) => {});
 import dep from "dep";
 ```
 
-### import/no-commonjs
-
-Disallow CommonJS `require` calls and `module.exports`.
-
-```js
-// bad
-const fs = require("fs");
-
-// good
-import fs from "node:fs";
-```
-
 ### import/no-cycle
 
 Disallow a module from importing a module with a dependency path back to itself.
@@ -7068,18 +5776,6 @@ Disallow a module from importing a module with a dependency path back to itself.
 
 // good
 // Break circular dependencies with a shared module
-```
-
-### import/no-deprecated
-
-Disallow importing deprecated modules.
-
-```js
-// bad
-import { oldFunction } from "lib"; // @deprecated
-
-// good
-import { newFunction } from "lib";
 ```
 
 ### import/no-duplicates
@@ -7105,18 +5801,6 @@ import {} from "mod";
 
 // good
 import { something } from "mod";
-```
-
-### import/no-extraneous-dependencies
-
-Disallow importing packages not listed in dependencies.
-
-```js
-// bad
-import test from "unlisted-package";
-
-// good
-import listed from "listed-package";
 ```
 
 ### import/no-mutable-exports
@@ -7168,18 +5852,6 @@ import { default as foo } from "./foo";
 import foo from "./foo";
 ```
 
-### import/no-rename-default
-
-Disallow renaming default imports.
-
-```js
-// bad
-import { default as MyComponent } from "./component";
-
-// good
-import MyComponent from "./component";
-```
-
 ### import/no-self-import
 
 Disallow a module from importing itself.
@@ -7190,18 +5862,6 @@ Disallow a module from importing itself.
 
 // good
 // Import from other modules only
-```
-
-### import/no-unused-modules
-
-Disallow modules without exports or with unused exports.
-
-```js
-// bad
-// A file with exports that nothing imports
-
-// good
-// All exports are consumed by other modules
 ```
 
 ### import/no-webpack-loader-syntax
@@ -7478,20 +6138,6 @@ Disallow polyfills already shipped with Next.js.
 
 ## Promise Rules
 
-### promise/avoid-new
-
-Avoid creating `new Promise` when not needed.
-
-```js
-// bad
-const p = new Promise((resolve) => {
-  resolve(value);
-});
-
-// good
-const p = Promise.resolve(value);
-```
-
 ### promise/catch-or-return
 
 Ensure promises are caught or returned.
@@ -7531,18 +6177,6 @@ new Promise((resolve) => {
 new Promise((resolve) => {
   resolve(1);
 });
-```
-
-### promise/no-native
-
-Disallow use of native Promises (for environments requiring polyfills).
-
-```js
-// bad
-const p = new Promise(() => {});
-
-// good
-const p = BluebirdPromise.resolve();
 ```
 
 ### promise/no-nesting
@@ -7613,30 +6247,6 @@ promise.then(() => Promise.resolve(1));
 
 // good
 promise.then(() => 1);
-```
-
-### promise/param-names
-
-Enforce standard parameter names for Promise constructors.
-
-```js
-// bad
-new Promise((res, rej) => {});
-
-// good
-new Promise((resolve, reject) => {});
-```
-
-### promise/prefer-await-to-callbacks
-
-Prefer `async`/`await` over callbacks.
-
-```js
-// bad
-readFile("file.txt", (err, data) => {});
-
-// good
-const data = await readFile("file.txt");
 ```
 
 ### promise/prefer-await-to-then
@@ -7886,19 +6496,6 @@ for (const item of items) {
 }
 ```
 
-### oxc/no-barrel-file
-
-Disallow barrel files that re-export everything.
-
-```js
-// bad
-export * from "./a";
-export * from "./b";
-
-// good
-export { specific } from "./a";
-```
-
 ### oxc/number-arg-out-of-range
 
 Disallow numeric arguments outside the allowed range.
@@ -8005,43 +6602,6 @@ const file = __dirname + "/config.json";
 
 // good
 const file = path.join(__dirname, "config.json");
-```
-
-### node/no-process-env
-
-Disallow `process.env` usage directly; use a config module.
-
-```js
-// bad
-const port = process.env.PORT;
-
-// good
-import { config } from "./config";
-const port = config.port;
-```
-
-### node/no-restricted-import
-
-Disallow specified modules when loaded by `import`.
-
-```js
-// bad
-import banned from "banned-module";
-
-// good
-import allowed from "allowed-module";
-```
-
-### node/prefer-global/text-decoder
-
-Prefer the global `TextDecoder` over `require('util').TextDecoder`.
-
-```js
-// bad
-const { TextDecoder } = require("util");
-
-// good
-const decoder = new TextDecoder();
 ```
 
 ## Vitest Rules
@@ -8715,21 +7275,6 @@ Preferred:
 
 ```ts
 const value = owner[key];
-```
-
-### anti-slop/no-runtime-typeof
-
-Disallow runtime `typeof` checks in favor of parsing at the I/O boundary. Severity: `off` in this config: the rule flags every `typeof`, including the `typeof window` SSR guards other enabled rules steer toward and ordinary `typeof x === "string"` narrowing.
-
-```ts
-// what it would flag
-if (typeof input === "string") {
-  use(input);
-}
-
-// what it wants
-const parsed = inputSchema.parse(input);
-use(parsed);
 ```
 
 ### anti-slop/no-shape-in-symbol-names
@@ -15487,15 +14032,13 @@ function BearCounter() {
 
 ## Development
 
-Build after installing dependencies and after changing `src/`:
-
 ```sh
 pnpm install
-pnpm build
 pnpm test
 pnpm lint
+pnpm check:readme
 ```
 
-TypeScript emits the config, first-party plugin, CLI, and declarations into `dist/`. This directory is gitignored and included in the npm package; public imports resolve there through `package.json` exports. The CLI copies the tracked `bin/template.ts`, and the vendored `anti-slop/index.js` stays committed.
+TypeScript builds each `src/*.ts` module and its declarations into `dist/`, which is gitignored and published; `package.json` `exports` is the public list. The CLI copies the tracked `bin/template.ts`, and the vendored `anti-slop/index.js` stays committed.
 
-CI and the pre-commit hook build before checking, and `prepack` builds before packing or publishing. `pnpm check:generated` compares `dist/` with a fresh temporary build to catch stale local outputs.
+Every script that reads `dist/` builds it first, so nothing reads a stale build. `pnpm check:readme` checks the README against `src/index.ts` and oxlint's own rule list.

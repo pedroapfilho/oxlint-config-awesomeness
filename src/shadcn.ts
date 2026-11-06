@@ -6,6 +6,7 @@ import { defineConfig } from "oxlint";
 // Repos with per-component exceptions redefine `shadcn/no-restyle` with their
 // own `contracts`; a later rule setting replaces this one.
 const shadcn: OxlintConfig = defineConfig({
+  // An optional peer the consumer installs, so oxlint finds it from the project root.
   jsPlugins: ["@shadcn/lint"],
   rules: {
     // Arbitrary values on appearance utilities (`p-[13px]`) bypass the theme scale.

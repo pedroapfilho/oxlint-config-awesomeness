@@ -39,6 +39,7 @@
       "types": "./dist/shadcn.d.ts",
       "default": "./dist/shadcn.js"
     },
+    "./template": "./bin/template.ts",
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -47,13 +48,12 @@
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "clean": "rm -rf dist coverage node_modules",
-    "check:generated": "node scripts/check-generated.mjs",
-    "lint": "oxlint .",
+    "lint": "pnpm build && oxlint .",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "check:readme": "node scripts/check-readme-severities.mjs",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "check:readme": "node scripts/check-readme.mjs",
+    "test": "pnpm build && vitest run",
+    "test:coverage": "pnpm build && vitest run --coverage",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "changeset publish",
@@ -74,6 +74,7 @@
     "@nkzw/eslint-plugin": "^2.0.0",
     "@shadcn/lint": "0.2.0",
     "@types/node": "^26.6.2",
+    "@vitest/coverage-v8": "^5.0.1",
     "eslint": "^10.13.0",
     "eslint-plugin-no-only-tests": "^3.4.0",
     "eslint-plugin-perfectionist": "^5.12.1",

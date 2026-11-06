@@ -38,10 +38,9 @@ jobs:
       - name: Audit changed code
         if: ${{ !cancelled() }}
         run: node .github/ci/ci.mjs run lint -- pnpm fallow:audit
-      - if: ${{ !cancelled() }}
-        run: pnpm check:generated
-      - if: ${{ !cancelled() }}
-        run: pnpm check:readme
+      - name: Check README against the config
+        if: ${{ !cancelled() }}
+        run: node .github/ci/ci.mjs run lint -- pnpm check:readme
       - if: ${{ !cancelled() }}
         run: node .github/ci/ci.mjs run lint -- pnpm oxlint --format=github .
       - name: Install gitleaks

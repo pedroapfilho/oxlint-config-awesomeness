@@ -27,8 +27,6 @@ jobs:
         with:
           runtime: node@24
           cache: true
-      # bin/init.test.js spawns the CLI at dist/init.js.
-      - run: pnpm build
       - run: node .github/ci/ci.mjs run test -- pnpm test
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         name: Upload CI evidence
