@@ -1,6 +1,9 @@
 import type { OxlintConfig } from "oxlint";
 import { defineConfig } from "oxlint";
 
+const allOff = (rules: Readonly<Record<string, "error" | "warn">>) =>
+  Object.fromEntries(Object.keys(rules).map((rule): [string, "off"] => [rule, "off"]));
+
 const UNSAFE_ANY_OFF = {
   "@typescript-eslint/no-unsafe-argument": "off",
   "@typescript-eslint/no-unsafe-assignment": "off",
@@ -10,33 +13,67 @@ const UNSAFE_ANY_OFF = {
   "@typescript-eslint/no-unsafe-type-assertion": "off",
 } as const;
 
-const ASSERTION_FAMILY_OFF = {
-  "anti-slop/no-chained-type-assertions": "off",
-  "anti-slop/no-known-value-widening": "off",
-  "anti-slop/no-unknown-type-aliases": "off",
-  "anti-slop/no-unsafe-dictionary-type": "off",
-  "anti-slop/no-widen-then-assert": "off",
-  "anti-slop/require-safety-comment-for-type-assertion": "off",
+// The anti-slop rules that reject faked type evidence: assertions, widening,
+// and `unknown` behind a name. Test, e2e and CLI code turns all of them off.
+const ASSERTION_FAMILY = {
+  // `x as unknown as T` launders any value into any type.
+  "anti-slop/no-chained-type-assertions": "error",
+  // Warn, not error: fires on `const X: Record<Union, string> = {...}` lookup
+  // tables and on named-shape return annotations, which are deliberate
+  // contracts here rather than laundered types. 76 sites across four repos.
+  "anti-slop/no-known-value-widening": "warn",
+  // `type X = unknown` hides the escape hatch behind a domain-sounding name.
+  "anti-slop/no-unknown-type-aliases": "error",
+  // Warn, not error: `Record<string, unknown>` is the correct type at a real
+  // boundary (structured log context, a recursive deep-merge input), and the
+  // rule cannot tell those from a lazy escape hatch.
+  "anti-slop/no-unsafe-dictionary-type": "warn",
+  // Widening a known value and asserting it back is a two-step type lie.
+  "anti-slop/no-widen-then-assert": "error",
+  "anti-slop/require-safety-comment-for-type-assertion": "error",
+} as const;
+
+const ASSERTION_FAMILY_OFF = allOff(ASSERTION_FAMILY);
+
+// React Compiler: oxlint's native port of the compiler's validation passes
+// (oxlint 1.79+). Replaces the eslint-plugin-react-hooks JS plugin, so the
+// same passes run without a JS bridge and consumers drop a peer dependency.
+// `config` and `gating` have no native port (oxlint fixes those options),
+// and `component-hook-factories` was not ported.
+const REACT_COMPILER = {
+  // Error boundaries have specific invariants the compiler respects.
+  "react/error-boundaries": "error",
+  // No global mutation during render; breaks the compiler's purity assumptions.
+  "react/globals": "error",
+  // Don't mutate props or state; the compiler assumes immutability.
+  "react/immutability": "error",
+  // Flags libraries the compiler can't safely optimize around.
+  "react/incompatible-library": "error",
+  // If you wrote `useMemo`/`useCallback`, keep them; the compiler preserves your intent.
+  "react/preserve-manual-memoization": "error",
+  // Render must be pure: no side effects, no I/O, no randomness.
+  "react/purity": "error",
+  // Refs belong in effects and handlers, not render.
+  "react/refs": "error",
+  // Setting state inside an effect must be carefully guarded.
+  "react/set-state-in-effect": "error",
+  // Never set state during render; it loops forever.
+  "react/set-state-in-render": "error",
+  // Prefer static component definitions over dynamic factories.
+  "react/static-components": "error",
+  // Syntax (decorators, specific private-field patterns) the compiler can't analyze.
+  // Lives in the `restriction` category, so it needs enabling by name.
+  "react/unsupported-syntax": "error",
+  // Enforces the modern `useMemo` shape the compiler expects.
+  "react/use-memo": "error",
+  // A `useMemo` callback that returns nothing is always a mistake.
+  "react/void-use-memo": "error",
 } as const;
 
 // Test components are throwaway probes that capture render state into outer
 // variables. They are never compiled for production, so the compiler's
 // invariants do not apply to them.
-const REACT_COMPILER_OFF = {
-  "react/error-boundaries": "off",
-  "react/globals": "off",
-  "react/immutability": "off",
-  "react/incompatible-library": "off",
-  "react/preserve-manual-memoization": "off",
-  "react/purity": "off",
-  "react/refs": "off",
-  "react/set-state-in-effect": "off",
-  "react/set-state-in-render": "off",
-  "react/static-components": "off",
-  "react/unsupported-syntax": "off",
-  "react/use-memo": "off",
-  "react/void-use-memo": "off",
-} as const;
+const REACT_COMPILER_OFF = allOff(REACT_COMPILER);
 
 // The vitest plugin runs on test files only. Enabling a plugin applies the
 // bulk-enabled categories to all of its rules and an override cannot scope
@@ -833,11 +870,7 @@ const config: OxlintConfig = defineConfig({
       { partitionByComment: true },
     ],
 
-    // React Compiler: oxlint's native port of the compiler's validation passes
-    // (oxlint 1.79+). Replaces the eslint-plugin-react-hooks JS plugin, so the
-    // same passes run without a JS bridge and consumers drop a peer dependency.
-    // `config` and `gating` have no native port (oxlint fixes those options),
-    // and `component-hook-factories` was not ported.
+    // React Compiler
 
     // Off: oxlint files the next five under enabled categories, but React ships
     // them off in its own presets and each misfires on non-React code. Measured
@@ -851,37 +884,11 @@ const config: OxlintConfig = defineConfig({
     "react/memo-dependencies": "off",
     "react/no-deriving-state-in-effects": "off",
 
-    // Error boundaries have specific invariants the compiler respects.
-    "react/error-boundaries": "error",
-    // No global mutation during render; breaks the compiler's purity assumptions.
-    "react/globals": "error",
-    // Don't mutate props or state; the compiler assumes immutability.
-    "react/immutability": "error",
-    // Flags libraries the compiler can't safely optimize around.
-    "react/incompatible-library": "error",
-    // If you wrote `useMemo`/`useCallback`, keep them; the compiler preserves your intent.
-    "react/preserve-manual-memoization": "error",
-    // Render must be pure: no side effects, no I/O, no randomness.
-    "react/purity": "error",
-    // Refs belong in effects and handlers, not render.
-    "react/refs": "error",
-    // Setting state inside an effect must be carefully guarded.
-    "react/set-state-in-effect": "error",
-    // Never set state during render; it loops forever.
-    "react/set-state-in-render": "error",
+    ...REACT_COMPILER,
     // Disabling a React rule inside a component makes the compiler skip that
     // component entirely, silently. Warn, not error: the opt-out can be right,
     // but it should be visible. Restriction-classified, so enabled by name.
     "react/rule-suppression": "warn",
-    // Prefer static component definitions over dynamic factories.
-    "react/static-components": "error",
-    // Syntax (decorators, specific private-field patterns) the compiler can't analyze.
-    // Lives in the `restriction` category, so it needs enabling by name.
-    "react/unsupported-syntax": "error",
-    // Enforces the modern `useMemo` shape the compiler expects.
-    "react/use-memo": "error",
-    // A `useMemo` callback that returns nothing is always a mistake.
-    "react/void-use-memo": "error",
 
     // React hooks — the classic rules, still necessary even with the compiler
 
@@ -913,16 +920,10 @@ const config: OxlintConfig = defineConfig({
     // one; iterator helpers (`.values().filter().map().toArray()`) or a single
     // `flatMap` do it in one pass.
     "anti-slop/no-array-filter-map": "error",
-    // `x as unknown as T` launders any value into any type.
-    "anti-slop/no-chained-type-assertions": "error",
     // Warn, not error: `...(cond ? { key } : {})` is how an optional key is
     // omitted in Next config objects and Better Auth options, where the
     // alternative (build the object in separate statements) reads worse.
     "anti-slop/no-conditional-empty-object-spread": "warn",
-    // Warn, not error: fires on `const X: Record<Union, string> = {...}` lookup
-    // tables and on named-shape return annotations, which are deliberate
-    // contracts here rather than laundered types. 76 sites across four repos.
-    "anti-slop/no-known-value-widening": "warn",
     "anti-slop/no-module-mocking": "error",
     // `object` on inputs accepts nearly everything; name the expected fields.
     "anti-slop/no-object-parameters": "error",
@@ -933,7 +934,8 @@ const config: OxlintConfig = defineConfig({
     "anti-slop/no-reflect-get": "error",
     // Flags every `typeof` unary, including the `typeof window` SSR guards the
     // react-doctor browser-global rules steer toward and ordinary
-    // `typeof x === "string"` narrowing. Off until upstream scopes it.
+    // `typeof x === "string"` narrowing.
+    // shortcut: off while upstream flags every `typeof`, turn on once it scopes the rule.
     "anti-slop/no-runtime-typeof": "off",
     // Warn, not error: matches any identifier containing "shape", which hits
     // zod's `schema.shape` introspection API (form resolvers, tRPC).
@@ -943,18 +945,10 @@ const config: OxlintConfig = defineConfig({
     // only exempts parameters named `cause`.
     "anti-slop/no-unknown-parameters": "warn",
     "anti-slop/no-unknown-returns": "error",
-    // `type X = unknown` hides the escape hatch behind a domain-sounding name.
-    "anti-slop/no-unknown-type-aliases": "error",
-    // Warn, not error: `Record<string, unknown>` is the correct type at a real
-    // boundary (structured log context, a recursive deep-merge input), and the
-    // rule cannot tell those from a lazy escape hatch.
-    "anti-slop/no-unsafe-dictionary-type": "warn",
-    // Widening a known value and asserting it back is a two-step type lie.
-    "anti-slop/no-widen-then-assert": "error",
     // Dense blocks read as one wall of code. The fix only inserts blank lines,
     // which oxfmt keeps, so `oxlint --fix` settles it.
     "anti-slop/require-readable-spacing": "error",
-    "anti-slop/require-safety-comment-for-type-assertion": "error",
+    ...ASSERTION_FAMILY,
 
     // Awesomeness: first-party rules shipped with this config.
 
@@ -972,9 +966,7 @@ const config: OxlintConfig = defineConfig({
     // go away, and without a reason a reviewer cannot tell a considered
     // exception from a silenced bug.
     //
-    // Warn, not error, while the managed repos catch up: they carried 303
-    // unexplained directives, many of them stale ones due for deletion.
-    // Promote to error once they are clean.
+    // shortcut: warn while the managed repos still carry unexplained directives, promote to error once they are clean.
     "awesomeness/require-disable-reason": "warn",
 
     // React Doctor (react-doctor): original diagnostic rules at upstream severities

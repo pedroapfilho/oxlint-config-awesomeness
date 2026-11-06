@@ -1,12 +1,5 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
-  "entry": [
-    "oxlint.config.ts",
-    "src/index.ts",
-    "src/awesomeness.ts",
-    "src/init.ts",
-    "src/shadcn.ts"
-  ],
   "ignorePatterns": ["anti-slop/index.js", "bin/template.ts", ".github/ci/*.mjs"],
   "ignoreDependencies": [
     "@nkzw/eslint-plugin",

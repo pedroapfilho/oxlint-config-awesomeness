@@ -31,7 +31,7 @@
     "node_modules/**",
     "coverage/**",
     "pnpm-lock.yaml",
-    "bin/**",
+    "bin/template.ts",
     "anti-slop/**",
     ".github/ci/*.mjs"
   ]
