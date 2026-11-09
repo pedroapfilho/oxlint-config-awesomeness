@@ -4,5 +4,6 @@
     "declaration": true,
     "noEmit": false,
     "outDir": "dist"
-  }
+  },
+  "exclude": ["src/**/*.test.*"]
 }

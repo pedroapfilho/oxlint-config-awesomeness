@@ -18,8 +18,8 @@ export default defineConfig({
       },
     ],
   },
-  // Generated output and the vendored third-party bundle are checked at source.
-  ignorePatterns: [".github/ci/*.mjs", "dist/**", "anti-slop/index.js"],
+  // The vendored third-party bundle is checked upstream.
+  ignorePatterns: [".github/ci/*.mjs", "anti-slop/index.js"],
   overrides: [
     {
       files: ["src/index.ts"],
@@ -28,15 +28,6 @@ export default defineConfig({
         // section comments are the point of the file.
         "awesomeness/no-novel-comments": "off",
         "max-lines": "off",
-      },
-    },
-    {
-      // The CLI source lives in src/ so the build can emit it, but it is CLI
-      // code: the shipped `**/bin/**` override does not reach it here.
-      files: ["src/init.ts"],
-      rules: {
-        "anti-slop/no-unknown-parameters": "off",
-        "node/no-sync": "off",
       },
     },
   ],

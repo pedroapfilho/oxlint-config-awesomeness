@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { constants, copyFileSync } from "node:fs";
+import { constants } from "node:fs";
+import { copyFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 
@@ -15,8 +16,8 @@ const fail = (message: string): never => {
   process.exit(1);
 };
 
-const messageOf = (error: unknown): string =>
-  error instanceof Error ? error.message : String(error);
+const messageOf = (cause: unknown): string =>
+  cause instanceof Error ? cause.message : String(cause);
 
 const parseCliArgs = () => {
   try {
@@ -46,8 +47,8 @@ if (positionals.length > 1 || positionals[0] !== "init") {
 const target = resolve("oxlint.config.ts");
 
 try {
-  copyFileSync(
-    resolve(import.meta.dirname, "../bin/template.ts"),
+  await copyFile(
+    new URL(import.meta.resolve("oxlint-config-awesomeness/template")),
     target,
     values.force === true ? 0 : constants.COPYFILE_EXCL,
   );

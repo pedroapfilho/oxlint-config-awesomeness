@@ -1,11 +1,5 @@
 import { spawnSync } from "node:child_process";
-import {
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  symlinkSync,
-  writeFileSync,
-} from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -13,7 +7,7 @@ import packageJson from "oxlint-config-awesomeness/package.json" with { type: "j
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 const INIT = resolve(import.meta.dirname, "..", packageJson.bin[packageJson.name]);
-const TEMPLATE = readFileSync(resolve(import.meta.dirname, "template.ts"), "utf8");
+const TEMPLATE = readFileSync(resolve(import.meta.dirname, "../bin/template.ts"), "utf8");
 
 let cwd;
 
