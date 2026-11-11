@@ -86,6 +86,7 @@
     "oxlint-plugin-react-doctor": "^0.9.14",
     "oxlint-tsgolint": "^7.0.2003",
     "typescript": "^7.0.2",
+    "vite": "^8.3.8",
     "vitest": "^5.0.1"
   },
   "peerDependencies": {
