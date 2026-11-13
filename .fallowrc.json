@@ -3,6 +3,7 @@
   "ignorePatterns": ["anti-slop/index.js", "bin/template.ts", ".github/ci/*.mjs"],
   "ignoreDependencies": [
     "@nkzw/eslint-plugin",
+    "@typescript/typescript6",
     "eslint-plugin-no-only-tests",
     "eslint-plugin-perfectionist"
   ]
