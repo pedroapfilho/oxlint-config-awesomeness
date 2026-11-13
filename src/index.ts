@@ -968,22 +968,12 @@ const config: OxlintConfig = defineConfig({
     "awesomeness/require-disable-reason": "warn",
 
     // React Doctor (react-doctor): original diagnostic rules at upstream severities
-    // (warn = advisory, error = definite bug). Excluded on purpose: the ports of
-    // oxlint-native react/jsx-a11y/react-hooks rules already enabled above (or
-    // deliberately disabled, like no-array-index-key), the six rules the native
-    // nextjs plugin already covers, no-eval (core eslint rule is on), and
-    // react-compiler-no-manual-memoization (contradicts
-    // react/preserve-manual-memoization).
-    //
-    // The plugin grew 337 -> 906 rules between 0.5 and 0.9.14 with nothing
-    // removed or renamed. Enabled below: rules for the stack the fleet ships
+    // (warn = advisory, error = definite bug), for the stack the fleet ships
     // (react, tailwind 4, next, ssr, i18n, TanStack Query/Form/Table/Start,
     // Base UI, shadcn, motion, zustand, ink, React Native). Library-specific
-    // rules key off the library's imports, so they are no-ops elsewhere. Left
-    // off: libraries no repo uses (three/r3f, firebase, supabase, react-router,
-    // remotion, mobx, valtio, preact); the visual-taste bucket described at the
-    // Maintainability group; and rules upstream retired (a "Retired:"
-    // recommendation, an empty rule body), 33 of them in 0.9.14.
+    // rules key off the library's imports, so they are no-ops elsewhere.
+    // `react-doctor.test.js` holds the reason for every rule left out, and fails
+    // when the installed plugin adds, retires or re-grades one.
 
     // Accessibility: original checks, not the ports excluded above. These cover
     // ground the native jsx-a11y rules do not (Tailwind animation gating, control
@@ -1050,6 +1040,7 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/no-giant-component": "warn",
     "react-doctor/no-legacy-class-lifecycles": "error",
     "react-doctor/no-legacy-context-api": "error",
+    // Error since react-doctor was adopted; upstream grades it warn.
     "react-doctor/no-nested-component-definition": "error",
     "react-doctor/no-react-dom-deprecated-apis": "warn",
     "react-doctor/no-react19-deprecated-apis": "warn",
@@ -1310,14 +1301,7 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/nextjs-no-use-search-params-without-suspense": "warn",
     "react-doctor/nextjs-no-vercel-og-import": "warn",
 
-    // React Native and Expo — no-ops in repos that do not use them. Left off:
-    // `expo-no-non-inlined-env` and `rn-no-dimensions-get`, which also fire on
-    // server code in a monorepo that ships a React Native app (`process.env[key]`
-    // in an API, a `Map#get` in a ledger); the library preferences upstream
-    // ships off (`rn-bottom-sheet-prefer-native`, `rn-no-non-native-navigator`,
-    // `rn-no-panresponder`, `rn-prefer-expo-image`, `rn-prefer-pressable`); and
-    // `rn-prefer-pressable-over-gesture-detector`, which flags the
-    // `GestureDetector` tap that `rn-pressable-shared-value-mutation` asks for.
+    // React Native and Expo — no-ops in repos that do not use them.
 
     "react-doctor/rn-animation-reaction-as-derived": "warn",
     "react-doctor/rn-bottom-sheet-no-ignored-scroll-prop": "warn",
@@ -1428,6 +1412,7 @@ const config: OxlintConfig = defineConfig({
 
     "react-doctor/advanced-event-handler-refs": "warn",
     "react-doctor/effect-needs-cleanup": "error",
+    // Error since react-doctor was adopted; upstream grades it warn.
     "react-doctor/no-adjust-state-on-prop-change": "error",
     "react-doctor/no-chain-state-updates": "warn",
     "react-doctor/no-create-context-in-render": "error",
@@ -1467,6 +1452,7 @@ const config: OxlintConfig = defineConfig({
 
     // TanStack Query.
 
+    // Error since react-doctor was adopted; upstream grades it warn.
     "react-doctor/query-destructure-result": "error",
     "react-doctor/query-floating-mutate-async": "warn",
     "react-doctor/query-mutation-missing-invalidation": "warn",

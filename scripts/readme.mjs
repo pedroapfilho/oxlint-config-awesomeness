@@ -42,7 +42,7 @@ const literalOf = (node) => (ts.isAsExpression(node) ? node.expression : node);
 
 // The comment directly above each rule and each override is its reason. A
 // comment followed by a blank line is a heading for the source alone.
-const reasonsOf = (text) => {
+export const reasonsOf = (text) => {
   const file = ts.createSourceFile("index.ts", text, ts.ScriptTarget.Latest, true);
   const families = new Map();
 
