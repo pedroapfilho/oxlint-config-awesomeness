@@ -89,6 +89,7 @@ const VITEST_OFF = {
   // data narrows a result type (`no-conditional-*`), mocks are typed by their
   // factory (`require-mock-type-parameters`), and `.todo` is a planning marker.
   // `no-standalone-expect` misreads the curried `describe.skipIf(cond)(...)`.
+
   "vitest/no-conditional-expect": "off",
   "vitest/no-conditional-in-test": "off",
   "vitest/no-standalone-expect": "off",
@@ -97,6 +98,7 @@ const VITEST_OFF = {
 
   // Style preferences the repos do not follow; measured against them, each
   // fired from dozens to thousands of times with no bug behind it.
+
   "vitest/consistent-test-filename": "off",
   "vitest/consistent-test-it": "off",
   "vitest/max-expects": "off",
@@ -545,7 +547,6 @@ const config: OxlintConfig = defineConfig({
     // A loop whose body always exits on the first pass is an `if` in disguise,
     // usually a misplaced `return`. Nursery-classified, so enabled by name.
     "no-unreachable-loop": "error",
-    // A value assigned and then overwritten before any read is dead code.
     // Warn, not error: the nursery implementation cannot see a read that
     // happens inside a callback, so `let captured = null` filled in by a
     // render probe reads as dead even though TypeScript needs the initializer.
@@ -595,8 +596,7 @@ const config: OxlintConfig = defineConfig({
     // `.catch((err) => ...)` — `err` should be `unknown`, not `any` (strict TS behavior).
     "@typescript-eslint/use-unknown-in-catch-callback-variable": "error",
 
-    // Type-aware (tsgolint) tuning. These rules only run when the consuming
-    // repo enables `options.typeAware`; configuring them here is a no-op otherwise.
+    // Type-aware (tsgolint) tuning
 
     // Requires `Readonly<>` on virtually every object/array parameter and fights
     // React, Playwright, and Hono signatures. Upstream keeps it out of every preset.
@@ -819,8 +819,12 @@ const config: OxlintConfig = defineConfig({
     "promise/prefer-await-to-callbacks": "off",
 
     // Style overrides — handled deterministically by perfectionist/oxfmt
+
+    // oxfmt sorts imports.
     "sort-imports": "off",
+    // `perfectionist/sort-objects` sorts keys.
     "sort-keys": "off",
+    // Ordering belongs to perfectionist and oxfmt.
     "sort-vars": "off",
     // oxfmt lowercases hex digits (`0xFF` -> `0xff`) and this rule then demands
     // uppercase, so no hex literal with letters can satisfy both. Number casing
@@ -872,16 +876,18 @@ const config: OxlintConfig = defineConfig({
 
     // React Compiler
 
-    // Off: oxlint files the next five under enabled categories, but React ships
-    // them off in its own presets and each misfires on non-React code. Measured
-    // against the fleet: `capitalized-calls` flags schema factories
-    // (`onSubmit: SignUpWizardSchema(t)`), `hooks` flags agent DSLs whose
-    // functions are named `use*`, and `exhaustive-effect-dependencies` repeats
-    // `react-hooks/exhaustive-deps` with worse messages.
+    // React ships it off in its own presets, and it flags schema factories
+    // (`onSubmit: SignUpWizardSchema(t)`).
     "react/capitalized-calls": "off",
+    // React ships it off in its own presets, and it repeats
+    // `react-hooks/exhaustive-deps` with worse messages.
     "react/exhaustive-effect-dependencies": "off",
+    // React ships it off in its own presets, and it flags agent DSLs whose
+    // functions are named `use*`.
     "react/hooks": "off",
+    // React ships it off in its own presets, and it misfires on non-React code.
     "react/memo-dependencies": "off",
+    // React ships it off in its own presets, and it misfires on non-React code.
     "react/no-deriving-state-in-effects": "off",
 
     ...REACT_COMPILER,
@@ -937,12 +943,11 @@ const config: OxlintConfig = defineConfig({
     // `typeof x === "string"` narrowing.
     // shortcut: off while upstream flags every `typeof`, turn on once it scopes the rule.
     "anti-slop/no-runtime-typeof": "off",
-    // Warn, not error: matches any identifier containing "shape", which hits
-    // zod's `schema.shape` introspection API (form resolvers, tRPC).
+    // Warn, not error: matches any identifier containing "shape".
     "anti-slop/no-shape-in-symbol-names": "warn",
-    // Warn, not error: `use-unknown-in-catch-callback-variable` (above) autofixes
-    // catch callbacks to `(err: unknown)`, which this rule then flags; upstream
-    // only exempts parameters named `cause`.
+    // Warn, not error: `use-unknown-in-catch-callback-variable` autofixes catch
+    // callbacks to `(err: unknown)`, which this rule then flags; upstream only
+    // exempts parameters named `cause`.
     "anti-slop/no-unknown-parameters": "warn",
     "anti-slop/no-unknown-returns": "error",
     // Dense blocks read as one wall of code. The fix only inserts blank lines,
@@ -952,20 +957,13 @@ const config: OxlintConfig = defineConfig({
 
     // Awesomeness: first-party rules shipped with this config.
 
-    // Comments longer than 5 lines narrate instead of inform. Directive
-    // comments (eslint-/oxlint-/@ts-) and license headers are exempt.
+    // Comments longer than 5 lines narrate instead of inform.
     //
     // Warn, not error: length is a proxy for narration, and after a comment
     // sweep the long survivors are the load-bearing ones (external-system
     // behavior, e2e helper contracts). Blocking a build on prose is the wrong
     // trade; the warning still surfaces every one of them.
     "awesomeness/no-novel-comments": "warn",
-    // Every `oxlint-disable`/`eslint-disable` needs `-- reason`, the lint
-    // counterpart of `ban-ts-comment` requiring a description on
-    // `@ts-expect-error`. A suppression is the cheapest way to make an error
-    // go away, and without a reason a reviewer cannot tell a considered
-    // exception from a silenced bug.
-    //
     // shortcut: warn while the managed repos still carry unexplained directives, promote to error once they are clean.
     "awesomeness/require-disable-reason": "warn",
 
@@ -990,6 +988,7 @@ const config: OxlintConfig = defineConfig({
     // Accessibility: original checks, not the ports excluded above. These cover
     // ground the native jsx-a11y rules do not (Tailwind animation gating, control
     // sizing, landmark and heading structure, focus visibility).
+
     "react-doctor/anchor-target-exists": "warn",
     "react-doctor/aria-braille-equivalent": "warn",
     "react-doctor/base-ui-dialog-popup-requires-title": "warn",
@@ -1047,6 +1046,7 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/shadcn-icon-button-requires-label": "warn",
 
     // Architecture — component structure, module boundaries, export hygiene.
+
     "react-doctor/no-giant-component": "warn",
     "react-doctor/no-legacy-class-lifecycles": "error",
     "react-doctor/no-legacy-context-api": "error",
@@ -1060,6 +1060,7 @@ const config: OxlintConfig = defineConfig({
     // Bugs: runtime defects with a concrete failure mode (hydration mismatches,
     // unguarded parses, effect and listener lifecycle, DOM structure). The
     // `base-ui-`, `shadcn-`, and `tanstack-` rules are no-ops without the library.
+
     "react-doctor/base-ui-tabs-tab-requires-list": "warn",
     "react-doctor/class-component-missing-component-will-unmount-teardown": "warn",
     "react-doctor/debounce-no-cleanup": "warn",
@@ -1147,6 +1148,7 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/web-animation-offsets-valid": "error",
 
     // Bundle size — heavy imports that bloat client bundles.
+
     "react-doctor/no-barrel-import": "warn",
     "react-doctor/no-dynamic-import-path": "warn",
     "react-doctor/no-full-lodash-import": "warn",
@@ -1156,9 +1158,11 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/use-lazy-motion": "warn",
 
     // Client/browser API usage.
+
     "react-doctor/client-passive-event-listeners": "warn",
 
     // Correctness — invalid HTML/DOM structure React will render broken.
+
     "react-doctor/html-no-invalid-paragraph-child": "warn",
     "react-doctor/html-no-invalid-table-nesting": "warn",
     "react-doctor/html-no-nested-interactive": "warn",
@@ -1169,6 +1173,7 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/rendering-svg-precision": "warn",
 
     // Design/UX — visual anti-patterns (focus rings, contrast, transitions).
+
     "react-doctor/no-disabled-zoom": "error",
     "react-doctor/no-gray-on-colored-background": "warn",
     "react-doctor/no-inline-bounce-easing": "warn",
@@ -1183,6 +1188,7 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/prefer-dvh-over-vh": "warn",
 
     // Ink (terminal UIs) — no-ops in repos that do not use it.
+
     "react-doctor/ink-ctrl-c-handler-requires-exit-option": "error",
     "react-doctor/ink-no-bare-process-exit": "error",
     "react-doctor/ink-no-direct-raw-mode": "error",
@@ -1205,6 +1211,7 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/ink-valid-aria-semantics": "error",
 
     // Jotai — no-ops in repos that do not use it.
+
     "react-doctor/jotai-derived-atom-returns-fresh-object": "warn",
     "react-doctor/jotai-select-atom-in-render-body": "error",
     "react-doctor/jotai-tq-use-raw-query-atom": "warn",
@@ -1231,6 +1238,7 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/js-set-map-lookups": "warn",
 
     // Motion (`motion` / `framer-motion`) — no-ops in repos that do not use it.
+
     "react-doctor/motion-animate-presence-must-outlive-child": "warn",
     "react-doctor/motion-animate-presence-requires-key": "warn",
     "react-doctor/motion-animate-presence-wait-single-child": "warn",
@@ -1249,6 +1257,7 @@ const config: OxlintConfig = defineConfig({
     // Maintainability: the mechanically-checkable subset. The rest of this bucket
     // upstream is visual-taste detection (decorative orbs, hero eyebrow chips,
     // uniform feature-card grids); those are design calls, not lint findings.
+
     "react-doctor/no-auto-scrolling-content": "warn",
     "react-doctor/no-deprecated-tailwind-class": "warn",
     "react-doctor/no-dynamic-tailwind-class-fragment": "warn",
@@ -1264,6 +1273,7 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/require-autoplay-video-poster": "warn",
 
     // Runtime performance: DOM, media and animation cost.
+
     "react-doctor/context-provider-value-from-unmemoized-local-literal": "warn",
     "react-doctor/no-create-object-url-without-revoke": "warn",
     "react-doctor/no-document-write": "warn",
@@ -1281,6 +1291,7 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/prefer-motion-transform-property": "warn",
 
     // Next.js App Router — RSC/route-handler/metadata pitfalls beyond the native nextjs plugin.
+
     "react-doctor/nextjs-error-boundary-missing-use-client": "error",
     "react-doctor/nextjs-global-error-missing-html-body": "error",
     "react-doctor/nextjs-image-missing-sizes": "warn",
@@ -1307,6 +1318,7 @@ const config: OxlintConfig = defineConfig({
     // `rn-no-panresponder`, `rn-prefer-expo-image`, `rn-prefer-pressable`); and
     // `rn-prefer-pressable-over-gesture-detector`, which flags the
     // `GestureDetector` tap that `rn-pressable-shared-value-mutation` asks for.
+
     "react-doctor/rn-animation-reaction-as-derived": "warn",
     "react-doctor/rn-bottom-sheet-no-ignored-scroll-prop": "warn",
     "react-doctor/rn-bottom-sheet-no-state-in-on-animate": "warn",
@@ -1338,6 +1350,7 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/rn-style-prefer-boxshadow": "warn",
 
     // React performance — re-render and memoization diagnostics.
+
     "react-doctor/async-defer-await": "warn",
     "react-doctor/no-global-css-variable-animation": "error",
     "react-doctor/no-inline-prop-on-memo-component": "warn",
@@ -1357,6 +1370,7 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/rerender-transitions-scroll": "warn",
 
     // Security.
+
     "react-doctor/active-static-asset": "warn",
     "react-doctor/agent-tool-capability-risk": "warn",
     "react-doctor/artifact-baas-authority-surface": "warn",
@@ -1400,6 +1414,7 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/window-open-without-noopener": "warn",
 
     // Server Components / server code.
+
     "react-doctor/server-after-nonblocking": "warn",
     "react-doctor/server-auth-actions": "error",
     "react-doctor/server-cache-with-object-literal": "warn",
@@ -1410,6 +1425,7 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/server-sequential-independent-await": "warn",
 
     // State and effects — the 'You Might Not Need an Effect' family and friends.
+
     "react-doctor/advanced-event-handler-refs": "warn",
     "react-doctor/effect-needs-cleanup": "error",
     "react-doctor/no-adjust-state-on-prop-change": "error",
@@ -1450,6 +1466,7 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/rerender-state-only-in-handlers": "warn",
 
     // TanStack Query.
+
     "react-doctor/query-destructure-result": "error",
     "react-doctor/query-floating-mutate-async": "warn",
     "react-doctor/query-mutation-missing-invalidation": "warn",
@@ -1461,6 +1478,7 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/query-stable-query-client": "warn",
 
     // TanStack Start — no-ops in repos that do not use it.
+
     "react-doctor/tanstack-start-get-mutation": "warn",
     "react-doctor/tanstack-start-loader-parallel-fetch": "warn",
     "react-doctor/tanstack-start-missing-head-content": "warn",
@@ -1477,16 +1495,19 @@ const config: OxlintConfig = defineConfig({
     "react-doctor/tanstack-start-server-fn-validate-input": "warn",
 
     // View Transitions API.
+
     "react-doctor/no-document-start-view-transition": "warn",
     "react-doctor/no-flush-sync": "warn",
 
     // Zod v4 — deprecated API usage.
+
     "react-doctor/zod-v4-no-deprecated-error-apis": "warn",
     "react-doctor/zod-v4-no-deprecated-error-customization": "warn",
     "react-doctor/zod-v4-no-deprecated-schema-apis": "warn",
     "react-doctor/zod-v4-prefer-top-level-string-formats": "warn",
 
     // Zustand — no-ops in repos that do not use it.
+
     "react-doctor/zustand-no-fresh-selector-result": "error",
     "react-doctor/zustand-no-get-during-initialization": "error",
     "react-doctor/zustand-no-mutating-state": "error",

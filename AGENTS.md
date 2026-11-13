@@ -51,7 +51,8 @@ Managed repositories import this config through their pnpm update cycle. Major a
 - `src/lint-astro.ts` is the `lint-astro` bin the blogs and the Astro theme run: it lints tracked `.astro` templates through ESLint with the config `src/astro.ts` builds from the repo's `oxlint.config.ts`. It imports `src/typescript6.ts` first, because typescript-eslint cannot load TypeScript 7. The two parsers and `@typescript/typescript6` are optional peer dependencies, like `@shadcn/lint`
 - `anti-slop/index.js` is a committed vendored bundle; `pnpm build` does not regenerate it. Its header records the upstream commit and the esbuild command that produced it, and upstream's third-party licenses ship beside it
 - Tests sit next to the code they cover and are not published. Unit tests import the source; tests that import `oxlint-config-awesomeness` or spawn its CLI exercise the built package
-- The README gives every rule the config enables by name a section and lists every rule it turns off in Disabled by Intent; `pnpm check:readme` rejects a section for a rule that does not run, a missing reason, and override or plugin tables that disagree with `src/index.ts`
+- `pnpm readme` writes the README's generated regions (between `<!-- name:start -->` and `<!-- name:end -->`) from `src/index.ts` and the installed oxlint: one section per rule the config runs with its severity, File-Type Overrides, Disabled by Intent, the plugin list and the headline. `pnpm check:readme` fails when they are stale. Written by hand: a rule section's description and example, and a plugin's description
+- In `src/index.ts`, the comment directly above a rule or an override is its reason, and the README prints it for an override, a rule that is off and a rule that warns. A comment followed by a blank line is a heading for the source only. `pnpm readme` fails on an override or an off rule with no reason
 
 ## Design-system linting
 
