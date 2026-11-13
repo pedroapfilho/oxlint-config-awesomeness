@@ -2,7 +2,13 @@
 
 Opinionated Oxlint config for software houses that want all their apps to feel the same.
 
-All five oxlint rule categories at `error`, plus **559 rules** enabled by name, across **17 plugins**. Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
+<!-- summary:start -->
+
+All five oxlint rule categories at `error`, plus **559 rules** enabled by name, across **17 plugins**.
+
+<!-- summary:end -->
+
+Built for full-stack TypeScript monorepos with React, Next.js, Hono, Prisma, and more.
 
 ## Installation
 
@@ -86,6 +92,8 @@ This creates `oxlint.config.ts` in the current directory with the extends boiler
 
 If you'd rather write the file yourself, here's all it needs to be:
 
+<!-- template:start -->
+
 ```ts
 import awesomeness from "oxlint-config-awesomeness";
 import { defineConfig } from "oxlint";
@@ -94,6 +102,8 @@ export default defineConfig({
   extends: [awesomeness],
 });
 ```
+
+<!-- template:end -->
 
 Then run `pnpm oxlint` or `npx oxlint`.
 
@@ -197,56 +207,178 @@ export default defineConfig({
 
 ## Plugins
 
-| Plugin        | Description                                                 |
-| ------------- | ----------------------------------------------------------- |
-| eslint (core) | JavaScript best practices and error prevention              |
-| unicorn       | Modern JavaScript patterns and idioms                       |
-| typescript    | Strict type safety and TypeScript conventions               |
-| react         | React component rules, hooks, and the React Compiler checks |
-| jsx-a11y      | Accessibility enforcement for JSX                           |
-| oxc           | Bug-catching rules unique to oxlint                         |
-| nextjs        | Next.js framework best practices                            |
-| import        | Module hygiene and import/export conventions                |
-| promise       | Async/promise handling                                      |
-| node          | Node.js environment rules                                   |
-| vitest        | Test correctness, in test files only                        |
+<!-- plugins:start -->
 
-Plus JS plugins: **perfectionist** (sorting), **@nkzw** (`useEffect` dependency arrays), **no-only-tests**, **react-doctor** (React, Next.js, security, and performance diagnostics), **anti-slop** (vendored, low-evidence TypeScript patterns), and the first-party **awesomeness** plugin.
+- **eslint**: JavaScript best practices and error prevention
+- **typescript**: Strict type safety and TypeScript conventions
+- **import**: Module hygiene and import/export conventions
+- **react**: React component rules, hooks, and the React Compiler checks
+- **unicorn**: Modern JavaScript patterns and idioms
+- **jsx-a11y**: Accessibility enforcement for JSX
+- **promise**: Async/promise handling
+- **nextjs**: Next.js framework best practices
+- **oxc**: Bug-catching rules unique to oxlint
+- **node**: Node.js environment rules
+- **vitest**: Test correctness, in test files only
+- **@nkzw** (JS plugin): `useEffect` dependency arrays
+- **no-only-tests** (JS plugin): Focused tests left behind
+- **perfectionist** (JS plugin): Sorting
+- **react-doctor** (JS plugin): React, Next.js, security, and performance diagnostics
+- **anti-slop** (JS plugin): Vendored, low-evidence TypeScript patterns
+- **awesomeness** (JS plugin): The first-party plugin
+
+<!-- plugins:end -->
 
 ## File-Type Overrides
 
-The config includes smart overrides so strict rules don't create noise in files that need flexibility. Each row names the main changes; `src/index.ts` has the full list:
+The config includes smart overrides so strict rules don't create noise in files that need flexibility. Each entry lists every rule the override changes:
 
-| Files                                                                                             | What changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `**/*.ts`, `**/*.tsx`, `**/*.mts`, `**/*.cts`                                                     | Rules the TypeScript compiler already enforces are off (`no-undef`, `no-redeclare`, `no-dupe-keys`, and the rest); `require-await` is off because its type-aware twin reports the same functions; `new-cap` checks only `new` targets                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `**/*.d.ts`                                                                                       | `@typescript-eslint/consistent-type-definitions` and `@typescript-eslint/consistent-indexed-object-style` are off, since ambient declarations merge through `interface`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `**/*.js`, `**/*.jsx`, `**/*.mjs`, `**/*.cjs`                                                     | Type-aware rules that report on `any` are off (the `no-unsafe-*` family, `@typescript-eslint/strict-boolean-expressions`, `@typescript-eslint/no-confusing-void-expression`, `@typescript-eslint/strict-void-return`): outside the tsconfig program every expression is `any`                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `**/*.test.*`, `**/*.spec.*`, `**/__tests__/**`                                                   | Adds the **vitest** plugin: its correctness rules, `vitest/expect-expect` with assertion helpers, and `vitest/require-to-throw-message` as a warning. Relaxes the `no-unsafe-*` family, the anti-slop assertion family, the React Compiler checks, `@typescript-eslint/no-unnecessary-condition`, `@typescript-eslint/no-explicit-any`, `@typescript-eslint/no-non-null-assertion`, `@typescript-eslint/no-require-imports`, `@typescript-eslint/no-var-requires`, `@typescript-eslint/promise-function-async`, `@typescript-eslint/no-non-null-asserted-nullish-coalescing`, `import/no-cycle`, `max-lines`, `max-nested-callbacks`, `node/no-sync`, `require-unicode-regexp`, `no-empty`, `no-empty-function`, and `no-use-before-define` |
-| `**/*.stories.ts`, `**/*.stories.tsx`                                                             | `no-console` is allowed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `**/seed.ts`, `**/seed.js`, `**/migrate.ts`, `**/migrate.js`                                      | `no-console` is allowed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `**/bin/**`, `**/scripts/**`, `tools/**`                                                          | CLI code: `no-console`, `unicorn/no-process-exit`, `node/no-sync`, `require-unicode-regexp`, `@typescript-eslint/no-unsafe-type-assertion`, and the anti-slop assertion family are off                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `*.config.ts`, `*.config.js`, `*.config.mjs`, `*.config.mts`, `next.config.*`, `**/.storybook/**` | `@typescript-eslint/strict-boolean-expressions` (configs branch on optional env vars), `max-lines`, `node/no-sync`, and `require-unicode-regexp` are off                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `**/e2e/**/fixtures/**`, `**/e2e/**/*.ts`                                                         | Relaxes the `no-unsafe-*` family, the anti-slop assertion family, the React Compiler checks, `@typescript-eslint/no-unnecessary-condition`, `@typescript-eslint/strict-boolean-expressions`, `react-hooks/rules-of-hooks`, `no-empty-pattern` (Playwright's `async ({}, use)` fixtures), and `require-unicode-regexp` (Playwright rejects `v`-flagged regex)                                                                                                                                                                                                                                                                                                                                                                                |
-| `**/*.astro`                                                                                      | `react-doctor/no-impure-call-at-module-scope` is off: the frontmatter runs per render, not at module init                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `**/middleware.ts`, `**/middleware.js`, `**/proxy.ts`, `**/proxy.js`                              | `unicorn/prefer-string-raw` is off: Next.js reads `config.matcher` as a plain string literal                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+<!-- overrides:start -->
+
+- `**/*.ts`, `**/*.tsx`, `**/*.mts`, `**/*.cts`: TypeScript files — turn off rules the TS compiler already enforces via its type system. Running them again would be pure overhead and occasionally produce false positives.
+  - `constructor-super` is off: TS enforces `super()` requirements via class hierarchy checks.
+  - `getter-return` is off: TS catches missing returns via the function's declared return type.
+  - `no-class-assign` is off: Class bindings are const in TS — reassignment is a compile error.
+  - `no-const-assign` is off: `const` bindings can't be reassigned — TS catches this.
+  - `no-dupe-class-members` is off: Duplicate class members produce a TS compile error.
+  - `no-dupe-keys` is off: Duplicate object keys are reported by TS.
+  - `new-cap` is `["error",{"capIsNew":false}]`: TS rejects calling a class without `new`, so the capitalized-call half of the rule only ever fires on factories (`next/font` loaders).
+  - `no-func-assign` is off: Function declarations are const-bound in TS.
+  - `no-import-assign` is off: Imports are read-only bindings — TS catches reassignment.
+  - `no-new-native-nonconstructor` is off: TS signatures prevent calling non-constructors with `new`.
+  - `no-obj-calls` is off: `Math()` / `JSON()` aren't callable per TS lib types.
+  - `no-redeclare` is off: Redeclaration is a TS compile error.
+  - `no-setter-return` is off: TS enforces setter signatures must not return values.
+  - `no-this-before-super` is off: TS catches `this` before `super()` in derived constructors.
+  - `no-undef` is off: TS resolves all references — unresolved identifiers fail to compile.
+  - `no-unreachable` is off: TS reports unreachable code as a diagnostic.
+  - `no-unsafe-negation` is off: TS narrows operators; `!a instanceof B` becomes a type error.
+  - `no-with` is off: `with` statements aren't allowed in strict mode or TS at all.
+  - `prefer-rest-params` is `"error"`: Not type-checked by TS — prefer `...args` over `arguments`.
+  - `prefer-spread` is `"error"`: Not type-checked by TS — prefer spread over `.apply()`.
+  - `require-await` is off: The type-aware `@typescript-eslint/require-await` reports the same functions and understands thenables; both on reports every hit twice.
+- `**/*.d.ts`: Ambient declarations merge into existing interfaces (`declare global`, module augmentation), which a `type` alias cannot do.
+  - Set to off: `@typescript-eslint/consistent-indexed-object-style`, `@typescript-eslint/consistent-type-definitions`.
+- `**/*.js`, `**/*.jsx`, `**/*.mjs`, `**/*.cjs`: JavaScript files: type-aware rules see no types here. A `.js` file outside the tsconfig program resolves every expression to `any`, so the rules that report on `any` fire on every line. Rules needing a known type (such as no-floating-promises) simply stay quiet, which is the correct outcome.
+  - `@typescript-eslint/no-confusing-void-expression` is off: Needs a resolved return type to tell void from value.
+  - `@typescript-eslint/strict-boolean-expressions` is off: Every condition is `any` without types.
+  - Also off: `@typescript-eslint/no-unsafe-argument`, `@typescript-eslint/no-unsafe-assignment`, `@typescript-eslint/no-unsafe-call`, `@typescript-eslint/no-unsafe-member-access`, `@typescript-eslint/no-unsafe-return`, `@typescript-eslint/no-unsafe-type-assertion`, `@typescript-eslint/strict-void-return`.
+- `**/*.test.*`, `**/*.spec.*`, `**/__tests__/**`: Test files — relax strict rules that generate noise in mocks, fixtures, describe blocks, and add Vitest rules. Playwright imports need their own framework-specific linter. Adds the `vitest` plugin.
+  - `vitest/no-focused-tests` is off: `no-only-tests/no-only-tests` already reports `.only`, in every file.
+  - `@typescript-eslint/no-unnecessary-condition` is off: Tests probe runtime shapes the types promise, so `?.` inside an assertion is how a missing value fails the test instead of crashing it.
+  - `vitest/expect-expect` is `["error",{"assertFunctionNames":["**.findBy*","**.getBy*","assert","assert*","assertType","expect","expect*","expectTypeOf","findBy*","getBy*","waitFor"]}]`: A test that asserts nothing passes whatever the code does. Shared helpers (`expectInvalidLinkState`, `assertShape`), Testing Library queries that throw when nothing matches (`getBy*`, `findBy*`), and `waitFor`, which throws on timeout, count as assertions.
+  - `vitest/require-to-throw-message` is `"warn"`: A bare `toThrow()` passes on any error, including the `TypeError` a typo throws. Warn, not error: 136 existing assertions across the fleet.
+  - `@typescript-eslint/no-explicit-any` is off: Mocks are commonly typed `any` for speed.
+  - `@typescript-eslint/no-non-null-asserted-nullish-coalescing` is off: Fixtures chain `!` + `??` for narrowing.
+  - `@typescript-eslint/no-non-null-assertion` is off: Fixtures narrow via `!` on known-populated test data.
+  - `@typescript-eslint/no-require-imports` is off: `jest.mock` / `vi.mock` factories use `require()`.
+  - `@typescript-eslint/no-var-requires` is off: Legacy `var x = require(...)` still appears in older test setups.
+  - `@typescript-eslint/promise-function-async` is off: Mock implementations may return bare promises without `async`.
+  - `import/no-cycle` is off: Test utilities can legitimately form small local cycles.
+  - `max-lines` is off: `describe`/`it` blocks legitimately exceed size limits.
+  - `node/no-sync` is off: Fixtures read files from disk; sync fs keeps setup readable.
+  - `require-unicode-regexp` is off: Throwaway matching in assertions does not need the `v` flag.
+  - `no-empty` is off: Empty test stubs are valid placeholders.
+  - `no-empty-function` is off: Empty mock implementations are common.
+  - `no-use-before-define` is off: Test helpers are often defined after the `describe` that uses them.
+  - Also off: `@typescript-eslint/no-unsafe-argument`, `@typescript-eslint/no-unsafe-assignment`, `@typescript-eslint/no-unsafe-call`, `@typescript-eslint/no-unsafe-member-access`, `@typescript-eslint/no-unsafe-return`, `@typescript-eslint/no-unsafe-type-assertion`, `anti-slop/no-chained-type-assertions`, `anti-slop/no-known-value-widening`, `anti-slop/no-unknown-type-aliases`, `anti-slop/no-unsafe-dictionary-type`, `anti-slop/no-widen-then-assert`, `anti-slop/require-safety-comment-for-type-assertion`, `react/error-boundaries`, `react/globals`, `react/immutability`, `react/incompatible-library`, `react/preserve-manual-memoization`, `react/purity`, `react/refs`, `react/set-state-in-effect`, `react/set-state-in-render`, `react/static-components`, `react/unsupported-syntax`, `react/use-memo`, `react/void-use-memo`, `vitest/no-conditional-expect`, `vitest/no-conditional-in-test`, `vitest/no-standalone-expect`, `vitest/require-mock-type-parameters`, `vitest/warn-todo`, `vitest/consistent-test-filename`, `vitest/consistent-test-it`, `vitest/max-expects`, `vitest/no-hooks`, `vitest/no-import-node-test`, `vitest/no-importing-vitest-globals`, `vitest/padding-around-after-all-blocks`, `vitest/padding-around-test-blocks`, `vitest/prefer-called-exactly-once-with`, `vitest/prefer-called-once`, `vitest/prefer-called-times`, `vitest/prefer-called-with`, `vitest/prefer-describe-function-title`, `vitest/prefer-each`, `vitest/prefer-equality-matcher`, `vitest/prefer-expect-assertions`, `vitest/prefer-expect-resolves`, `vitest/prefer-expect-type-of`, `vitest/prefer-hooks-in-order`, `vitest/prefer-hooks-on-top`, `vitest/prefer-import-in-mock`, `vitest/prefer-importing-vitest-globals`, `vitest/prefer-lowercase-title`, `vitest/prefer-mock-promise-shorthand`, `vitest/prefer-mock-return-shorthand`, `vitest/prefer-spy-on`, `vitest/prefer-strict-boolean-matchers`, `vitest/prefer-strict-equal`, `vitest/prefer-to-be`, `vitest/prefer-to-be-falsy`, `vitest/prefer-to-be-truthy`, `vitest/prefer-to-contain`, `vitest/prefer-to-have-been-called-times`, `vitest/prefer-to-have-length`, `vitest/require-hook`, `vitest/require-top-level-describe`, `max-nested-callbacks`.
+- `**/*.stories.ts`, `**/*.stories.tsx`: Storybook stories — component documentation has its own idioms.
+  - `no-console` is off: `console.log` is a valid teaching tool in stories.
+- `**/seed.ts`, `**/seed.js`, `**/migrate.ts`, `**/migrate.js`: Seed and migration scripts — one-shot CLI tools with log output.
+  - `no-console` is off: CLI tools print progress to stdout.
+- `**/bin/**`, `**/scripts/**`, `tools/**`: CLI entry points — `process.exit` and console output are the whole point. `**/scripts/**` reaches the per-app script folders of a monorepo; a glob containing a slash is anchored at the repo root.
+  - `node/no-sync` is off: One-shot CLI tools run sequentially; sync fs is the simpler, correct choice.
+  - `@typescript-eslint/no-unsafe-type-assertion` is off: One-shot scripts parse their own local JSON output; a schema at that boundary is ceremony when the producer is the same script.
+  - Also off: `anti-slop/no-chained-type-assertions`, `anti-slop/no-known-value-widening`, `anti-slop/no-unknown-type-aliases`, `anti-slop/no-unsafe-dictionary-type`, `anti-slop/no-widen-then-assert`, `anti-slop/require-safety-comment-for-type-assertion`, `no-console`, `require-unicode-regexp`, `unicorn/no-process-exit`.
+- `*.config.ts`, `*.config.js`, `*.config.mjs`, `*.config.mts`, `**/.storybook/**`, `vitest.config.*`, `playwright.config.*`, `tailwind.config.*`, `postcss.config.*`, `next.config.*`: Config files — build tooling is allowed anonymous defaults and long files.
+  - `@typescript-eslint/strict-boolean-expressions` is off: Config files branch on optional env vars (`if (process.env.CI)`); spelling out the nullish/empty cases there is ceremony, not safety.
+  - `max-lines` is off: Big configs (webpack, next) routinely exceed 400 lines.
+  - `node/no-sync` is off: Build config reads files at startup; sync fs is correct there.
+  - `require-unicode-regexp` is off: Throwaway matching in build config does not need the `v` flag.
+- `**/e2e/**/fixtures/**`, `**/e2e/**/*.ts`: Playwright/Cypress E2E fixtures — test harness code, not React components.
+  - `@typescript-eslint/no-unnecessary-condition` is off: Harness code checks page and API state the types cannot see.
+  - `@typescript-eslint/strict-boolean-expressions` is off: Harness code branches on optional env vars (`if (process.env.CI)`).
+  - `no-empty-pattern` is off: A fixture with no dependencies must be written `async ({}, use) =>`; Playwright reads the destructuring pattern to resolve fixtures.
+  - `react-hooks/rules-of-hooks` is off: Playwright fixtures use hook-like names (`test.extend`) that trip the rule.
+  - `require-unicode-regexp` is off: Playwright's selector engine rejects `v`-flagged regex literals at runtime.
+  - Also off: `@typescript-eslint/no-unsafe-argument`, `@typescript-eslint/no-unsafe-assignment`, `@typescript-eslint/no-unsafe-call`, `@typescript-eslint/no-unsafe-member-access`, `@typescript-eslint/no-unsafe-return`, `@typescript-eslint/no-unsafe-type-assertion`, `anti-slop/no-chained-type-assertions`, `anti-slop/no-known-value-widening`, `anti-slop/no-unknown-type-aliases`, `anti-slop/no-unsafe-dictionary-type`, `anti-slop/no-widen-then-assert`, `anti-slop/require-safety-comment-for-type-assertion`, `react/error-boundaries`, `react/globals`, `react/immutability`, `react/incompatible-library`, `react/preserve-manual-memoization`, `react/purity`, `react/refs`, `react/set-state-in-effect`, `react/set-state-in-render`, `react/static-components`, `react/unsupported-syntax`, `react/use-memo`, `react/void-use-memo`.
+- `**/*.astro`: Astro components: the frontmatter runs per render, not at module init.
+  - Set to off: `react-doctor/no-impure-call-at-module-scope`.
+- `**/middleware.ts`, `**/middleware.js`, `**/proxy.ts`, `**/proxy.js`: Next.js middleware (`proxy.ts` since Next 16): `config.matcher` must be a plain string literal. Next reads it statically at build time and cannot evaluate the `String.raw` template this rule rewrites escapes into.
+  - Set to off: `unicorn/prefer-string-raw`.
+
+<!-- overrides:end -->
 
 ## Disabled by Intent
 
 The five categories are enabled at `error`, and the config turns these rules off by name because they fight modern React, Next.js, and ESM conventions:
 
-| Category of fight                                                                        | Rules off                                                                                                                                                                                                                                                                                                                                                                       |
-| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **React 17+ JSX transform / composition**                                                | `react/react-in-jsx-scope`, `react/jsx-props-no-spreading`, `react/jsx-max-depth`, `react/no-array-index-key`, `react/jsx-no-constructed-context-values`, `react/hook-use-state` (its naming demands deadlock with the unused-variable check)                                                                                                                                   |
-| **React Compiler checks React ships off** (each misfires on non-React code)              | `react/capitalized-calls`, `react/exhaustive-effect-dependencies`, `react/hooks`, `react/memo-dependencies`, `react/no-deriving-state-in-effects`                                                                                                                                                                                                                               |
-| **Type-aware rules that fight library signatures**                                       | `@typescript-eslint/prefer-readonly-parameter-types`, `@typescript-eslint/unbound-method`                                                                                                                                                                                                                                                                                       |
-| **Modern ESM (named exports, side-effect imports, namespace imports, `node:` protocol)** | `import/no-named-export`, `import/prefer-default-export`, `import/group-exports`, `import/exports-last`, `import/no-anonymous-default-export`, `import/no-nodejs-modules`, `import/no-unassigned-import`, `import/no-namespace`, `import/max-dependencies`, `import/first`, `import/consistent-type-specifier-style`                                                            |
-| **Pedantic style preferences**                                                           | `no-magic-numbers`, `no-ternary`, `no-inline-comments`, `capitalized-comments`, `arrow-body-style`, `func-style`, `func-names`, `init-declarations`, `no-inferrable-types`, `prefer-destructuring`, `no-negated-condition`, `no-continue`, `parameter-properties`, `max-statements`, `max-lines-per-function`, `id-length`, `one-var`                                           |
-| **Unicorn overreach**                                                                    | `unicorn/prefer-global-this`, `unicorn/no-useless-undefined`, `unicorn/no-nested-ternary`, `unicorn/explicit-length-check`, `unicorn/custom-error-definition`, `unicorn/no-zero-fractions`, `unicorn/escape-case`, `unicorn/no-array-callback-reference`, `unicorn/no-array-for-each`, `unicorn/no-array-reduce`, `unicorn/no-null` (APIs, JSON, and the DOM all return `null`) |
-| **Owned by oxfmt and perfectionist**                                                     | `sort-imports`, `sort-keys`, `sort-vars`, `unicorn/number-literal-case` (oxfmt lowercases hex digits; the rule demands uppercase)                                                                                                                                                                                                                                               |
-| **Sequential awaits by design** (pagination, rate limits, one transaction connection)    | `no-await-in-loop`, `react-doctor/async-await-in-loop`                                                                                                                                                                                                                                                                                                                          |
-| **Anti-slop rules that flag sound code**                                                 | `anti-slop/no-runtime-typeof` (it flags every `typeof`, including the `typeof window` SSR guards other enabled rules steer toward and ordinary `typeof x === "string"` narrowing)                                                                                                                                                                                               |
-| **Promise rules with broken assumptions**                                                | `promise/prefer-await-to-callbacks`, `promise/avoid-new`, `promise/param-names`                                                                                                                                                                                                                                                                                                 |
+<!-- disabled:start -->
+
+- `one-var`: Lives in `style`, which we bulk-enable, so it needs an explicit "off" — deleting this line would restore the upstream default ("always"), which demands comma-combined declarations.
+- `@typescript-eslint/prefer-readonly-parameter-types`: Requires `Readonly<>` on virtually every object/array parameter and fights React, Playwright, and Hono signatures. Upstream keeps it out of every preset.
+- `@typescript-eslint/unbound-method`: Fires on idiomatic destructuring of library hooks (`const { push } = useRouter()`) because their types lack `this: void` annotations; false positives dominate. Most peer configs enable it; measured on the fleet, 11 of 12 sampled hits were this.
+- `react/hook-use-state`: Three-way deadlock: `[v, setV]` trips `no-unused-vars` if setter unused; `[v, _setV]` trips this rule's strict `[thing, setThing]` naming; `[v]` trips this rule's "must destructure both" requirement. TypeScript already catches setter-name typos via type errors, so the value is low.
+- `react/jsx-max-depth`: JSX depth is constrained by composition, not by a magic number.
+- `react/jsx-no-constructed-context-values`: React Compiler handles memoization, so pre-extracting context values is moot.
+- `react/jsx-props-no-spreading`: Prop spreading is a valid composition pattern with proper types.
+- `react/no-array-index-key`: Static lists have stable indices — false positives outweigh real catches.
+- `react/react-in-jsx-scope`: React 17+ automatic JSX runtime — no import needed.
+- `import/consistent-type-specifier-style`: Mixing `import type` styles in one project is fine.
+- `import/exports-last`: "Exports at end" is style preference, not correctness.
+- `import/first`: Side-effect imports (CSS, polyfills) must come first — conflicts with this rule.
+- `import/group-exports`: Grouping exports isn't meaningful with named exports.
+- `import/max-dependencies`: Dependency count caps don't catch real problems.
+- `import/no-anonymous-default-export`: Anonymous default exports are normal in configs and utilities.
+- `import/no-named-export`: Named exports are the modern ESM norm.
+- `import/no-namespace`: `import * as Sentry from '@sentry/node'` is the canonical API for Sentry/Prisma/etc.
+- `import/no-nodejs-modules`: Node built-ins (`node:fs`) are legitimate in Node code.
+- `import/no-unassigned-import`: Side-effect imports for CSS and polyfills are required.
+- `import/prefer-default-export`: Modern codebases prefer named exports; default exports are the exception.
+- `arrow-body-style`: Block bodies are sometimes clearer (breakpoints, multi-statement arrows).
+- `capitalized-comments`: Capitalization of comments is noise.
+- `func-names`: Anonymous arrows are canonical in modern code.
+- `func-style`: Mixing declarations and expressions is a project's call.
+- `id-length`: `i`, `x`, `n` are fine in small scopes.
+- `init-declarations`: `let x; ... x = compute();` is a real pattern.
+- `max-lines-per-function`: Too blunt — well-factored functions can still be long.
+- `max-statements`: Too blunt — modern async code has many statements by design.
+- `no-await-in-loop`: Off: the rule assumes loop bodies are independent and should be parallelised, but the dominant patterns here are inherently sequential: cursor pagination, rate-limited fan-out, and retry backoff. Measured across the fleet it was suppressed 105 times and disabled outright in 6 repos. `react-doctor/async-await-in-loop` is off for the same reason.
+- `no-continue`: `continue` is often clearer than extra nesting.
+- `no-inferrable-types`: Explicit types on simple assignments is a style choice, not an error.
+- `no-inline-comments`: Inline `// ...` comments are sometimes the clearest option.
+- `no-magic-numbers`: Too noisy — most numbers in UI code have obvious meaning.
+- `no-negated-condition`: `if (!done)` is often clearer than `if (done === false)`.
+- `no-ternary`: Ternaries are fine in expressions.
+- `parameter-properties`: TS parameter properties (`constructor(private x: T)`) are a valid shorthand.
+- `prefer-destructuring`: Destructuring isn't always clearer — `arr[0]` can be better than `const [first] = arr`.
+- `unicorn/custom-error-definition`: Over-prescribes a specific custom-error shape.
+- `unicorn/escape-case`: Escape-case fights non-English strings and regex literals.
+- `unicorn/explicit-length-check`: `if (arr.length)` is a valid idiom for "has elements".
+- `unicorn/no-array-callback-reference`: `.map(fn)` is the canonical callback pattern.
+- `unicorn/no-array-for-each`: `forEach` is fine for side effects.
+- `unicorn/no-array-reduce`: `reduce` is fine — the rule is ideological, not mechanical.
+- `unicorn/no-nested-ternary`: Nested ternaries are sometimes the clearest expression.
+- `unicorn/no-useless-undefined`: `return undefined` is sometimes explicit and intentional.
+- `unicorn/no-zero-fractions`: `1.0` can signal "this is a floating-point value" in domain code.
+- `unicorn/prefer-global-this`: `window` and `self` are fine in clearly-browser code.
+- `promise/avoid-new`: `new Promise` is required when wrapping event emitters, streams, or callback APIs.
+- `promise/param-names`: `(resolve, reject)` is the idiomatic parameter naming.
+- `promise/prefer-await-to-callbacks`: Event emitters and streams are callback-based and stay that way.
+- `sort-imports`: oxfmt sorts imports.
+- `sort-keys`: `perfectionist/sort-objects` sorts keys.
+- `sort-vars`: Ordering belongs to perfectionist and oxfmt.
+- `unicorn/number-literal-case`: oxfmt lowercases hex digits (`0xFF` -> `0xff`) and this rule then demands uppercase, so no hex literal with letters can satisfy both. Number casing belongs to the formatter.
+- `unicorn/no-null`: `null` is a legitimate, distinct value — don't force `undefined` everywhere.
+- `react/capitalized-calls`: React ships it off in its own presets, and it flags schema factories (`onSubmit: SignUpWizardSchema(t)`).
+- `react/exhaustive-effect-dependencies`: React ships it off in its own presets, and it repeats `react-hooks/exhaustive-deps` with worse messages.
+- `react/hooks`: React ships it off in its own presets, and it flags agent DSLs whose functions are named `use*`.
+- `react/memo-dependencies`: React ships it off in its own presets, and it misfires on non-React code.
+- `react/no-deriving-state-in-effects`: React ships it off in its own presets, and it misfires on non-React code.
+- `anti-slop/no-runtime-typeof`: Flags every `typeof` unary, including the `typeof window` SSR guards the react-doctor browser-global rules steer toward and ordinary `typeof x === "string"` narrowing. shortcut: off while upstream flags every `typeof`, turn on once it scopes the rule.
+- `react-doctor/async-await-in-loop`: Off, like core `no-await-in-loop`: the awaits it flags are sequential on purpose (one transaction connection, a request limiter, a hardware transport that takes one exchange at a time). Measured across the fleet it carried 58 reasoned suppressions in 9 repos.
+
+<!-- disabled:end -->
 
 A few of these are particularly worth calling out because they form **contradictory pairs** when both fire on the same code:
 
@@ -273,13 +405,15 @@ Based on [`@nkzw/oxlint-config`](https://github.com/nkzw-tech/oxlint-config) by 
 
 ## All Rules
 
-Rules this config runs, each with a description and an example. Every rule the config enables by name has a section, and every rule it turns off by name is in [Disabled by Intent](#disabled-by-intent). `pnpm check:readme` fails on a section for a rule that does not run.
+Every rule this config runs, with its severity. Every rule it turns off by name is in [Disabled by Intent](#disabled-by-intent). `pnpm readme` writes this list from `src/index.ts` and the installed oxlint; a rule nobody has described yet links to its upstream documentation.
+
+<!-- rules:start -->
 
 ## ESLint Core Rules
 
 ### accessor-pairs
 
-Enforce getter/setter pairs in objects and classes.
+Enforce getter/setter pairs in objects and classes. Severity: `error`.
 
 ```js
 // bad
@@ -302,7 +436,7 @@ const obj = {
 
 ### array-callback-return
 
-Enforce return statements in array method callbacks.
+Enforce return statements in array method callbacks. Severity: `error`.
 
 ```js
 // bad
@@ -316,7 +450,7 @@ Enforce return statements in array method callbacks.
 
 ### block-scoped-var
 
-Enforce that `var` declarations are used within their defined scope.
+Enforce that `var` declarations are used within their defined scope. Severity: `error`.
 
 ```js
 // bad
@@ -334,7 +468,7 @@ if (true) {
 
 ### constructor-super
 
-Require `super()` calls in constructors of derived classes.
+Require `super()` calls in constructors of derived classes. Severity: `error`.
 
 ```js
 // bad
@@ -355,7 +489,7 @@ class Child extends Parent {
 
 ### curly
 
-Require braces around all control-flow bodies.
+Require braces around all control-flow bodies. Severity: `error`.
 
 ```js
 // bad
@@ -369,7 +503,7 @@ if (foo) {
 
 ### default-case
 
-Require a `default` case in `switch` statements.
+Require a `default` case in `switch` statements. Severity: `error`.
 
 ```js
 // bad
@@ -392,7 +526,7 @@ switch (action) {
 
 ### default-case-last
 
-Enforce `default` clause to be the last case in `switch`.
+Enforce `default` clause to be the last case in `switch`. Severity: `error`.
 
 ```js
 // bad
@@ -418,7 +552,7 @@ switch (action) {
 
 ### default-param-last
 
-Enforce default parameters to be last in the parameter list.
+Enforce default parameters to be last in the parameter list. Severity: `error`.
 
 ```js
 // bad
@@ -430,7 +564,7 @@ function fn(b, a = 1) {}
 
 ### eqeqeq
 
-Require `===` and `!==` instead of `==` and `!=`.
+Require `===` and `!==` instead of `==` and `!=`. Severity: `error`.
 
 ```js
 // bad
@@ -444,7 +578,7 @@ if (x === 1) {
 
 ### for-direction
 
-Enforce that a `for` loop update clause moves in the correct direction.
+Enforce that a `for` loop update clause moves in the correct direction. Severity: `error`.
 
 ```js
 // bad
@@ -454,9 +588,17 @@ for (let i = 0; i < 10; i--) {}
 for (let i = 0; i < 10; i++) {}
 ```
 
+### func-name-matching
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/eslint/func-name-matching.html). Severity: `error`.
+
+### getter-return
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/eslint/getter-return.html). Severity: `error`.
+
 ### grouped-accessor-pairs
 
-Require getter and setter pairs to be adjacent in objects.
+Require getter and setter pairs to be adjacent in objects. Severity: `error`.
 
 ```js
 // bad
@@ -476,7 +618,7 @@ const obj = {
 
 ### guard-for-in
 
-Require `hasOwnProperty` checks in `for...in` loops.
+Require `hasOwnProperty` checks in `for...in` loops. Severity: `error`.
 
 ```js
 // bad
@@ -490,9 +632,21 @@ for (const key in obj) {
 }
 ```
 
+### id-denylist
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/eslint/id-denylist.html). Severity: `error`.
+
+### id-match
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/eslint/id-match.html). Severity: `error`.
+
+### logical-assignment-operators
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/eslint/logical-assignment-operators.html). Severity: `error`.
+
 ### max-classes-per-file
 
-Enforce a maximum of one class per file.
+Enforce a maximum of one class per file. Severity: `error`.
 
 ```js
 // bad
@@ -506,7 +660,7 @@ class Foo {}
 
 ### max-depth
 
-Enforce a maximum nesting depth of 4.
+Enforce a maximum nesting depth of 4. Severity: `error`.
 
 ```js
 // bad
@@ -528,7 +682,7 @@ if (c && d) handle();
 
 ### max-lines
 
-Enforce a maximum of 400 lines per file (excluding blanks and comments).
+Enforce a maximum of 400 lines per file (excluding blanks and comments). Severity: `error`.
 
 ```js
 // bad
@@ -540,7 +694,7 @@ Enforce a maximum of 400 lines per file (excluding blanks and comments).
 
 ### max-nested-callbacks
 
-Enforce a maximum of 3 nested callbacks.
+Enforce a maximum of 3 nested callbacks. Severity: `error`.
 
 ```js
 // bad
@@ -560,7 +714,7 @@ fn(middle);
 
 ### max-params
 
-Enforce a maximum of 4 parameters per function.
+Enforce a maximum of 4 parameters per function. Severity: `error`.
 
 ```js
 // bad
@@ -572,7 +726,7 @@ function fn({ a, b, c, d, e }) {}
 
 ### new-cap
 
-Require constructor names to begin with a capital letter.
+Require constructor names to begin with a capital letter. Severity: `error`.
 
 ```js
 // bad
@@ -584,7 +738,7 @@ const thing = new MyObject();
 
 ### no-alert
 
-Disallow `alert`, `confirm`, and `prompt`.
+Disallow `alert`, `confirm`, and `prompt`. Severity: `error`.
 
 ```js
 // bad
@@ -596,7 +750,7 @@ showNotification("done");
 
 ### no-array-constructor
 
-Disallow the `Array` constructor.
+Disallow the `Array` constructor. Severity: `error`.
 
 ```js
 // bad
@@ -608,7 +762,7 @@ const arr = [1, 2, 3];
 
 ### no-async-promise-executor
 
-Disallow using `async` function as a Promise executor.
+Disallow using `async` function as a Promise executor. Severity: `error`.
 
 ```js
 // bad
@@ -622,7 +776,7 @@ const p = fetch(url);
 
 ### no-caller
 
-Disallow `arguments.caller` and `arguments.callee`.
+Disallow `arguments.caller` and `arguments.callee`. Severity: `error`.
 
 ```js
 // bad
@@ -638,7 +792,7 @@ function fn() {
 
 ### no-case-declarations
 
-Disallow lexical declarations in `case` clauses without blocks.
+Disallow lexical declarations in `case` clauses without blocks. Severity: `error`.
 
 ```js
 // bad
@@ -657,7 +811,7 @@ switch (x) {
 
 ### no-class-assign
 
-Disallow reassigning class declarations.
+Disallow reassigning class declarations. Severity: `error`.
 
 ```js
 // bad
@@ -671,7 +825,7 @@ const bar = "bar";
 
 ### no-compare-neg-zero
 
-Disallow comparing against `-0`.
+Disallow comparing against `-0`. Severity: `error`.
 
 ```js
 // bad
@@ -685,7 +839,7 @@ if (Object.is(x, -0)) {
 
 ### no-cond-assign
 
-Disallow assignment operators in conditional statements.
+Disallow assignment operators in conditional statements. Severity: `error`.
 
 ```js
 // bad
@@ -699,7 +853,7 @@ if (x === 0) {
 
 ### no-console
 
-Disallow `console` usage in production code.
+Disallow `console` usage in production code. Severity: `error`.
 
 ```js
 // bad
@@ -711,7 +865,7 @@ logger.info("debug");
 
 ### no-const-assign
 
-Disallow reassigning `const` variables.
+Disallow reassigning `const` variables. Severity: `error`.
 
 ```js
 // bad
@@ -725,7 +879,7 @@ x = 2;
 
 ### no-constant-binary-expression
 
-Disallow expressions where the operation does not affect the value.
+Disallow expressions where the operation does not affect the value. Severity: `error`.
 
 ```js
 // bad
@@ -737,7 +891,7 @@ const result = (x ?? 'default') || 'fallback';
 
 ### no-constant-condition
 
-Disallow constant expressions in conditions.
+Disallow constant expressions in conditions. Severity: `error`.
 
 ```js
 // bad
@@ -751,7 +905,7 @@ if (isReady) {
 
 ### no-constructor-return
 
-Disallow returning a value from a constructor.
+Disallow returning a value from a constructor. Severity: `error`.
 
 ```js
 // bad
@@ -771,7 +925,7 @@ class Foo {
 
 ### no-control-regex
 
-Disallow control characters in regular expressions.
+Disallow control characters in regular expressions. Severity: `error`.
 
 ```js
 // bad
@@ -783,7 +937,7 @@ const re = /\n/;
 
 ### no-debugger
 
-Disallow the `debugger` statement.
+Disallow the `debugger` statement. Severity: `error`.
 
 ```js
 // bad
@@ -795,7 +949,7 @@ debugger;
 
 ### no-delete-var
 
-Disallow deleting variables.
+Disallow deleting variables. Severity: `error`.
 
 ```js
 // bad
@@ -809,7 +963,7 @@ x = undefined;
 
 ### no-dupe-class-members
 
-Disallow duplicate class members.
+Disallow duplicate class members. Severity: `error`.
 
 ```js
 // bad
@@ -827,7 +981,7 @@ class Foo {
 
 ### no-dupe-else-if
 
-Disallow duplicate conditions in `else-if` chains.
+Disallow duplicate conditions in `else-if` chains. Severity: `error`.
 
 ```js
 // bad
@@ -843,7 +997,7 @@ if (a) {
 
 ### no-dupe-keys
 
-Disallow duplicate keys in object literals.
+Disallow duplicate keys in object literals. Severity: `error`.
 
 ```js
 // bad
@@ -855,7 +1009,7 @@ const obj = { a: 1, b: 2 };
 
 ### no-duplicate-case
 
-Disallow duplicate `case` labels in `switch`.
+Disallow duplicate `case` labels in `switch`. Severity: `error`.
 
 ```js
 // bad
@@ -877,7 +1031,7 @@ switch (x) {
 
 ### no-duplicate-imports
 
-Disallow duplicate module imports.
+Disallow duplicate module imports. Severity: `error`.
 
 ```js
 // bad
@@ -890,7 +1044,7 @@ import { a, b } from "mod";
 
 ### no-else-return
 
-Disallow `else` blocks after `return` in `if`.
+Disallow `else` blocks after `return` in `if`. Severity: `error`.
 
 ```js
 // bad
@@ -909,7 +1063,7 @@ return b;
 
 ### no-empty
 
-Disallow empty block statements.
+Disallow empty block statements. Severity: `error`.
 
 ```js
 // bad
@@ -924,7 +1078,7 @@ if (condition) {
 
 ### no-empty-character-class
 
-Disallow empty character classes in regular expressions.
+Disallow empty character classes in regular expressions. Severity: `error`.
 
 ```js
 // bad
@@ -936,7 +1090,7 @@ const re = /abc[a-z]/;
 
 ### no-empty-pattern
 
-Disallow empty destructuring patterns.
+Disallow empty destructuring patterns. Severity: `error`.
 
 ```js
 // bad
@@ -948,7 +1102,7 @@ const { a } = obj;
 
 ### no-empty-static-block
 
-Disallow empty static blocks in classes.
+Disallow empty static blocks in classes. Severity: `error`.
 
 ```js
 // bad
@@ -966,7 +1120,7 @@ class Foo {
 
 ### no-eval
 
-Disallow `eval()`.
+Disallow `eval()`. Severity: `error`.
 
 ```js
 // bad
@@ -978,7 +1132,7 @@ alert("hi");
 
 ### no-ex-assign
 
-Disallow reassigning exceptions in `catch` clauses.
+Disallow reassigning exceptions in `catch` clauses. Severity: `error`.
 
 ```js
 // bad
@@ -996,7 +1150,7 @@ try {
 
 ### no-extend-native
 
-Disallow extending native objects.
+Disallow extending native objects. Severity: `error`.
 
 ```js
 // bad
@@ -1010,7 +1164,7 @@ function first(arr) {
 
 ### no-extra-bind
 
-Disallow unnecessary `.bind()` calls.
+Disallow unnecessary `.bind()` calls. Severity: `error`.
 
 ```js
 // bad
@@ -1026,7 +1180,7 @@ const fn = function () {
 
 ### no-extra-boolean-cast
 
-Disallow unnecessary boolean casts.
+Disallow unnecessary boolean casts. Severity: `error`.
 
 ```js
 // bad
@@ -1040,7 +1194,7 @@ if (x) {
 
 ### no-extra-label
 
-Disallow unnecessary labels.
+Disallow unnecessary labels. Severity: `error`.
 
 ```js
 // bad
@@ -1056,7 +1210,7 @@ while (true) {
 
 ### no-fallthrough
 
-Disallow fallthrough of `case` statements.
+Disallow fallthrough of `case` statements. Severity: `error`.
 
 ```js
 // bad
@@ -1080,7 +1234,7 @@ switch (x) {
 
 ### no-func-assign
 
-Disallow reassigning `function` declarations.
+Disallow reassigning `function` declarations. Severity: `error`.
 
 ```js
 // bad
@@ -1094,7 +1248,7 @@ const baz = bar;
 
 ### no-global-assign
 
-Disallow assignments to native objects or read-only global variables.
+Disallow assignments to native objects or read-only global variables. Severity: `error`.
 
 ```js
 // bad
@@ -1106,7 +1260,7 @@ const myUndefined = 1;
 
 ### no-implicit-coercion
 
-Disallow shorthand type conversions.
+Disallow shorthand type conversions. Severity: `error`.
 
 ```js
 // bad
@@ -1118,9 +1272,13 @@ const str = String(value);
 const num = Number(value);
 ```
 
+### no-implied-eval
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-implied-eval.html). Severity: `error`.
+
 ### no-import-assign
 
-Disallow assigning to imported bindings.
+Disallow assigning to imported bindings. Severity: `error`.
 
 ```js
 // bad
@@ -1134,7 +1292,7 @@ const y = 1;
 
 ### no-inner-declarations
 
-Disallow variable or `function` declarations in nested blocks.
+Disallow variable or `function` declarations in nested blocks. Severity: `error`.
 
 ```js
 // bad
@@ -1151,7 +1309,7 @@ if (test) {
 
 ### no-invalid-regexp
 
-Disallow invalid regular expression strings in `RegExp` constructors.
+Disallow invalid regular expression strings in `RegExp` constructors. Severity: `error`.
 
 ```js
 // bad
@@ -1163,7 +1321,7 @@ new RegExp("[a-z]");
 
 ### no-irregular-whitespace
 
-Disallow irregular whitespace characters.
+Disallow irregular whitespace characters. Severity: `error`.
 
 ```js
 // bad
@@ -1175,7 +1333,7 @@ const desc = "foo bar";
 
 ### no-iterator
 
-Disallow the `__iterator__` property.
+Disallow the `__iterator__` property. Severity: `error`.
 
 ```js
 // bad
@@ -1187,7 +1345,7 @@ Foo.prototype[Symbol.iterator] = function () {};
 
 ### no-label-var
 
-Disallow labels that share a name with a variable.
+Disallow labels that share a name with a variable. Severity: `error`.
 
 ```js
 // bad
@@ -1204,7 +1362,7 @@ loop: while (true) {
 
 ### no-labels
 
-Disallow labeled statements.
+Disallow labeled statements. Severity: `error`.
 
 ```js
 // bad
@@ -1220,7 +1378,7 @@ for (;;) {
 
 ### no-lone-blocks
 
-Disallow unnecessary nested blocks.
+Disallow unnecessary nested blocks. Severity: `error`.
 
 ```js
 // bad
@@ -1234,7 +1392,7 @@ const x = 1;
 
 ### no-lonely-if
 
-Disallow `if` as the only statement in an `else` block.
+Disallow `if` as the only statement in an `else` block. Severity: `error`.
 
 ```js
 // bad
@@ -1252,7 +1410,7 @@ if (a) {
 
 ### no-loop-func
 
-Disallow functions inside loops that reference loop variables.
+Disallow functions inside loops that reference loop variables. Severity: `error`.
 
 ```js
 // bad
@@ -1268,7 +1426,7 @@ for (let i = 0; i < 5; i++) {
 
 ### no-loss-of-precision
 
-Disallow number literals that lose precision.
+Disallow number literals that lose precision. Severity: `error`.
 
 ```js
 // bad
@@ -1280,7 +1438,7 @@ const x = 9007199254740992n;
 
 ### no-misleading-character-class
 
-Disallow characters composed of multiple code points in character classes.
+Disallow characters composed of multiple code points in character classes. Severity: `error`.
 
 ```js
 // bad
@@ -1292,7 +1450,7 @@ const re = /👶🏻/u;
 
 ### no-multi-assign
 
-Disallow chained assignment expressions.
+Disallow chained assignment expressions. Severity: `error`.
 
 ```js
 // bad
@@ -1306,7 +1464,7 @@ let c = 1;
 
 ### no-multi-str
 
-Disallow multiline strings using backslash.
+Disallow multiline strings using backslash. Severity: `error`.
 
 ```js
 // bad
@@ -1320,7 +1478,7 @@ const str = "line1\nline2";
 
 ### no-nested-ternary
 
-Disallow nested ternary expressions.
+Disallow nested ternary expressions. Severity: `error`.
 
 ```js
 // bad
@@ -1333,7 +1491,7 @@ const x = a ? inner : e;
 
 ### no-new
 
-Disallow `new` operators outside of assignments or comparisons.
+Disallow `new` operators outside of assignments or comparisons. Severity: `error`.
 
 ```js
 // bad
@@ -1345,7 +1503,7 @@ const instance = new SideEffect();
 
 ### no-new-func
 
-Disallow the `Function` constructor.
+Disallow the `Function` constructor. Severity: `error`.
 
 ```js
 // bad
@@ -1357,7 +1515,7 @@ const fn = (a) => a;
 
 ### no-new-native-nonconstructor
 
-Disallow `new` operators with `Symbol` and `BigInt`.
+Disallow `new` operators with `Symbol` and `BigInt`. Severity: `error`.
 
 ```js
 // bad
@@ -1369,7 +1527,7 @@ const sym = Symbol("desc");
 
 ### no-new-wrappers
 
-Disallow primitive wrapper instances (`new String`, `new Number`, `new Boolean`).
+Disallow primitive wrapper instances (`new String`, `new Number`, `new Boolean`). Severity: `error`.
 
 ```js
 // bad
@@ -1381,7 +1539,7 @@ const str = "hello";
 
 ### no-nonoctal-decimal-escape
 
-Disallow `\8` and `\9` escape sequences in string literals.
+Disallow `\8` and `\9` escape sequences in string literals. Severity: `error`.
 
 ```js
 // bad
@@ -1393,7 +1551,7 @@ const str = "8";
 
 ### no-obj-calls
 
-Disallow calling global objects as functions.
+Disallow calling global objects as functions. Severity: `error`.
 
 ```js
 // bad
@@ -1405,7 +1563,7 @@ const pi = Math.PI;
 
 ### no-object-constructor
 
-Disallow the `Object` constructor without arguments.
+Disallow the `Object` constructor without arguments. Severity: `error`.
 
 ```js
 // bad
@@ -1417,7 +1575,7 @@ const obj = {};
 
 ### no-param-reassign
 
-Disallow reassigning function parameters.
+Disallow reassigning function parameters. Severity: `error`.
 
 ```js
 // bad
@@ -1433,7 +1591,7 @@ function fn(x) {
 
 ### no-promise-executor-return
 
-Disallow returning values from Promise executor functions.
+Disallow returning values from Promise executor functions. Severity: `error`.
 
 ```js
 // bad
@@ -1447,7 +1605,7 @@ new Promise((resolve) => {
 
 ### no-proto
 
-Disallow the `__proto__` property.
+Disallow the `__proto__` property. Severity: `error`.
 
 ```js
 // bad
@@ -1459,7 +1617,7 @@ const proto = Object.getPrototypeOf(obj);
 
 ### no-prototype-builtins
 
-Disallow calling `Object.prototype` methods directly on objects.
+Disallow calling `Object.prototype` methods directly on objects. Severity: `error`.
 
 ```js
 // bad
@@ -1471,7 +1629,7 @@ Object.hasOwn(obj, "key");
 
 ### no-redeclare
 
-Disallow variable redeclaration.
+Disallow variable redeclaration. Severity: `error`.
 
 ```js
 // bad
@@ -1485,7 +1643,7 @@ x = 2;
 
 ### no-regex-spaces
 
-Disallow multiple spaces in regular expressions.
+Disallow multiple spaces in regular expressions. Severity: `error`.
 
 ```js
 // bad
@@ -1497,7 +1655,7 @@ const re = /foo {3}bar/;
 
 ### no-return-assign
 
-Disallow assignment operators in `return` statements.
+Disallow assignment operators in `return` statements. Severity: `error`.
 
 ```js
 // bad
@@ -1511,7 +1669,7 @@ const fn = () => {
 
 ### no-script-url
 
-Disallow `javascript:` URLs.
+Disallow `javascript:` URLs. Severity: `error`.
 
 ```js
 // bad
@@ -1523,7 +1681,7 @@ location.href = "#";
 
 ### no-self-assign
 
-Disallow assignments where both sides are exactly the same.
+Disallow assignments where both sides are exactly the same. Severity: `error`.
 
 ```js
 // bad
@@ -1535,7 +1693,7 @@ x = y;
 
 ### no-self-compare
 
-Disallow comparisons where both sides are exactly the same.
+Disallow comparisons where both sides are exactly the same. Severity: `error`.
 
 ```js
 // bad
@@ -1549,7 +1707,7 @@ if (Number.isNaN(x)) {
 
 ### no-sequences
 
-Disallow comma operators.
+Disallow comma operators. Severity: `error`.
 
 ```js
 // bad
@@ -1562,7 +1720,7 @@ const x = val;
 
 ### no-setter-return
 
-Disallow returning values from setters.
+Disallow returning values from setters. Severity: `error`.
 
 ```js
 // bad
@@ -1582,7 +1740,7 @@ const obj = {
 
 ### no-shadow
 
-Disallow variable declarations from shadowing outer scope variables.
+Disallow variable declarations from shadowing outer scope variables. Severity: `error`.
 
 ```js
 // bad
@@ -1600,7 +1758,7 @@ function fn() {
 
 ### no-shadow-restricted-names
 
-Disallow shadowing restricted identifiers like `undefined`, `NaN`, `Infinity`.
+Disallow shadowing restricted identifiers like `undefined`, `NaN`, `Infinity`. Severity: `error`.
 
 ```js
 // bad
@@ -1612,7 +1770,7 @@ const undef = "foo";
 
 ### no-sparse-arrays
 
-Disallow sparse arrays.
+Disallow sparse arrays. Severity: `error`.
 
 ```js
 // bad
@@ -1624,7 +1782,7 @@ const arr = [1, undefined, 3];
 
 ### no-template-curly-in-string
 
-Disallow template literal placeholder syntax in regular strings.
+Disallow template literal placeholder syntax in regular strings. Severity: `error`.
 
 ```js
 // bad
@@ -1636,7 +1794,7 @@ const msg = `Hello ${name}`;
 
 ### no-this-before-super
 
-Disallow `this`/`super` before calling `super()` in constructors.
+Disallow `this`/`super` before calling `super()` in constructors. Severity: `error`.
 
 ```js
 // bad
@@ -1658,7 +1816,7 @@ class A extends B {
 
 ### no-throw-literal
 
-Require throwing `Error` objects only.
+Require throwing `Error` objects only. Severity: `error`.
 
 ```js
 // bad
@@ -1670,7 +1828,7 @@ throw new Error("error");
 
 ### no-unassigned-vars
 
-Disallow variables that are declared but never assigned.
+Disallow variables that are declared but never assigned. Severity: `error`.
 
 ```js
 // bad
@@ -1684,7 +1842,7 @@ console.log(x);
 
 ### no-underscore-dangle
 
-Disallow dangling underscores in identifiers. Prisma's aggregate and relation-count keys (`_count`, `_sum`, `_avg`, `_min`, `_max`, `_all`) are allowed.
+Disallow dangling underscores in identifiers. Prisma's aggregate and relation-count keys (`_count`, `_sum`, `_avg`, `_min`, `_max`, `_all`) are allowed. Severity: `error`.
 
 ```js
 // bad
@@ -1697,7 +1855,7 @@ const total = result._count.posts;
 
 ### no-unexpected-multiline
 
-Disallow confusing multiline expressions.
+Disallow confusing multiline expressions. Severity: `error`.
 
 ```js
 // bad
@@ -1710,7 +1868,7 @@ const foo = bar;
 
 ### no-unmodified-loop-condition
 
-Disallow unmodified conditions in loops.
+Disallow unmodified conditions in loops. Severity: `error`.
 
 ```js
 // bad
@@ -1728,7 +1886,7 @@ while (x) {
 
 ### no-unneeded-ternary
 
-Disallow ternary operators when simpler alternatives exist.
+Disallow ternary operators when simpler alternatives exist. Severity: `error`.
 
 ```js
 // bad
@@ -1738,9 +1896,13 @@ const isYes = answer === 1 ? true : false;
 const isYes = answer === 1;
 ```
 
+### no-unreachable
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-unreachable.html). Severity: `error`.
+
 ### no-unreachable-loop
 
-Disallow loops whose body always exits on the first iteration.
+Disallow loops whose body always exits on the first iteration. Severity: `error`.
 
 ```js
 // bad
@@ -1755,7 +1917,7 @@ return first?.id;
 
 ### no-unsafe-finally
 
-Disallow control flow statements in `finally` blocks.
+Disallow control flow statements in `finally` blocks. Severity: `error`.
 
 ```js
 // bad
@@ -1773,7 +1935,7 @@ try {
 
 ### no-unsafe-negation
 
-Disallow negating the left operand of relational operators.
+Disallow negating the left operand of relational operators. Severity: `error`.
 
 ```js
 // bad
@@ -1787,7 +1949,7 @@ if (!(key in object)) {
 
 ### no-unsafe-optional-chaining
 
-Disallow optional chaining in contexts where `undefined` is not allowed.
+Disallow optional chaining in contexts where `undefined` is not allowed. Severity: `error`.
 
 ```js
 // bad
@@ -1799,7 +1961,7 @@ const result = obj?.foo?.();
 
 ### no-unused-expressions
 
-Disallow unused expressions.
+Disallow unused expressions. Severity: `error`.
 
 ```js
 // bad
@@ -1811,7 +1973,7 @@ const result = x + 1;
 
 ### no-unused-labels
 
-Disallow unused labels.
+Disallow unused labels. Severity: `error`.
 
 ```js
 // bad
@@ -1827,7 +1989,7 @@ for (;;) {
 
 ### no-unused-private-class-members
 
-Disallow unused private class members.
+Disallow unused private class members. Severity: `error`.
 
 ```js
 // bad
@@ -1846,7 +2008,7 @@ class Foo {
 
 ### no-unused-vars
 
-Disallow unused variables. `--fix` deletes unused imports.
+Disallow unused variables. `--fix` deletes unused imports. Severity: `error`.
 
 ```js
 // bad
@@ -1859,7 +2021,7 @@ console.log(used);
 
 ### no-use-before-define
 
-Disallow using variables before they are defined.
+Disallow using variables before they are defined. Severity: `error`.
 
 ```js
 // bad
@@ -1873,7 +2035,7 @@ console.log(x);
 
 ### no-useless-assignment
 
-Disallow assigning a value that is overwritten before it is read. Severity: `warn`.
+Disallow assigning a value that is overwritten before it is read. Severity: `warn`. Warn, not error: the nursery implementation cannot see a read that happens inside a callback, so `let captured = null` filled in by a render probe reads as dead even though TypeScript needs the initializer.
 
 ```js
 // bad
@@ -1886,7 +2048,7 @@ const status = "loading";
 
 ### no-useless-backreference
 
-Disallow useless backreferences in regular expressions.
+Disallow useless backreferences in regular expressions. Severity: `error`.
 
 ```js
 // bad
@@ -1898,7 +2060,7 @@ const re = /(a)\1/;
 
 ### no-useless-call
 
-Disallow unnecessary `.call()` and `.apply()`.
+Disallow unnecessary `.call()` and `.apply()`. Severity: `error`.
 
 ```js
 // bad
@@ -1910,7 +2072,7 @@ fn(arg);
 
 ### no-useless-catch
 
-Disallow `catch` clauses that only rethrow.
+Disallow `catch` clauses that only rethrow. Severity: `error`.
 
 ```js
 // bad
@@ -1926,7 +2088,7 @@ doSomething();
 
 ### no-useless-computed-key
 
-Disallow unnecessary computed property keys.
+Disallow unnecessary computed property keys. Severity: `error`.
 
 ```js
 // bad
@@ -1938,7 +2100,7 @@ const obj = { a: 1 };
 
 ### no-useless-concat
 
-Disallow unnecessary concatenation of strings.
+Disallow unnecessary concatenation of strings. Severity: `error`.
 
 ```js
 // bad
@@ -1950,7 +2112,7 @@ const str = "ab";
 
 ### no-useless-constructor
 
-Disallow unnecessary constructors.
+Disallow unnecessary constructors. Severity: `error`.
 
 ```js
 // bad
@@ -1964,7 +2126,7 @@ class Foo {}
 
 ### no-useless-escape
 
-Disallow unnecessary escape characters.
+Disallow unnecessary escape characters. Severity: `error`.
 
 ```js
 // bad
@@ -1976,7 +2138,7 @@ const str = '"';
 
 ### no-useless-rename
 
-Disallow renaming import, export, and destructured assignments to the same name.
+Disallow renaming import, export, and destructured assignments to the same name. Severity: `error`.
 
 ```js
 // bad
@@ -1988,7 +2150,7 @@ import { foo } from "mod";
 
 ### no-useless-return
 
-Disallow redundant return statements.
+Disallow redundant return statements. Severity: `error`.
 
 ```js
 // bad
@@ -2005,7 +2167,7 @@ function fn() {
 
 ### no-var
 
-Require `let` or `const` instead of `var`.
+Require `let` or `const` instead of `var`. Severity: `error`.
 
 ```js
 // bad
@@ -2017,7 +2179,7 @@ const x = 1;
 
 ### no-void
 
-Disallow the `void` operator in expressions. As a statement it stays allowed, to mark a promise as deliberately ignored.
+Disallow the `void` operator in expressions. As a statement it stays allowed, to mark a promise as deliberately ignored. Severity: `error`.
 
 ```js
 // bad
@@ -2030,7 +2192,7 @@ void sendAnalytics(event);
 
 ### no-warning-comments
 
-Disallow `@nocommit`, `TODO`, `FIXME`, and `XXX` comments. A placeholder in generated code ships unfinished behavior behind a comment; track the follow-up in an issue instead.
+Disallow `@nocommit`, `TODO`, `FIXME`, and `XXX` comments. A placeholder in generated code ships unfinished behavior behind a comment; track the follow-up in an issue instead. Severity: `error`.
 
 ```js
 // bad
@@ -2043,7 +2205,7 @@ const items = data ?? [];
 
 ### no-with
 
-Disallow `with` statements.
+Disallow `with` statements. Severity: `error`.
 
 ```js
 // bad
@@ -2055,9 +2217,13 @@ with (obj) {
 obj.foo = 1;
 ```
 
+### object-shorthand
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/eslint/object-shorthand.html). Severity: `error`.
+
 ### operator-assignment
 
-Require shorthand operators where possible.
+Require shorthand operators where possible. Severity: `error`.
 
 ```js
 // bad
@@ -2067,9 +2233,13 @@ x = x + 1;
 x += 1;
 ```
 
+### prefer-arrow-callback
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/eslint/prefer-arrow-callback.html). Severity: `error`.
+
 ### prefer-const
 
-Require `const` for variables that are never reassigned.
+Require `const` for variables that are never reassigned. Severity: `error`.
 
 ```js
 // bad
@@ -2081,7 +2251,7 @@ const x = 1;
 
 ### prefer-exponentiation-operator
 
-Require `**` instead of `Math.pow()`.
+Require `**` instead of `Math.pow()`. Severity: `error`.
 
 ```js
 // bad
@@ -2091,9 +2261,13 @@ const sq = Math.pow(x, 2);
 const sq = x ** 2;
 ```
 
+### prefer-named-capture-group
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/eslint/prefer-named-capture-group.html). Severity: `error`.
+
 ### prefer-numeric-literals
 
-Require binary, octal, and hexadecimal literals instead of `parseInt()`.
+Require binary, octal, and hexadecimal literals instead of `parseInt()`. Severity: `error`.
 
 ```js
 // bad
@@ -2105,7 +2279,7 @@ const x = 0b111110111;
 
 ### prefer-object-has-own
 
-Require `Object.hasOwn()` over `Object.prototype.hasOwnProperty.call()`.
+Require `Object.hasOwn()` over `Object.prototype.hasOwnProperty.call()`. Severity: `error`.
 
 ```js
 // bad
@@ -2117,7 +2291,7 @@ Object.hasOwn(obj, "key");
 
 ### prefer-object-spread
 
-Require spread syntax instead of `Object.assign()`.
+Require spread syntax instead of `Object.assign()`. Severity: `error`.
 
 ```js
 // bad
@@ -2129,7 +2303,7 @@ const obj = { ...defaults, ...overrides };
 
 ### prefer-promise-reject-errors
 
-Require `Error` objects as Promise rejection reasons.
+Require `Error` objects as Promise rejection reasons. Severity: `error`.
 
 ```js
 // bad
@@ -2139,9 +2313,13 @@ Promise.reject("error");
 Promise.reject(new Error("error"));
 ```
 
+### prefer-regex-literals
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/eslint/prefer-regex-literals.html). Severity: `error`.
+
 ### prefer-rest-params
 
-Require rest parameters instead of `arguments`.
+Require rest parameters instead of `arguments`. Severity: `error`.
 
 ```js
 // bad
@@ -2157,7 +2335,7 @@ function fn(...args) {
 
 ### prefer-spread
 
-Require spread syntax instead of `.apply()`.
+Require spread syntax instead of `.apply()`. Severity: `error`.
 
 ```js
 // bad
@@ -2169,7 +2347,7 @@ Math.max(...nums);
 
 ### prefer-template
 
-Require template literals instead of string concatenation.
+Require template literals instead of string concatenation. Severity: `error`.
 
 ```js
 // bad
@@ -2181,7 +2359,7 @@ const msg = `Hello ${name}`;
 
 ### preserve-caught-error
 
-Require a parameter in `catch` clauses.
+Require a parameter in `catch` clauses. Severity: `error`.
 
 ```js
 // bad
@@ -2199,7 +2377,7 @@ try {
 
 ### radix
 
-Require the radix parameter in `parseInt()`.
+Require the radix parameter in `parseInt()`. Severity: `error`.
 
 ```js
 // bad
@@ -2211,7 +2389,7 @@ parseInt("071", 10);
 
 ### require-await
 
-Disallow `async` functions that have no `await` expression.
+Disallow `async` functions that have no `await` expression. Severity: `error`.
 
 ```js
 // bad
@@ -2227,7 +2405,7 @@ async function fn() {
 
 ### require-unicode-regexp
 
-Require the `v` flag on regular expressions for Unicode-aware matching with set notation.
+Require the `v` flag on regular expressions for Unicode-aware matching with set notation. Severity: `error`.
 
 ```js
 // bad
@@ -2239,7 +2417,7 @@ const re = /[a-z]/v;
 
 ### require-yield
 
-Require `yield` in generator functions.
+Require `yield` in generator functions. Severity: `error`.
 
 ```js
 // bad
@@ -2255,7 +2433,7 @@ function* gen() {
 
 ### symbol-description
 
-Require a description when creating `Symbol`.
+Require a description when creating `Symbol`. Severity: `error`.
 
 ```js
 // bad
@@ -2267,7 +2445,7 @@ const sym = Symbol("id");
 
 ### unicode-bom
 
-Disallow Unicode byte order mark (BOM).
+Disallow Unicode byte order mark (BOM). Severity: `error`.
 
 ```js
 // bad
@@ -2279,7 +2457,7 @@ const x = 1;
 
 ### use-isnan
 
-Require `Number.isNaN()` instead of comparison with `NaN`.
+Require `Number.isNaN()` instead of comparison with `NaN`. Severity: `error`.
 
 ```js
 // bad
@@ -2293,7 +2471,7 @@ if (Number.isNaN(x)) {
 
 ### valid-typeof
 
-Enforce comparing `typeof` expressions against valid strings.
+Enforce comparing `typeof` expressions against valid strings. Severity: `error`.
 
 ```js
 // bad
@@ -2305,7 +2483,7 @@ typeof x === "string";
 
 ### vars-on-top
 
-Require `var` declarations to be at the top of their scope.
+Require `var` declarations to be at the top of their scope. Severity: `error`.
 
 ```js
 // bad
@@ -2323,7 +2501,7 @@ function fn() {
 
 ### yoda
 
-Disallow Yoda conditions.
+Disallow Yoda conditions. Severity: `error`.
 
 ```js
 // bad
@@ -2339,7 +2517,7 @@ if (color === "red") {
 
 ### @typescript-eslint/adjacent-overload-signatures
 
-Require overload signatures to be consecutive.
+Require overload signatures to be consecutive. Severity: `error`.
 
 ```ts
 // bad
@@ -2355,7 +2533,7 @@ declare function bar(): void;
 
 ### @typescript-eslint/array-type
 
-Enforce using generic `Array<T>` syntax over `T[]`.
+Enforce using generic `Array<T>` syntax over `T[]`. Severity: `error`.
 
 ```ts
 // bad
@@ -2365,9 +2543,13 @@ const items: string[] = [];
 const items: Array<string> = [];
 ```
 
+### @typescript-eslint/await-thenable
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/await-thenable.html). Severity: `error`.
+
 ### @typescript-eslint/ban-ts-comment
 
-Disallow `@ts-ignore`, `@ts-nocheck`, and `@ts-check` comments.
+Disallow `@ts-ignore`, `@ts-nocheck`, and `@ts-check` comments. Severity: `error`.
 
 ```ts
 // bad
@@ -2380,7 +2562,7 @@ const x: number = Number("hello");
 
 ### @typescript-eslint/ban-tslint-comment
 
-Disallow `// tslint:<rule>` comments.
+Disallow `// tslint:<rule>` comments. Severity: `error`.
 
 ```ts
 // bad
@@ -2392,7 +2574,7 @@ Disallow `// tslint:<rule>` comments.
 
 ### @typescript-eslint/ban-types
 
-Disallow certain types like `Object`, `String`, `Number`, `Boolean`.
+Disallow certain types like `Object`, `String`, `Number`, `Boolean`. Severity: `error`.
 
 ```ts
 // bad
@@ -2404,7 +2586,7 @@ const fn = (x: Record<string, unknown>) => {};
 
 ### @typescript-eslint/class-literal-property-style
 
-Enforce using readonly fields over getters that return literals.
+Enforce using readonly fields over getters that return literals. Severity: `error`.
 
 ```ts
 // bad
@@ -2422,7 +2604,7 @@ class Foo {
 
 ### @typescript-eslint/consistent-generic-constructors
 
-Enforce specifying type parameters on the constructor call, not the variable type.
+Enforce specifying type parameters on the constructor call, not the variable type. Severity: `error`.
 
 ```ts
 // bad
@@ -2434,7 +2616,7 @@ const map = new Map<string, number>();
 
 ### @typescript-eslint/consistent-indexed-object-style
 
-Enforce using `Record<K, V>` over index signatures.
+Enforce using `Record<K, V>` over index signatures. Severity: `error`.
 
 ```ts
 // bad
@@ -2444,9 +2626,17 @@ type Foo = { [key: string]: number };
 type Foo = Record<string, number>;
 ```
 
+### @typescript-eslint/consistent-return
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/consistent-return.html). Severity: `error`.
+
+### @typescript-eslint/consistent-type-assertions
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/consistent-type-assertions.html). Severity: `error`.
+
 ### @typescript-eslint/consistent-type-definitions
 
-Enforce using `type` over `interface`.
+Enforce using `type` over `interface`. Severity: `error`.
 
 ```ts
 // bad
@@ -2460,9 +2650,13 @@ type User = {
 };
 ```
 
+### @typescript-eslint/consistent-type-exports
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/consistent-type-exports.html). Severity: `error`.
+
 ### @typescript-eslint/consistent-type-imports
 
-Enforce consistent usage of type imports.
+Enforce consistent usage of type imports. Severity: `error`.
 
 ```ts
 // bad
@@ -2472,9 +2666,13 @@ import { User } from "./types";
 import type { User } from "./types";
 ```
 
+### @typescript-eslint/dot-notation
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/dot-notation.html). Severity: `error`.
+
 ### @typescript-eslint/method-signature-style
 
-Enforce using property-style method signatures.
+Enforce using property-style method signatures. Severity: `error`.
 
 ```ts
 // bad
@@ -2488,9 +2686,17 @@ type Foo = {
 };
 ```
 
+### @typescript-eslint/no-array-delete
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-array-delete.html). Severity: `error`.
+
+### @typescript-eslint/no-base-to-string
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-base-to-string.html). Severity: `error`.
+
 ### @typescript-eslint/no-confusing-non-null-assertion
 
-Disallow non-null assertions in confusing positions.
+Disallow non-null assertions in confusing positions. Severity: `error`.
 
 ```ts
 // bad
@@ -2502,7 +2708,7 @@ const x = foo?.bar;
 
 ### @typescript-eslint/no-confusing-void-expression
 
-Require expressions of type `void` to appear in statement position.
+Require expressions of type `void` to appear in statement position. Severity: `error`.
 
 ```ts
 // bad
@@ -2514,7 +2720,7 @@ alert("hi");
 
 ### @typescript-eslint/no-deprecated
 
-Disallow usage of deprecated APIs.
+Disallow usage of deprecated APIs. Severity: `error`.
 
 ```ts
 // bad
@@ -2528,7 +2734,7 @@ newFn();
 
 ### @typescript-eslint/no-duplicate-enum-values
 
-Disallow duplicate enum member values.
+Disallow duplicate enum member values. Severity: `error`.
 
 ```ts
 // bad
@@ -2544,9 +2750,13 @@ enum E {
 }
 ```
 
+### @typescript-eslint/no-duplicate-type-constituents
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-duplicate-type-constituents.html). Severity: `error`.
+
 ### @typescript-eslint/no-dynamic-delete
 
-Disallow using the `delete` operator on computed key expressions.
+Disallow using the `delete` operator on computed key expressions. Severity: `error`.
 
 ```ts
 // bad
@@ -2558,7 +2768,7 @@ Reflect.deleteProperty(obj, key);
 
 ### @typescript-eslint/no-empty-interface
 
-Disallow empty interfaces.
+Disallow empty interfaces. Severity: `error`.
 
 ```ts
 // bad
@@ -2570,7 +2780,7 @@ type Empty = Record<string, never>;
 
 ### @typescript-eslint/no-empty-object-type
 
-Disallow `{}` as a type.
+Disallow `{}` as a type. Severity: `error`.
 
 ```ts
 // bad
@@ -2582,7 +2792,7 @@ type Foo = Record<string, unknown>;
 
 ### @typescript-eslint/no-explicit-any
 
-Disallow the `any` type.
+Disallow the `any` type. Severity: `error`.
 
 ```ts
 // bad
@@ -2594,7 +2804,7 @@ const x: unknown = {};
 
 ### @typescript-eslint/no-extra-non-null-assertion
 
-Disallow extra non-null assertions.
+Disallow extra non-null assertions. Severity: `error`.
 
 ```ts
 // bad
@@ -2606,7 +2816,7 @@ const x = foo!.bar;
 
 ### @typescript-eslint/no-extraneous-class
 
-Disallow classes with only static members.
+Disallow classes with only static members. Severity: `error`.
 
 ```ts
 // bad
@@ -2620,7 +2830,7 @@ export const format = () => {};
 
 ### @typescript-eslint/no-floating-promises
 
-Require Promise-like statements to be handled.
+Require Promise-like statements to be handled. Severity: `error`.
 
 ```ts
 // bad
@@ -2632,7 +2842,7 @@ await fetchData();
 
 ### @typescript-eslint/no-for-in-array
 
-Disallow iterating over arrays with `for...in`.
+Disallow iterating over arrays with `for...in`. Severity: `error`.
 
 ```ts
 // bad
@@ -2644,9 +2854,13 @@ for (const item of arr) {
 }
 ```
 
+### @typescript-eslint/no-implied-eval
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-implied-eval.html). Severity: `error`.
+
 ### @typescript-eslint/no-import-type-side-effects
 
-Enforce that type-only imports have inline `type` qualifiers.
+Enforce that type-only imports have inline `type` qualifiers. Severity: `error`.
 
 ```ts
 // bad
@@ -2658,7 +2872,7 @@ import { type A, type B } from "mod";
 
 ### @typescript-eslint/no-invalid-void-type
 
-Disallow `void` outside of return types and generic type arguments.
+Disallow `void` outside of return types and generic type arguments. Severity: `error`.
 
 ```ts
 // bad
@@ -2670,7 +2884,7 @@ const log = (message: string): void => {};
 
 ### @typescript-eslint/no-meaningless-void-operator
 
-Disallow the `void` operator except where it is useful.
+Disallow the `void` operator except where it is useful. Severity: `error`.
 
 ```ts
 // bad
@@ -2682,7 +2896,7 @@ void someAsyncOperation();
 
 ### @typescript-eslint/no-misused-new
 
-Enforce valid definitions of `new` and `constructor`.
+Enforce valid definitions of `new` and `constructor`. Severity: `error`.
 
 ```ts
 // bad
@@ -2698,7 +2912,7 @@ class Foo {
 
 ### @typescript-eslint/no-misused-promises
 
-Disallow Promises in places not designed to handle them.
+Disallow Promises in places not designed to handle them. Severity: `error`.
 
 ```ts
 // bad
@@ -2710,9 +2924,13 @@ if (await fetchData()) {
 }
 ```
 
+### @typescript-eslint/no-misused-spread
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-misused-spread.html). Severity: `error`.
+
 ### @typescript-eslint/no-mixed-enums
 
-Disallow enums from mixing string and number members.
+Disallow enums from mixing string and number members. Severity: `error`.
 
 ```ts
 // bad
@@ -2730,7 +2948,7 @@ enum E {
 
 ### @typescript-eslint/no-namespace
 
-Disallow TypeScript namespaces.
+Disallow TypeScript namespaces. Severity: `error`.
 
 ```ts
 // bad
@@ -2744,7 +2962,7 @@ export const x = 1;
 
 ### @typescript-eslint/no-non-null-asserted-nullish-coalescing
 
-Disallow non-null assertions with nullish coalescing.
+Disallow non-null assertions with nullish coalescing. Severity: `error`.
 
 ```ts
 // bad
@@ -2756,7 +2974,7 @@ const x = foo ?? bar;
 
 ### @typescript-eslint/no-non-null-asserted-optional-chain
 
-Disallow non-null assertions after optional chaining.
+Disallow non-null assertions after optional chaining. Severity: `error`.
 
 ```ts
 // bad
@@ -2768,7 +2986,7 @@ const x = foo?.bar;
 
 ### @typescript-eslint/no-non-null-assertion
 
-Disallow non-null assertions using `!`.
+Disallow non-null assertions using `!`. Severity: `error`.
 
 ```ts
 // bad
@@ -2778,9 +2996,13 @@ const x = value!;
 const x = value ?? fallback;
 ```
 
+### @typescript-eslint/no-redundant-type-constituents
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-redundant-type-constituents.html). Severity: `error`.
+
 ### @typescript-eslint/no-require-imports
 
-Disallow `require()` calls.
+Disallow `require()` calls. Severity: `error`.
 
 ```ts
 // bad
@@ -2792,7 +3014,7 @@ import fs from "fs";
 
 ### @typescript-eslint/no-this-alias
 
-Disallow aliasing `this`.
+Disallow aliasing `this`. Severity: `error`.
 
 ```ts
 // bad
@@ -2804,7 +3026,7 @@ const fn = () => this.value;
 
 ### @typescript-eslint/no-unnecessary-boolean-literal-compare
 
-Disallow unnecessary equality comparison against boolean literals.
+Disallow unnecessary equality comparison against boolean literals. Severity: `error`.
 
 ```ts
 // bad
@@ -2818,7 +3040,7 @@ if (isReady) {
 
 ### @typescript-eslint/no-unnecessary-condition
 
-Disallow conditions, optional chains, and `??` fallbacks on values whose type already rules the case out. A defensive check on a required field hides a wrong type instead of fixing it. Off in test and e2e files. Severity: `warn`.
+Disallow conditions, optional chains, and `??` fallbacks on values whose type already rules the case out. Off in test and e2e files. Severity: `warn`. Defensive checks the types rule out (`user?.name ?? "anonymous"` on a required field) hide a wrong type instead of fixing it. Warn, not error: 721 existing sites, and a flag flipped inside a callback (`cancelled`) reads as constant to the checker. Nursery-classified, so enabled by name.
 
 ```ts
 // bad
@@ -2828,9 +3050,13 @@ const label = (user: { name: string }) => user?.name ?? "anonymous";
 const label = (user: { name?: string }) => user.name ?? "anonymous";
 ```
 
+### @typescript-eslint/no-unnecessary-parameter-property-assignment
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-unnecessary-parameter-property-assignment.html). Severity: `error`.
+
 ### @typescript-eslint/no-unnecessary-qualifier
 
-Disallow unnecessary namespace qualifiers.
+Disallow unnecessary namespace qualifiers. Severity: `error`.
 
 ```ts
 // bad
@@ -2846,9 +3072,13 @@ namespace Foo {
 }
 ```
 
+### @typescript-eslint/no-unnecessary-template-expression
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-unnecessary-template-expression.html). Severity: `error`.
+
 ### @typescript-eslint/no-unnecessary-type-arguments
 
-Disallow type arguments that are equal to the default.
+Disallow type arguments that are equal to the default. Severity: `error`.
 
 ```ts
 // bad
@@ -2860,7 +3090,7 @@ const p = new Promise((resolve) => resolve());
 
 ### @typescript-eslint/no-unnecessary-type-assertion
 
-Disallow type assertions that do not change the type.
+Disallow type assertions that do not change the type. Severity: `error`.
 
 ```ts
 // bad
@@ -2872,7 +3102,7 @@ const x = "hello";
 
 ### @typescript-eslint/no-unnecessary-type-constraint
 
-Disallow unnecessary constraints on generic types.
+Disallow unnecessary constraints on generic types. Severity: `error`.
 
 ```ts
 // bad
@@ -2882,9 +3112,13 @@ type Foo<T extends unknown> = T;
 type Foo<T> = T;
 ```
 
+### @typescript-eslint/no-unnecessary-type-conversion
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-unnecessary-type-conversion.html). Severity: `error`.
+
 ### @typescript-eslint/no-unnecessary-type-parameters
 
-Disallow type parameters that are only used once.
+Disallow type parameters that are only used once. Severity: `error`.
 
 ```ts
 // bad
@@ -2896,7 +3130,7 @@ function fn(x: unknown): void {}
 
 ### @typescript-eslint/no-unsafe-argument
 
-Disallow calling a function with a value of type `any`.
+Disallow calling a function with a value of type `any`. Severity: `error`.
 
 ```ts
 // bad
@@ -2910,7 +3144,7 @@ fn(x as ExpectedType);
 
 ### @typescript-eslint/no-unsafe-assignment
 
-Disallow assigning a value with type `any`.
+Disallow assigning a value with type `any`. Severity: `error`.
 
 ```ts
 // bad
@@ -2922,7 +3156,7 @@ const x: string = someAny as string;
 
 ### @typescript-eslint/no-unsafe-call
 
-Disallow calling a value with type `any`.
+Disallow calling a value with type `any`. Severity: `error`.
 
 ```ts
 // bad
@@ -2936,7 +3170,7 @@ x();
 
 ### @typescript-eslint/no-unsafe-declaration-merging
 
-Disallow unsafe declaration merging.
+Disallow unsafe declaration merging. Severity: `error`.
 
 ```ts
 // bad
@@ -2949,7 +3183,7 @@ class Foo {}
 
 ### @typescript-eslint/no-unsafe-enum-comparison
 
-Disallow comparing an enum value with a non-enum value.
+Disallow comparing an enum value with a non-enum value. Severity: `error`.
 
 ```ts
 // bad
@@ -2967,9 +3201,13 @@ if (status === Status.Active) {
 }
 ```
 
+### @typescript-eslint/no-unsafe-function-type
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-unsafe-function-type.html). Severity: `error`.
+
 ### @typescript-eslint/no-unsafe-member-access
 
-Disallow member access on a value with type `any`.
+Disallow member access on a value with type `any`. Severity: `error`.
 
 ```ts
 // bad
@@ -2983,7 +3221,7 @@ x.foo;
 
 ### @typescript-eslint/no-unsafe-return
 
-Disallow returning a value with type `any`.
+Disallow returning a value with type `any`. Severity: `error`.
 
 ```ts
 // bad
@@ -2997,9 +3235,13 @@ function fn(): string {
 }
 ```
 
+### @typescript-eslint/no-unsafe-type-assertion
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-unsafe-type-assertion.html). Severity: `error`.
+
 ### @typescript-eslint/no-unsafe-unary-minus
 
-Disallow unary minus on non-numeric types.
+Disallow unary minus on non-numeric types. Severity: `error`.
 
 ```ts
 // bad
@@ -3011,9 +3253,13 @@ const x = 5;
 const y = -x;
 ```
 
+### @typescript-eslint/no-useless-default-assignment
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-useless-default-assignment.html). Severity: `error`.
+
 ### @typescript-eslint/no-useless-empty-export
 
-Disallow empty exports that do not change anything in a module file.
+Disallow empty exports that do not change anything in a module file. Severity: `error`.
 
 ```ts
 // bad
@@ -3026,7 +3272,7 @@ export const x = 1;
 
 ### @typescript-eslint/no-var-requires
 
-Disallow `require` statements except in import statements.
+Disallow `require` statements except in import statements. Severity: `error`.
 
 ```ts
 // bad
@@ -3038,7 +3284,7 @@ import fs from "fs";
 
 ### @typescript-eslint/no-wrapper-object-types
 
-Disallow `String`, `Number`, `Boolean` as types.
+Disallow `String`, `Number`, `Boolean` as types. Severity: `error`.
 
 ```ts
 // bad
@@ -3050,7 +3296,7 @@ const fn = (x: string) => {};
 
 ### @typescript-eslint/only-throw-error
 
-Require throwing `Error` objects only (TypeScript version).
+Require throwing `Error` objects only (TypeScript version). Severity: `error`.
 
 ```ts
 // bad
@@ -3062,7 +3308,7 @@ throw new Error("error");
 
 ### @typescript-eslint/prefer-as-const
 
-Enforce the use of `as const` over literal types.
+Enforce the use of `as const` over literal types. Severity: `error`.
 
 ```ts
 // bad
@@ -3074,7 +3320,7 @@ const x = "hello" as const;
 
 ### @typescript-eslint/prefer-enum-initializers
 
-Require initializers for each enum member.
+Require initializers for each enum member. Severity: `error`.
 
 ```ts
 // bad
@@ -3092,7 +3338,7 @@ enum Status {
 
 ### @typescript-eslint/prefer-find
 
-Enforce using `Array.find` over `Array.filter` + index access.
+Enforce using `Array.find` over `Array.filter` + index access. Severity: `error`.
 
 ```ts
 // bad
@@ -3104,7 +3350,7 @@ const item = items.find((i) => i.id === 1);
 
 ### @typescript-eslint/prefer-for-of
 
-Enforce using `for...of` loops over standard `for` loops when the index is unused.
+Enforce using `for...of` loops over standard `for` loops when the index is unused. Severity: `error`.
 
 ```ts
 // bad
@@ -3120,7 +3366,7 @@ for (const item of arr) {
 
 ### @typescript-eslint/prefer-function-type
 
-Enforce using function types instead of interfaces with call signatures.
+Enforce using function types instead of interfaces with call signatures. Severity: `error`.
 
 ```ts
 // bad
@@ -3134,7 +3380,7 @@ type Fn = () => void;
 
 ### @typescript-eslint/prefer-includes
 
-Enforce using `includes()` over `indexOf() !== -1`.
+Enforce using `includes()` over `indexOf() !== -1`. Severity: `error`.
 
 ```ts
 // bad
@@ -3148,7 +3394,7 @@ if (arr.includes(item)) {
 
 ### @typescript-eslint/prefer-literal-enum-member
 
-Enforce that enum members are literal values.
+Enforce that enum members are literal values. Severity: `error`.
 
 ```ts
 // bad
@@ -3164,7 +3410,7 @@ enum E {
 
 ### @typescript-eslint/prefer-namespace-keyword
 
-Enforce using `namespace` keyword over `module` keyword.
+Enforce using `namespace` keyword over `module` keyword. Severity: `error`.
 
 ```ts
 // bad
@@ -3176,7 +3422,7 @@ namespace Foo {}
 
 ### @typescript-eslint/prefer-nullish-coalescing
 
-Enforce using `??` instead of `||` for nullable values.
+Enforce using `??` instead of `||` for nullable values. Severity: `error`.
 
 ```ts
 // bad
@@ -3188,7 +3434,7 @@ const x = value ?? "default";
 
 ### @typescript-eslint/prefer-optional-chain
 
-Enforce using optional chaining over nested conditions.
+Enforce using optional chaining over nested conditions. Severity: `error`.
 
 ```ts
 // bad
@@ -3198,9 +3444,13 @@ const x = foo && foo.bar && foo.bar.baz;
 const x = foo?.bar?.baz;
 ```
 
+### @typescript-eslint/prefer-promise-reject-errors
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/prefer-promise-reject-errors.html). Severity: `error`.
+
 ### @typescript-eslint/prefer-readonly
 
-Enforce that class members not modified after construction are marked `readonly`.
+Enforce that class members not modified after construction are marked `readonly`. Severity: `error`.
 
 ```ts
 // bad
@@ -3216,7 +3466,7 @@ class Foo {
 
 ### @typescript-eslint/prefer-reduce-type-parameter
 
-Enforce using type parameter over casting in `Array.reduce`.
+Enforce using type parameter over casting in `Array.reduce`. Severity: `error`.
 
 ```ts
 // bad
@@ -3228,7 +3478,7 @@ const sum = arr.reduce<number>((a, b) => a + b, 0);
 
 ### @typescript-eslint/prefer-regexp-exec
 
-Enforce using `RegExp.exec()` over `String.match()` when no global flag.
+Enforce using `RegExp.exec()` over `String.match()` when no global flag. Severity: `error`.
 
 ```ts
 // bad
@@ -3240,7 +3490,7 @@ Enforce using `RegExp.exec()` over `String.match()` when no global flag.
 
 ### @typescript-eslint/prefer-return-this-type
 
-Enforce that `this` is used as the return type when a class method returns `this`.
+Enforce that `this` is used as the return type when a class method returns `this`. Severity: `error`.
 
 ```ts
 // bad
@@ -3260,7 +3510,7 @@ class Builder {
 
 ### @typescript-eslint/prefer-string-starts-ends-with
 
-Enforce using `startsWith()` and `endsWith()` over equivalent string methods.
+Enforce using `startsWith()` and `endsWith()` over equivalent string methods. Severity: `error`.
 
 ```ts
 // bad
@@ -3274,7 +3524,7 @@ if (str.startsWith("abc")) {
 
 ### @typescript-eslint/prefer-ts-expect-error
 
-Enforce using `@ts-expect-error` over `@ts-ignore`.
+Enforce using `@ts-expect-error` over `@ts-ignore`. Severity: `error`.
 
 ```ts
 // bad
@@ -3288,7 +3538,7 @@ const x: number = "hello";
 
 ### @typescript-eslint/promise-function-async
 
-Require functions that return Promises to be marked `async`.
+Require functions that return Promises to be marked `async`. Severity: `error`.
 
 ```ts
 // bad
@@ -3302,9 +3552,13 @@ async function fn(): Promise<void> {
 }
 ```
 
+### @typescript-eslint/related-getter-setter-pairs
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/related-getter-setter-pairs.html). Severity: `error`.
+
 ### @typescript-eslint/require-array-sort-compare
 
-Require a compare function for `Array.sort()`.
+Require a compare function for `Array.sort()`. Severity: `error`.
 
 ```ts
 // bad
@@ -3314,9 +3568,13 @@ items.sort();
 items.sort((a, b) => a - b);
 ```
 
+### @typescript-eslint/require-await
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/require-await.html). Severity: `error`.
+
 ### @typescript-eslint/restrict-plus-operands
 
-Require both operands of `+` to be the same type.
+Require both operands of `+` to be the same type. Severity: `error`.
 
 ```ts
 // bad
@@ -3328,7 +3586,7 @@ const x = `count: ${5}`;
 
 ### @typescript-eslint/restrict-template-expressions
 
-Enforce template literal expressions to be of string type.
+Enforce template literal expressions to be of string type. Severity: `error`.
 
 ```ts
 // bad
@@ -3340,7 +3598,7 @@ const msg = `value: ${String(obj)}`;
 
 ### @typescript-eslint/return-await
 
-Enforce returning awaited values in specific contexts.
+Enforce returning awaited values in specific contexts. Severity: `error`.
 
 ```ts
 // bad
@@ -3354,9 +3612,17 @@ async function fn() {
 }
 ```
 
+### @typescript-eslint/strict-boolean-expressions
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/strict-boolean-expressions.html). Severity: `error`.
+
+### @typescript-eslint/strict-void-return
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/strict-void-return.html). Severity: `error`.
+
 ### @typescript-eslint/switch-exhaustiveness-check
 
-Require switch statements over unions to be exhaustive.
+Require switch statements over unions to be exhaustive. Severity: `error`.
 
 ```ts
 // bad
@@ -3378,7 +3644,7 @@ switch (x as T) {
 
 ### @typescript-eslint/triple-slash-reference
 
-Disallow triple-slash reference directives.
+Disallow triple-slash reference directives. Severity: `error`.
 
 ```ts
 // bad
@@ -3390,7 +3656,7 @@ import foo from "foo";
 
 ### @typescript-eslint/unified-signatures
 
-Enforce unified signatures for overloads that could be unified.
+Enforce unified signatures for overloads that could be unified. Severity: `error`.
 
 ```ts
 // bad
@@ -3403,7 +3669,7 @@ function fn(x: string | number): void;
 
 ### @typescript-eslint/use-unknown-in-catch-callback-variable
 
-Require `unknown` for the error parameter of Promise `.catch()` and `.then()` rejection callbacks.
+Require `unknown` for the error parameter of Promise `.catch()` and `.then()` rejection callbacks. Severity: `error`.
 
 ```ts
 // bad
@@ -3419,7 +3685,7 @@ promise.catch((err: unknown) => {
 
 ### react/button-has-type
 
-Require explicit `type` attribute on `<button>` elements.
+Require explicit `type` attribute on `<button>` elements. Severity: `error`.
 
 ```tsx
 // bad
@@ -3431,7 +3697,7 @@ Require explicit `type` attribute on `<button>` elements.
 
 ### react/checked-requires-onchange-or-readonly
 
-Require `onChange` or `readOnly` when `checked` is used.
+Require `onChange` or `readOnly` when `checked` is used. Severity: `error`.
 
 ```tsx
 // bad
@@ -3441,9 +3707,13 @@ Require `onChange` or `readOnly` when `checked` is used.
 <input type="checkbox" checked={true} onChange={handleChange} />
 ```
 
+### react/display-name
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/react/display-name.html). Severity: `error`.
+
 ### react/exhaustive-deps
 
-Verify the list of dependencies for Hooks like `useEffect` and `useCallback`.
+Verify the list of dependencies for Hooks like `useEffect` and `useCallback`. Severity: `error`.
 
 ```tsx
 // bad
@@ -3459,7 +3729,7 @@ useEffect(() => {
 
 ### react/forward-ref-uses-ref
 
-Require `forwardRef` components to use the `ref` parameter.
+Require `forwardRef` components to use the `ref` parameter. Severity: `error`.
 
 ```tsx
 // bad
@@ -3471,7 +3741,7 @@ const Comp = forwardRef((props, ref) => <div ref={ref} />);
 
 ### react/function-component-definition
 
-Enforce arrow-function components for both named and unnamed components.
+Enforce arrow-function components for both named and unnamed components. Severity: `error`.
 
 ```tsx
 // bad
@@ -3485,7 +3755,7 @@ const Card = () => <div />;
 
 ### react/iframe-missing-sandbox
 
-Require `sandbox` attribute on `<iframe>` elements.
+Require `sandbox` attribute on `<iframe>` elements. Severity: `error`.
 
 ```tsx
 // bad
@@ -3497,7 +3767,7 @@ Require `sandbox` attribute on `<iframe>` elements.
 
 ### react/jsx-boolean-value
 
-Enforce boolean attributes notation in JSX.
+Enforce boolean attributes notation in JSX. Severity: `error`.
 
 ```tsx
 // bad
@@ -3509,7 +3779,7 @@ Enforce boolean attributes notation in JSX.
 
 ### react/jsx-curly-brace-presence
 
-Enforce curly braces or disallow unnecessary curly braces in JSX.
+Enforce curly braces or disallow unnecessary curly braces in JSX. Severity: `error`.
 
 ```tsx
 // bad
@@ -3521,7 +3791,7 @@ Enforce curly braces or disallow unnecessary curly braces in JSX.
 
 ### react/jsx-fragments
 
-Enforce shorthand Fragment syntax.
+Enforce shorthand Fragment syntax. Severity: `error`.
 
 ```tsx
 // bad
@@ -3531,9 +3801,13 @@ Enforce shorthand Fragment syntax.
 <><Child /></>
 ```
 
+### react/jsx-handler-names
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-handler-names.html). Severity: `error`.
+
 ### react/jsx-key
 
-Require `key` props on elements in iterators.
+Require `key` props on elements in iterators. Severity: `error`.
 
 ```tsx
 // bad
@@ -3545,7 +3819,7 @@ items.map((item) => <li key={item.id}>{item.name}</li>);
 
 ### react/jsx-no-comment-textnodes
 
-Disallow comments as text nodes in JSX.
+Disallow comments as text nodes in JSX. Severity: `error`.
 
 ```tsx
 // bad
@@ -3557,7 +3831,7 @@ Disallow comments as text nodes in JSX.
 
 ### react/jsx-no-duplicate-props
 
-Disallow duplicate props in JSX.
+Disallow duplicate props in JSX. Severity: `error`.
 
 ```tsx
 // bad
@@ -3569,7 +3843,7 @@ Disallow duplicate props in JSX.
 
 ### react/jsx-no-script-url
 
-Disallow `javascript:` URLs in JSX.
+Disallow `javascript:` URLs in JSX. Severity: `error`.
 
 ```tsx
 // bad
@@ -3581,7 +3855,7 @@ Disallow `javascript:` URLs in JSX.
 
 ### react/jsx-no-target-blank
 
-Require `rel="noreferrer"` with `target="_blank"`.
+Require `rel="noreferrer"` with `target="_blank"`. Severity: `error`.
 
 ```tsx
 // bad
@@ -3593,7 +3867,7 @@ Require `rel="noreferrer"` with `target="_blank"`.
 
 ### react/jsx-no-undef
 
-Disallow undeclared variables in JSX.
+Disallow undeclared variables in JSX. Severity: `error`.
 
 ```tsx
 // bad
@@ -3606,7 +3880,7 @@ const App = () => <MyComponent />;
 
 ### react/jsx-no-useless-fragment
 
-Disallow unnecessary fragments.
+Disallow unnecessary fragments. Severity: `error`.
 
 ```tsx
 // bad
@@ -3618,9 +3892,17 @@ Disallow unnecessary fragments.
 }
 ```
 
+### react/jsx-pascal-case
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-pascal-case.html). Severity: `error`.
+
+### react/jsx-props-no-spread-multi
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-props-no-spread-multi.html). Severity: `error`.
+
 ### react/no-children-prop
 
-Disallow passing children as props.
+Disallow passing children as props. Severity: `error`.
 
 ```tsx
 // bad
@@ -3632,7 +3914,7 @@ Disallow passing children as props.
 
 ### react/no-clone-element
 
-Disallow `cloneElement`, a legacy API that injects props a child cannot see in its own call site. Pass the data as a prop instead.
+Disallow `cloneElement`, a legacy API that injects props a child cannot see in its own call site. Pass the data as a prop instead. Severity: `error`.
 
 ```tsx
 // bad
@@ -3644,7 +3926,7 @@ const Field = ({ disabled }) => <input disabled={disabled} />;
 
 ### react/no-danger
 
-Disallow `dangerouslySetInnerHTML`.
+Disallow `dangerouslySetInnerHTML`. Severity: `error`.
 
 ```tsx
 // bad
@@ -3656,7 +3938,7 @@ Disallow `dangerouslySetInnerHTML`.
 
 ### react/no-danger-with-children
 
-Disallow `dangerouslySetInnerHTML` alongside `children`.
+Disallow `dangerouslySetInnerHTML` alongside `children`. Severity: `error`.
 
 ```tsx
 // bad
@@ -3668,7 +3950,7 @@ Disallow `dangerouslySetInnerHTML` alongside `children`.
 
 ### react/no-did-mount-set-state
 
-Disallow `setState` in `componentDidMount`.
+Disallow `setState` in `componentDidMount`. Severity: `error`.
 
 ```tsx
 // bad
@@ -3680,7 +3962,7 @@ componentDidMount() { this.setState({ loaded: true }); }
 
 ### react/no-did-update-set-state
 
-Disallow `setState` in `componentDidUpdate`.
+Disallow `setState` in `componentDidUpdate`. Severity: `error`.
 
 ```tsx
 // bad
@@ -3692,7 +3974,7 @@ componentDidUpdate() { this.setState({ updated: true }); }
 
 ### react/no-direct-mutation-state
 
-Disallow direct mutation of `this.state`.
+Disallow direct mutation of `this.state`. Severity: `error`.
 
 ```tsx
 // bad
@@ -3704,7 +3986,7 @@ this.setState({ count: 1 });
 
 ### react/no-find-dom-node
 
-Disallow `ReactDOM.findDOMNode`.
+Disallow `ReactDOM.findDOMNode`. Severity: `error`.
 
 ```tsx
 // bad
@@ -3716,7 +3998,7 @@ const ref = useRef<HTMLDivElement>(null);
 
 ### react/no-is-mounted
 
-Disallow `isMounted`.
+Disallow `isMounted`. Severity: `error`.
 
 ```tsx
 // bad
@@ -3730,7 +4012,7 @@ if (this.isMounted()) {
 
 ### react/no-namespace
 
-Disallow React namespace syntax (e.g., `<Foo:Bar />`).
+Disallow React namespace syntax (e.g., `<Foo:Bar />`). Severity: `error`.
 
 ```tsx
 // bad
@@ -3740,9 +4022,13 @@ Disallow React namespace syntax (e.g., `<Foo:Bar />`).
 <FooBar />
 ```
 
+### react/no-object-type-as-default-prop
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/react/no-object-type-as-default-prop.html). Severity: `error`.
+
 ### react/no-redundant-should-component-update
 
-Disallow `shouldComponentUpdate` when extending `PureComponent`.
+Disallow `shouldComponentUpdate` when extending `PureComponent`. Severity: `error`.
 
 ```tsx
 // bad
@@ -3758,7 +4044,7 @@ class Foo extends PureComponent {}
 
 ### react/no-render-return-value
 
-Disallow using the return value of `ReactDOM.render`.
+Disallow using the return value of `ReactDOM.render`. Severity: `error`.
 
 ```tsx
 // bad
@@ -3768,9 +4054,13 @@ const app = ReactDOM.render(<App />, el);
 ReactDOM.render(<App />, el);
 ```
 
+### react/no-set-state
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/react/no-set-state.html). Severity: `error`.
+
 ### react/no-string-refs
 
-Disallow string refs.
+Disallow string refs. Severity: `error`.
 
 ```tsx
 // bad
@@ -3782,7 +4072,7 @@ Disallow string refs.
 
 ### react/no-this-in-sfc
 
-Disallow `this` in stateless function components.
+Disallow `this` in stateless function components. Severity: `error`.
 
 ```tsx
 // bad
@@ -3794,7 +4084,7 @@ const Comp = ({ name }: Props) => <div>{name}</div>;
 
 ### react/no-unescaped-entities
 
-Disallow unescaped HTML entities in JSX.
+Disallow unescaped HTML entities in JSX. Severity: `error`.
 
 ```tsx
 // bad
@@ -3806,7 +4096,7 @@ Disallow unescaped HTML entities in JSX.
 
 ### react/no-unknown-property
 
-Disallow unknown DOM properties.
+Disallow unknown DOM properties. Severity: `error`.
 
 ```tsx
 // bad
@@ -3818,7 +4108,7 @@ Disallow unknown DOM properties.
 
 ### react/no-unsafe
 
-Disallow usage of unsafe lifecycle methods.
+Disallow usage of unsafe lifecycle methods. Severity: `error`.
 
 ```tsx
 // bad
@@ -3830,7 +4120,7 @@ componentDidMount() {}
 
 ### react/no-unstable-nested-components
 
-Disallow creating unstable components inside components.
+Disallow creating unstable components inside components. Severity: `error`.
 
 ```tsx
 // bad
@@ -3846,7 +4136,7 @@ const Parent = () => <Child />;
 
 ### react/no-will-update-set-state
 
-Disallow `setState` in `componentWillUpdate`.
+Disallow `setState` in `componentWillUpdate`. Severity: `error`.
 
 ```tsx
 // bad
@@ -3858,7 +4148,7 @@ componentWillUpdate() { this.setState({}); }
 
 ### react/prefer-es6-class
 
-Enforce ES6 class syntax for React components.
+Enforce ES6 class syntax for React components. Severity: `error`.
 
 ```tsx
 // bad
@@ -3872,7 +4162,7 @@ class Comp extends Component {
 
 ### react/require-render-return
 
-Require `render` method to return a value.
+Require `render` method to return a value. Severity: `error`.
 
 ```tsx
 // bad
@@ -3892,7 +4182,7 @@ class Foo extends Component {
 
 ### react/rules-of-hooks
 
-Enforce Rules of Hooks.
+Enforce Rules of Hooks. Severity: `error`.
 
 ```tsx
 // bad
@@ -3906,7 +4196,7 @@ const [count, setCount] = useState(0);
 
 ### react/self-closing-comp
 
-Require self-closing tags when children are not needed.
+Require self-closing tags when children are not needed. Severity: `error`.
 
 ```tsx
 // bad
@@ -3916,9 +4206,13 @@ Require self-closing tags when children are not needed.
 <Component />
 ```
 
+### react/state-in-constructor
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/react/state-in-constructor.html). Severity: `error`.
+
 ### react/style-prop-object
 
-Enforce that the `style` prop value is an object.
+Enforce that the `style` prop value is an object. Severity: `error`.
 
 ```tsx
 // bad
@@ -3930,7 +4224,7 @@ Enforce that the `style` prop value is an object.
 
 ### react/void-dom-elements-no-children
 
-Disallow children on void DOM elements.
+Disallow children on void DOM elements. Severity: `error`.
 
 ```tsx
 // bad
@@ -4034,7 +4328,7 @@ useEffect(() => {
 
 ### react/rule-suppression
 
-Flag disabled React rules inside a component: the compiler then skips that component without saying so. Severity: `warn`.
+Flag disabled React rules inside a component. Severity: `warn`. Disabling a React rule inside a component makes the compiler skip that component entirely, silently. Warn, not error: the opt-out can be right, but it should be visible. Restriction-classified, so enabled by name.
 
 ```tsx
 // bad
@@ -4119,7 +4413,7 @@ useEffect(() => {
 
 ### unicorn/catch-error-name
 
-Enforce a specific parameter name in catch clauses.
+Enforce a specific parameter name in catch clauses. Severity: `error`.
 
 ```js
 // bad
@@ -4131,9 +4425,17 @@ try {
 } catch (error) {}
 ```
 
+### unicorn/consistent-assert
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/consistent-assert.html). Severity: `error`.
+
+### unicorn/consistent-date-clone
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/consistent-date-clone.html). Severity: `error`.
+
 ### unicorn/consistent-empty-array-spread
 
-Disallow spreading empty arrays.
+Disallow spreading empty arrays. Severity: `error`.
 
 ```js
 // bad
@@ -4145,7 +4447,7 @@ const arr = [1, 2];
 
 ### unicorn/consistent-existence-index-check
 
-Enforce consistent style for checking element existence with `indexOf`.
+Enforce consistent style for checking element existence with `indexOf`. Severity: `error`.
 
 ```js
 // bad
@@ -4159,7 +4461,7 @@ if (arr.includes(item)) {
 
 ### unicorn/consistent-function-scoping
 
-Move functions to the highest possible scope.
+Move functions to the highest possible scope. Severity: `error`.
 
 ```js
 // bad
@@ -4179,9 +4481,13 @@ function outer() {
 }
 ```
 
+### unicorn/consistent-template-literal-escape
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/consistent-template-literal-escape.html). Severity: `error`.
+
 ### unicorn/empty-brace-spaces
 
-Enforce no spaces in empty braces.
+Enforce no spaces in empty braces. Severity: `error`.
 
 ```js
 // bad
@@ -4193,7 +4499,7 @@ const obj = {};
 
 ### unicorn/error-message
 
-Require `Error` messages.
+Require `Error` messages. Severity: `error`.
 
 ```js
 // bad
@@ -4203,9 +4509,13 @@ throw new Error();
 throw new Error("Something went wrong");
 ```
 
+### unicorn/explicit-timer-delay
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/explicit-timer-delay.html). Severity: `error`.
+
 ### unicorn/filename-case
 
-Enforce kebab-case filenames.
+Enforce kebab-case filenames. Severity: `error`.
 
 ```js
 // bad
@@ -4215,9 +4525,13 @@ Enforce kebab-case filenames.
 // my-component.js
 ```
 
+### unicorn/max-nested-calls
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/max-nested-calls.html). Severity: `error`.
+
 ### unicorn/new-for-builtins
 
-Require `new` for builtins that need it, forbid for those that do not.
+Require `new` for builtins that need it, forbid for those that do not. Severity: `error`.
 
 ```js
 // bad
@@ -4231,7 +4545,7 @@ const sym = Symbol("x");
 
 ### unicorn/no-abusive-eslint-disable
 
-Disallow `eslint-disable` without specifying rules.
+Disallow `eslint-disable` without specifying rules. Severity: `error`.
 
 ```js
 // bad
@@ -4241,9 +4555,17 @@ Disallow `eslint-disable` without specifying rules.
 /* eslint-disable no-console */
 ```
 
+### unicorn/no-accessor-recursion
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-accessor-recursion.html). Severity: `error`.
+
+### unicorn/no-array-fill-with-reference-type
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-array-fill-with-reference-type.html). Severity: `error`.
+
 ### unicorn/no-array-method-this-argument
 
-Disallow using the `thisArg` argument in array methods.
+Disallow using the `thisArg` argument in array methods. Severity: `error`.
 
 ```js
 // bad
@@ -4253,9 +4575,17 @@ arr.map(fn, thisArg);
 arr.map((x) => fn.call(thisArg, x));
 ```
 
+### unicorn/no-array-reverse
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-array-reverse.html). Severity: `error`.
+
+### unicorn/no-array-sort
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-array-sort.html). Severity: `error`.
+
 ### unicorn/no-await-expression-member
 
-Disallow member access on await expressions.
+Disallow member access on await expressions. Severity: `error`.
 
 ```js
 // bad
@@ -4268,7 +4598,7 @@ const length = response.length;
 
 ### unicorn/no-await-in-promise-methods
 
-Disallow using `await` in `Promise.all`/`Promise.race` array items.
+Disallow using `await` in `Promise.all`/`Promise.race` array items. Severity: `error`.
 
 ```js
 // bad
@@ -4278,9 +4608,13 @@ await Promise.all([await fetch(a), await fetch(b)]);
 await Promise.all([fetch(a), fetch(b)]);
 ```
 
+### unicorn/no-confusing-array-with
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-confusing-array-with.html). Severity: `error`.
+
 ### unicorn/no-console-spaces
 
-Disallow leading/trailing spaces inside `console.log` parameters.
+Disallow leading/trailing spaces inside `console.log` parameters. Severity: `error`.
 
 ```js
 // bad
@@ -4292,7 +4626,7 @@ console.log("hello");
 
 ### unicorn/no-document-cookie
 
-Disallow `document.cookie` direct access.
+Disallow `document.cookie` direct access. Severity: `error`.
 
 ```js
 // bad
@@ -4304,7 +4638,7 @@ document.cookie = "key=value";
 
 ### unicorn/no-empty-file
 
-Disallow empty files.
+Disallow empty files. Severity: `error`.
 
 ```js
 // bad
@@ -4316,7 +4650,7 @@ export const EMPTY = "";
 
 ### unicorn/no-hex-escape
 
-Enforce using Unicode escapes instead of hexadecimal escapes.
+Enforce using Unicode escapes instead of hexadecimal escapes. Severity: `error`.
 
 ```js
 // bad
@@ -4326,9 +4660,13 @@ const str = "\x1B";
 const str = "\u001B";
 ```
 
+### unicorn/no-immediate-mutation
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-immediate-mutation.html). Severity: `error`.
+
 ### unicorn/no-instanceof-array
 
-Require `Array.isArray()` instead of `instanceof Array`.
+Require `Array.isArray()` instead of `instanceof Array`. Severity: `error`.
 
 ```js
 // bad
@@ -4340,9 +4678,13 @@ if (Array.isArray(x)) {
 }
 ```
 
+### unicorn/no-instanceof-builtins
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-instanceof-builtins.html). Severity: `error`.
+
 ### unicorn/no-invalid-fetch-options
 
-Disallow invalid options in `fetch()`.
+Disallow invalid options in `fetch()`. Severity: `error`.
 
 ```js
 // bad
@@ -4354,7 +4696,7 @@ fetch(url, { signal: AbortSignal.timeout(5000) });
 
 ### unicorn/no-invalid-remove-event-listener
 
-Prevent invalid `removeEventListener` calls.
+Prevent invalid `removeEventListener` calls. Severity: `error`.
 
 ```js
 // bad
@@ -4368,7 +4710,7 @@ el.removeEventListener("click", handler);
 
 ### unicorn/no-length-as-slice-end
 
-Disallow using `.length` as the end argument in `slice()`.
+Disallow using `.length` as the end argument in `slice()`. Severity: `error`.
 
 ```js
 // bad
@@ -4380,7 +4722,7 @@ const sub = arr.slice(1);
 
 ### unicorn/no-lonely-if
 
-Disallow `if` as the only statement in `else`.
+Disallow `if` as the only statement in `else`. Severity: `error`.
 
 ```js
 // bad
@@ -4398,7 +4740,7 @@ if (a) {
 
 ### unicorn/no-magic-array-flat-depth
 
-Disallow magic numbers as `flat()` depth argument.
+Disallow magic numbers as `flat()` depth argument. Severity: `error`.
 
 ```js
 // bad
@@ -4410,7 +4752,7 @@ arr.flat(Infinity);
 
 ### unicorn/no-negated-condition
 
-Simplify negated conditions.
+Simplify negated conditions. Severity: `error`.
 
 ```js
 // bad
@@ -4430,7 +4772,7 @@ if (x) {
 
 ### unicorn/no-negation-in-equality-check
 
-Disallow negation in equality checks.
+Disallow negation in equality checks. Severity: `error`.
 
 ```js
 // bad
@@ -4444,7 +4786,7 @@ if (x !== y) {
 
 ### unicorn/no-new-array
 
-Disallow `new Array()`.
+Disallow `new Array()`. Severity: `error`.
 
 ```js
 // bad
@@ -4456,7 +4798,7 @@ const arr = Array.from({ length: 10 });
 
 ### unicorn/no-new-buffer
 
-Disallow `new Buffer()`.
+Disallow `new Buffer()`. Severity: `error`.
 
 ```js
 // bad
@@ -4468,7 +4810,7 @@ const buf = Buffer.from("abc");
 
 ### unicorn/no-object-as-default-parameter
 
-Disallow objects as default parameter values.
+Disallow objects as default parameter values. Severity: `error`.
 
 ```js
 // bad
@@ -4480,7 +4822,7 @@ function fn({ x = 1 } = {}) {}
 
 ### unicorn/no-process-exit
 
-Disallow `process.exit()`.
+Disallow `process.exit()`. Severity: `error`.
 
 ```js
 // bad
@@ -4492,7 +4834,7 @@ throw new Error("Fatal error");
 
 ### unicorn/no-single-promise-in-promise-methods
 
-Disallow passing a single-element array to `Promise.all`.
+Disallow passing a single-element array to `Promise.all`. Severity: `error`.
 
 ```js
 // bad
@@ -4504,7 +4846,7 @@ await fetchData();
 
 ### unicorn/no-static-only-class
 
-Disallow classes with only static members.
+Disallow classes with only static members. Severity: `error`.
 
 ```js
 // bad
@@ -4518,7 +4860,7 @@ const format = () => {};
 
 ### unicorn/no-thenable
 
-Disallow `then` property on objects.
+Disallow `then` property on objects. Severity: `error`.
 
 ```js
 // bad
@@ -4530,7 +4872,7 @@ const obj = { resolve() {} };
 
 ### unicorn/no-this-assignment
 
-Disallow assigning `this` to a variable.
+Disallow assigning `this` to a variable. Severity: `error`.
 
 ```js
 // bad
@@ -4542,7 +4884,7 @@ const fn = () => this.value;
 
 ### unicorn/no-typeof-undefined
 
-Prefer direct comparison over `typeof x === 'undefined'`.
+Prefer direct comparison over `typeof x === 'undefined'`. Severity: `error`.
 
 ```js
 // bad
@@ -4554,9 +4896,17 @@ if (x === undefined) {
 }
 ```
 
+### unicorn/no-unnecessary-array-flat-depth
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-unnecessary-array-flat-depth.html). Severity: `error`.
+
+### unicorn/no-unnecessary-array-splice-count
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-unnecessary-array-splice-count.html). Severity: `error`.
+
 ### unicorn/no-unnecessary-await
 
-Disallow awaiting non-promise values.
+Disallow awaiting non-promise values. Severity: `error`.
 
 ```js
 // bad
@@ -4566,9 +4916,13 @@ const x = await "hello";
 const x = "hello";
 ```
 
+### unicorn/no-unnecessary-slice-end
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-unnecessary-slice-end.html). Severity: `error`.
+
 ### unicorn/no-unreadable-array-destructuring
 
-Disallow unreadable array destructuring.
+Disallow unreadable array destructuring. Severity: `error`.
 
 ```js
 // bad
@@ -4580,7 +4934,7 @@ const z = arr[2];
 
 ### unicorn/no-unreadable-iife
 
-Disallow unreadable IIFEs.
+Disallow unreadable IIFEs. Severity: `error`.
 
 ```js
 // bad
@@ -4591,9 +4945,13 @@ const fn = () => {};
 const x = fn();
 ```
 
+### unicorn/no-useless-collection-argument
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-useless-collection-argument.html). Severity: `error`.
+
 ### unicorn/no-useless-error-capture-stack-trace
 
-Disallow `Error.captureStackTrace` in an `Error` subclass constructor, where the engine has already captured the stack.
+Disallow `Error.captureStackTrace` in an `Error` subclass constructor, where the engine has already captured the stack. Severity: `error`.
 
 ```ts
 // bad
@@ -4615,7 +4973,7 @@ class ApiError extends Error {
 
 ### unicorn/no-useless-fallback-in-spread
 
-Disallow useless fallback in spread.
+Disallow useless fallback in spread. Severity: `error`.
 
 ```js
 // bad
@@ -4627,7 +4985,7 @@ const obj = { ...x };
 
 ### unicorn/no-useless-length-check
 
-Disallow useless `length` check before array iteration.
+Disallow useless `length` check before array iteration. Severity: `error`.
 
 ```js
 // bad
@@ -4639,7 +4997,7 @@ arr.forEach(fn);
 
 ### unicorn/no-useless-promise-resolve-reject
 
-Disallow unnecessary `Promise.resolve` or `Promise.reject`.
+Disallow unnecessary `Promise.resolve` or `Promise.reject`. Severity: `error`.
 
 ```js
 // bad
@@ -4655,7 +5013,7 @@ async function fn() {
 
 ### unicorn/no-useless-spread
 
-Disallow unnecessary spread.
+Disallow unnecessary spread. Severity: `error`.
 
 ```js
 // bad
@@ -4667,7 +5025,7 @@ const arr = [1, 2, 3];
 
 ### unicorn/no-useless-switch-case
 
-Disallow useless switch cases.
+Disallow useless switch cases. Severity: `error`.
 
 ```js
 // bad
@@ -4689,7 +5047,7 @@ switch (x) {
 
 ### unicorn/numeric-separators-style
 
-Enforce consistent style for numeric separators.
+Enforce consistent style for numeric separators. Severity: `error`.
 
 ```js
 // bad
@@ -4701,7 +5059,7 @@ const x = 1_000_000;
 
 ### unicorn/prefer-add-event-listener
 
-Prefer `addEventListener` over `on*` properties.
+Prefer `addEventListener` over `on*` properties. Severity: `error`.
 
 ```js
 // bad
@@ -4713,7 +5071,7 @@ el.addEventListener("click", handler);
 
 ### unicorn/prefer-array-find
 
-Prefer `.find()` over `.filter()[0]`.
+Prefer `.find()` over `.filter()[0]`. Severity: `error`.
 
 ```js
 // bad
@@ -4725,7 +5083,7 @@ const item = arr.find((x) => x.id === 1);
 
 ### unicorn/prefer-array-flat
 
-Prefer `.flat()` over legacy flattening.
+Prefer `.flat()` over legacy flattening. Severity: `error`.
 
 ```js
 // bad
@@ -4737,7 +5095,7 @@ const flat = nested.flat();
 
 ### unicorn/prefer-array-flat-map
 
-Prefer `.flatMap()` over `.map().flat()`.
+Prefer `.flatMap()` over `.map().flat()`. Severity: `error`.
 
 ```js
 // bad
@@ -4749,7 +5107,7 @@ const result = arr.flatMap(fn);
 
 ### unicorn/prefer-array-index-of
 
-Prefer `.indexOf()` over `.findIndex()` for simple value lookups.
+Prefer `.indexOf()` over `.findIndex()` for simple value lookups. Severity: `error`.
 
 ```js
 // bad
@@ -4761,7 +5119,7 @@ arr.indexOf(val);
 
 ### unicorn/prefer-array-some
 
-Prefer `.some()` over `.find()` or `.filter().length`.
+Prefer `.some()` over `.find()` or `.filter().length`. Severity: `error`.
 
 ```js
 // bad
@@ -4775,7 +5133,7 @@ if (arr.some((x) => x > 0)) {
 
 ### unicorn/prefer-at
 
-Prefer `.at()` for index access.
+Prefer `.at()` for index access. Severity: `error`.
 
 ```js
 // bad
@@ -4785,9 +5143,13 @@ const last = arr[arr.length - 1];
 const last = arr.at(-1);
 ```
 
+### unicorn/prefer-bigint-literals
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/prefer-bigint-literals.html). Severity: `error`.
+
 ### unicorn/prefer-blob-reading-methods
 
-Prefer `Blob` reading methods over `FileReader`.
+Prefer `Blob` reading methods over `FileReader`. Severity: `error`.
 
 ```js
 // bad
@@ -4798,9 +5160,17 @@ reader.readAsText(blob);
 const text = await blob.text();
 ```
 
+### unicorn/prefer-class-fields
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/prefer-class-fields.html). Severity: `error`.
+
+### unicorn/prefer-classlist-toggle
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/prefer-classlist-toggle.html). Severity: `error`.
+
 ### unicorn/prefer-code-point
 
-Prefer `codePointAt` over `charCodeAt` and `String.fromCodePoint` over `String.fromCharCode`.
+Prefer `codePointAt` over `charCodeAt` and `String.fromCodePoint` over `String.fromCharCode`. Severity: `error`.
 
 ```js
 // bad
@@ -4812,7 +5182,7 @@ str.codePointAt(0);
 
 ### unicorn/prefer-date-now
 
-Prefer `Date.now()` over `new Date().getTime()`.
+Prefer `Date.now()` over `new Date().getTime()`. Severity: `error`.
 
 ```js
 // bad
@@ -4822,9 +5192,13 @@ const now = new Date().getTime();
 const now = Date.now();
 ```
 
+### unicorn/prefer-default-parameters
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/prefer-default-parameters.html). Severity: `error`.
+
 ### unicorn/prefer-dom-node-append
 
-Prefer `Node.append()` over `Node.appendChild()`.
+Prefer `Node.append()` over `Node.appendChild()`. Severity: `error`.
 
 ```js
 // bad
@@ -4836,7 +5210,7 @@ parent.append(child);
 
 ### unicorn/prefer-dom-node-dataset
 
-Prefer `dataset` over `setAttribute`/`getAttribute` for data attributes.
+Prefer `dataset` over `setAttribute`/`getAttribute` for data attributes. Severity: `error`.
 
 ```js
 // bad
@@ -4848,7 +5222,7 @@ el.dataset.id = "123";
 
 ### unicorn/prefer-dom-node-remove
 
-Prefer `childNode.remove()` over `parentNode.removeChild(childNode)`.
+Prefer `childNode.remove()` over `parentNode.removeChild(childNode)`. Severity: `error`.
 
 ```js
 // bad
@@ -4860,7 +5234,7 @@ child.remove();
 
 ### unicorn/prefer-dom-node-text-content
 
-Prefer `textContent` over `innerText`.
+Prefer `textContent` over `innerText`. Severity: `error`.
 
 ```js
 // bad
@@ -4872,7 +5246,7 @@ el.textContent = "hello";
 
 ### unicorn/prefer-event-target
 
-Prefer `EventTarget` over `EventEmitter`.
+Prefer `EventTarget` over `EventEmitter`. Severity: `error`.
 
 ```js
 // bad
@@ -4882,9 +5256,17 @@ class Bus extends EventEmitter {}
 class Bus extends EventTarget {}
 ```
 
+### unicorn/prefer-export-from
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/prefer-export-from.html). Severity: `error`.
+
+### unicorn/prefer-import-meta-properties
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/prefer-import-meta-properties.html). Severity: `error`.
+
 ### unicorn/prefer-includes
 
-Prefer `includes()` over `indexOf() !== -1`.
+Prefer `includes()` over `indexOf() !== -1`. Severity: `error`.
 
 ```js
 // bad
@@ -4898,7 +5280,7 @@ if (arr.includes(x)) {
 
 ### unicorn/prefer-keyboard-event-key
 
-Prefer `KeyboardEvent.key` over `keyCode`.
+Prefer `KeyboardEvent.key` over `keyCode`. Severity: `error`.
 
 ```js
 // bad
@@ -4912,7 +5294,7 @@ if (event.key === "Enter") {
 
 ### unicorn/prefer-logical-operator-over-ternary
 
-Prefer logical operators over ternary when possible.
+Prefer logical operators over ternary when possible. Severity: `error`.
 
 ```js
 // bad
@@ -4924,7 +5306,7 @@ const x = a || b;
 
 ### unicorn/prefer-math-min-max
 
-Prefer `Math.min`/`Math.max` over ternaries for clamping.
+Prefer `Math.min`/`Math.max` over ternaries for clamping. Severity: `error`.
 
 ```js
 // bad
@@ -4936,7 +5318,7 @@ const clamped = Math.min(x, max);
 
 ### unicorn/prefer-math-trunc
 
-Prefer `Math.trunc` over bitwise alternatives.
+Prefer `Math.trunc` over bitwise alternatives. Severity: `error`.
 
 ```js
 // bad
@@ -4948,7 +5330,7 @@ const int = Math.trunc(x);
 
 ### unicorn/prefer-modern-dom-apis
 
-Prefer modern DOM APIs.
+Prefer modern DOM APIs. Severity: `error`.
 
 ```js
 // bad
@@ -4960,7 +5342,7 @@ refNode.before(newNode);
 
 ### unicorn/prefer-modern-math-apis
 
-Prefer modern `Math` APIs.
+Prefer modern `Math` APIs. Severity: `error`.
 
 ```js
 // bad
@@ -4972,7 +5354,7 @@ const hyp = Math.hypot(x, y);
 
 ### unicorn/prefer-native-coercion-functions
 
-Prefer native coercion functions over wrappers.
+Prefer native coercion functions over wrappers. Severity: `error`.
 
 ```js
 // bad
@@ -4984,7 +5366,7 @@ const toStr = String;
 
 ### unicorn/prefer-negative-index
 
-Prefer negative index over length-based index.
+Prefer negative index over length-based index. Severity: `error`.
 
 ```js
 // bad
@@ -4996,7 +5378,7 @@ const last = str.slice(-3);
 
 ### unicorn/prefer-node-protocol
 
-Prefer `node:` protocol for built-in modules.
+Prefer `node:` protocol for built-in modules. Severity: `error`.
 
 ```js
 // bad
@@ -5006,9 +5388,13 @@ import fs from "fs";
 import fs from "node:fs";
 ```
 
+### unicorn/prefer-number-coercion
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/prefer-number-coercion.html). Severity: `error`.
+
 ### unicorn/prefer-number-properties
 
-Prefer `Number` static properties over global ones.
+Prefer `Number` static properties over global ones. Severity: `error`.
 
 ```js
 // bad
@@ -5022,7 +5408,7 @@ if (Number.isNaN(x)) {
 
 ### unicorn/prefer-object-from-entries
 
-Prefer `Object.fromEntries` over manual construction.
+Prefer `Object.fromEntries` over manual construction. Severity: `error`.
 
 ```js
 // bad
@@ -5037,7 +5423,7 @@ const obj = Object.fromEntries(pairs);
 
 ### unicorn/prefer-optional-catch-binding
 
-Prefer omitting the catch binding when unused.
+Prefer omitting the catch binding when unused. Severity: `error`.
 
 ```js
 // bad
@@ -5055,7 +5441,7 @@ try {
 
 ### unicorn/prefer-prototype-methods
 
-Prefer borrowing methods from the prototype.
+Prefer borrowing methods from the prototype. Severity: `error`.
 
 ```js
 // bad
@@ -5067,7 +5453,7 @@ const hasOwn = Object.prototype.hasOwnProperty;
 
 ### unicorn/prefer-query-selector
 
-Prefer `querySelector`/`querySelectorAll` over older methods.
+Prefer `querySelector`/`querySelectorAll` over older methods. Severity: `error`.
 
 ```js
 // bad
@@ -5079,7 +5465,7 @@ document.querySelector("#app");
 
 ### unicorn/prefer-reflect-apply
 
-Prefer `Reflect.apply` over `Function.prototype.apply`.
+Prefer `Reflect.apply` over `Function.prototype.apply`. Severity: `error`.
 
 ```js
 // bad
@@ -5091,7 +5477,7 @@ Reflect.apply(fn, ctx, args);
 
 ### unicorn/prefer-regexp-test
 
-Prefer `RegExp.test()` over `String.match()` for boolean results.
+Prefer `RegExp.test()` over `String.match()` for boolean results. Severity: `error`.
 
 ```js
 // bad
@@ -5103,9 +5489,13 @@ if (/ell/.test("hello")) {
 }
 ```
 
+### unicorn/prefer-response-static-json
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/prefer-response-static-json.html). Severity: `error`.
+
 ### unicorn/prefer-set-has
 
-Prefer `Set.has()` over `Array.includes()` for large lists.
+Prefer `Set.has()` over `Array.includes()` for large lists. Severity: `error`.
 
 ```js
 // bad
@@ -5119,7 +5509,7 @@ items.has(2);
 
 ### unicorn/prefer-set-size
 
-Prefer `Set.size` over converting to array and checking length.
+Prefer `Set.size` over converting to array and checking length. Severity: `error`.
 
 ```js
 // bad
@@ -5129,9 +5519,13 @@ Prefer `Set.size` over converting to array and checking length.
 set.size;
 ```
 
+### unicorn/prefer-single-call
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/prefer-single-call.html). Severity: `error`.
+
 ### unicorn/prefer-spread
 
-Prefer spread over `Array.from` and `concat`.
+Prefer spread over `Array.from` and `concat`. Severity: `error`.
 
 ```js
 // bad
@@ -5143,7 +5537,7 @@ Array.from(iterable);
 
 ### unicorn/prefer-string-raw
 
-Prefer `String.raw` for strings with backslashes.
+Prefer `String.raw` for strings with backslashes. Severity: `error`.
 
 ```js
 // bad
@@ -5155,7 +5549,7 @@ const path = String.raw`C:\Users\foo`;
 
 ### unicorn/prefer-string-replace-all
 
-Prefer `replaceAll` over `replace` with global regex.
+Prefer `replaceAll` over `replace` with global regex. Severity: `error`.
 
 ```js
 // bad
@@ -5167,7 +5561,7 @@ str.replaceAll("foo", "bar");
 
 ### unicorn/prefer-string-slice
 
-Prefer `slice` over `substring`.
+Prefer `slice` over `substring`. Severity: `error`.
 
 ```js
 // bad
@@ -5179,7 +5573,7 @@ str.slice(1, 3);
 
 ### unicorn/prefer-string-starts-ends-with
 
-Prefer `startsWith`/`endsWith` over regex or index checks.
+Prefer `startsWith`/`endsWith` over regex or index checks. Severity: `error`.
 
 ```js
 // bad
@@ -5193,7 +5587,7 @@ if (str.startsWith("abc")) {
 
 ### unicorn/prefer-string-trim-start-end
 
-Prefer `trimStart`/`trimEnd` over `trimLeft`/`trimRight`.
+Prefer `trimStart`/`trimEnd` over `trimLeft`/`trimRight`. Severity: `error`.
 
 ```js
 // bad
@@ -5205,7 +5599,7 @@ str.trimStart();
 
 ### unicorn/prefer-structured-clone
 
-Prefer `structuredClone` over `JSON.parse(JSON.stringify())`.
+Prefer `structuredClone` over `JSON.parse(JSON.stringify())`. Severity: `error`.
 
 ```js
 // bad
@@ -5217,7 +5611,7 @@ const copy = structuredClone(obj);
 
 ### unicorn/prefer-ternary
 
-Prefer ternary over simple `if-else` assignments.
+Prefer ternary over simple `if-else` assignments. Severity: `error`.
 
 ```js
 // bad
@@ -5234,7 +5628,7 @@ const x = cond ? "a" : "b";
 
 ### unicorn/prefer-top-level-await
 
-Prefer top-level await over IIFEs.
+Prefer top-level await over IIFEs. Severity: `error`.
 
 ```js
 // bad
@@ -5248,7 +5642,7 @@ await setup();
 
 ### unicorn/prefer-type-error
 
-Throw `TypeError` for type-checking conditions.
+Throw `TypeError` for type-checking conditions. Severity: `error`.
 
 ```js
 // bad
@@ -5260,7 +5654,7 @@ if (typeof x !== "string") throw new TypeError("Expected string");
 
 ### unicorn/relative-url-style
 
-Enforce consistent style for relative URL strings.
+Enforce consistent style for relative URL strings. Severity: `error`.
 
 ```js
 // bad
@@ -5272,7 +5666,7 @@ new URL("foo", base);
 
 ### unicorn/require-array-join-separator
 
-Require a separator argument in `Array.join()`.
+Require a separator argument in `Array.join()`. Severity: `error`.
 
 ```js
 // bad
@@ -5282,9 +5676,17 @@ arr.join();
 arr.join(",");
 ```
 
+### unicorn/require-module-attributes
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/require-module-attributes.html). Severity: `error`.
+
+### unicorn/require-module-specifiers
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/require-module-specifiers.html). Severity: `error`.
+
 ### unicorn/require-number-to-fixed-digits-argument
 
-Require a digits argument in `Number.toFixed()`.
+Require a digits argument in `Number.toFixed()`. Severity: `error`.
 
 ```js
 // bad
@@ -5296,7 +5698,7 @@ num.toFixed(2);
 
 ### unicorn/require-post-message-target-origin
 
-Require a `targetOrigin` argument in `postMessage`.
+Require a `targetOrigin` argument in `postMessage`. Severity: `error`.
 
 ```js
 // bad
@@ -5308,7 +5710,7 @@ window.postMessage(data, "https://example.com");
 
 ### unicorn/switch-case-braces
 
-Require braces in `switch` cases.
+Require braces in `switch` cases. Severity: `error`.
 
 ```js
 // bad
@@ -5327,9 +5729,13 @@ switch (x) {
 }
 ```
 
+### unicorn/switch-case-break-position
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/switch-case-break-position.html). Severity: `error`.
+
 ### unicorn/text-encoding-identifier-case
 
-Enforce correct case for text encoding identifiers.
+Enforce correct case for text encoding identifiers. Severity: `error`.
 
 ```js
 // bad
@@ -5341,7 +5747,7 @@ new TextDecoder("utf-8");
 
 ### unicorn/throw-new-error
 
-Require `new` when throwing errors.
+Require `new` when throwing errors. Severity: `error`.
 
 ```js
 // bad
@@ -5355,7 +5761,7 @@ throw new Error("fail");
 
 ### jsx-a11y/alt-text
 
-Require `alt` text on images and other elements.
+Require `alt` text on images and other elements. Severity: `error`.
 
 ```jsx
 // bad
@@ -5367,7 +5773,7 @@ Require `alt` text on images and other elements.
 
 ### jsx-a11y/anchor-ambiguous-text
 
-Disallow ambiguous link text like "click here".
+Disallow ambiguous link text like "click here". Severity: `error`.
 
 ```jsx
 // bad
@@ -5379,7 +5785,7 @@ Disallow ambiguous link text like "click here".
 
 ### jsx-a11y/anchor-has-content
 
-Require anchors to have content.
+Require anchors to have content. Severity: `error`.
 
 ```jsx
 // bad
@@ -5391,7 +5797,7 @@ Require anchors to have content.
 
 ### jsx-a11y/anchor-is-valid
 
-Enforce valid `href` values on anchors.
+Enforce valid `href` values on anchors. Severity: `error`.
 
 ```jsx
 // bad
@@ -5403,7 +5809,7 @@ Enforce valid `href` values on anchors.
 
 ### jsx-a11y/aria-activedescendant-has-tabindex
 
-Require `tabIndex` on elements with `aria-activedescendant`.
+Require `tabIndex` on elements with `aria-activedescendant`. Severity: `error`.
 
 ```jsx
 // bad
@@ -5415,7 +5821,7 @@ Require `tabIndex` on elements with `aria-activedescendant`.
 
 ### jsx-a11y/aria-props
 
-Enforce valid ARIA props.
+Enforce valid ARIA props. Severity: `error`.
 
 ```jsx
 // bad
@@ -5425,9 +5831,13 @@ Enforce valid ARIA props.
 <div aria-label="Menu" />
 ```
 
+### jsx-a11y/aria-proptypes
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/aria-proptypes.html). Severity: `error`.
+
 ### jsx-a11y/aria-role
 
-Enforce valid ARIA roles.
+Enforce valid ARIA roles. Severity: `error`.
 
 ```jsx
 // bad
@@ -5439,7 +5849,7 @@ Enforce valid ARIA roles.
 
 ### jsx-a11y/aria-unsupported-elements
 
-Disallow ARIA attributes on elements that do not support them.
+Disallow ARIA attributes on elements that do not support them. Severity: `error`.
 
 ```jsx
 // bad
@@ -5451,7 +5861,7 @@ Disallow ARIA attributes on elements that do not support them.
 
 ### jsx-a11y/autocomplete-valid
 
-Enforce valid `autocomplete` attribute values.
+Enforce valid `autocomplete` attribute values. Severity: `error`.
 
 ```jsx
 // bad
@@ -5463,7 +5873,7 @@ Enforce valid `autocomplete` attribute values.
 
 ### jsx-a11y/click-events-have-key-events
 
-Require keyboard event handlers alongside `onClick`.
+Require keyboard event handlers alongside `onClick`. Severity: `error`.
 
 ```jsx
 // bad
@@ -5473,9 +5883,13 @@ Require keyboard event handlers alongside `onClick`.
 <div onClick={handleClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} />
 ```
 
+### jsx-a11y/control-has-associated-label
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/control-has-associated-label.html). Severity: `error`.
+
 ### jsx-a11y/heading-has-content
 
-Require headings to have content.
+Require headings to have content. Severity: `error`.
 
 ```jsx
 // bad
@@ -5487,7 +5901,7 @@ Require headings to have content.
 
 ### jsx-a11y/html-has-lang
 
-Require `lang` attribute on `<html>`.
+Require `lang` attribute on `<html>`. Severity: `error`.
 
 ```jsx
 // bad
@@ -5499,7 +5913,7 @@ Require `lang` attribute on `<html>`.
 
 ### jsx-a11y/iframe-has-title
 
-Require `title` attribute on `<iframe>`.
+Require `title` attribute on `<iframe>`. Severity: `error`.
 
 ```jsx
 // bad
@@ -5511,7 +5925,7 @@ Require `title` attribute on `<iframe>`.
 
 ### jsx-a11y/img-redundant-alt
 
-Disallow "image" or "photo" in `alt` text.
+Disallow "image" or "photo" in `alt` text. Severity: `error`.
 
 ```jsx
 // bad
@@ -5523,7 +5937,7 @@ Disallow "image" or "photo" in `alt` text.
 
 ### jsx-a11y/interactive-supports-focus
 
-Require focus support on interactive elements.
+Require focus support on interactive elements. Severity: `error`.
 
 ```jsx
 // bad
@@ -5535,7 +5949,7 @@ Require focus support on interactive elements.
 
 ### jsx-a11y/label-has-associated-control
 
-Require labels to be associated with a control.
+Require labels to be associated with a control. Severity: `error`.
 
 ```jsx
 // bad
@@ -5547,9 +5961,13 @@ Require labels to be associated with a control.
 <input id="name" />
 ```
 
+### jsx-a11y/lang
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/lang.html). Severity: `error`.
+
 ### jsx-a11y/media-has-caption
 
-Require `<track>` elements for `<video>` and `<audio>`.
+Require `<track>` elements for `<video>` and `<audio>`. Severity: `error`.
 
 ```jsx
 // bad
@@ -5563,7 +5981,7 @@ Require `<track>` elements for `<video>` and `<audio>`.
 
 ### jsx-a11y/mouse-events-have-key-events
 
-Require keyboard events alongside mouse events.
+Require keyboard events alongside mouse events. Severity: `error`.
 
 ```jsx
 // bad
@@ -5575,7 +5993,7 @@ Require keyboard events alongside mouse events.
 
 ### jsx-a11y/no-access-key
 
-Disallow `accessKey` prop on elements.
+Disallow `accessKey` prop on elements. Severity: `error`.
 
 ```jsx
 // bad
@@ -5587,7 +6005,7 @@ Disallow `accessKey` prop on elements.
 
 ### jsx-a11y/no-aria-hidden-on-focusable
 
-Disallow `aria-hidden` on focusable elements.
+Disallow `aria-hidden` on focusable elements. Severity: `error`.
 
 ```jsx
 // bad
@@ -5599,7 +6017,7 @@ Disallow `aria-hidden` on focusable elements.
 
 ### jsx-a11y/no-autofocus
 
-Disallow `autoFocus` prop.
+Disallow `autoFocus` prop. Severity: `error`.
 
 ```jsx
 // bad
@@ -5611,7 +6029,7 @@ Disallow `autoFocus` prop.
 
 ### jsx-a11y/no-distracting-elements
 
-Disallow `<marquee>` and `<blink>`.
+Disallow `<marquee>` and `<blink>`. Severity: `error`.
 
 ```jsx
 // bad
@@ -5623,7 +6041,7 @@ Disallow `<marquee>` and `<blink>`.
 
 ### jsx-a11y/no-interactive-element-to-noninteractive-role
 
-Disallow interactive elements with non-interactive roles.
+Disallow interactive elements with non-interactive roles. Severity: `error`.
 
 ```jsx
 // bad
@@ -5635,7 +6053,7 @@ Disallow interactive elements with non-interactive roles.
 
 ### jsx-a11y/no-noninteractive-element-interactions
 
-Disallow event handlers on non-interactive elements.
+Disallow event handlers on non-interactive elements. Severity: `error`.
 
 ```jsx
 // bad
@@ -5647,7 +6065,7 @@ Disallow event handlers on non-interactive elements.
 
 ### jsx-a11y/no-noninteractive-element-to-interactive-role
 
-Disallow non-interactive elements with interactive roles.
+Disallow non-interactive elements with interactive roles. Severity: `error`.
 
 ```jsx
 // bad
@@ -5659,7 +6077,7 @@ Disallow non-interactive elements with interactive roles.
 
 ### jsx-a11y/no-noninteractive-tabindex
 
-Disallow `tabIndex` on non-interactive elements.
+Disallow `tabIndex` on non-interactive elements. Severity: `error`.
 
 ```jsx
 // bad
@@ -5671,7 +6089,7 @@ Disallow `tabIndex` on non-interactive elements.
 
 ### jsx-a11y/no-redundant-roles
 
-Disallow redundant roles on elements.
+Disallow redundant roles on elements. Severity: `error`.
 
 ```jsx
 // bad
@@ -5681,9 +6099,13 @@ Disallow redundant roles on elements.
 <button type="button">Click</button>
 ```
 
+### jsx-a11y/no-static-element-interactions
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/no-static-element-interactions.html). Severity: `error`.
+
 ### jsx-a11y/prefer-tag-over-role
 
-Prefer semantic HTML elements over ARIA roles.
+Prefer semantic HTML elements over ARIA roles. Severity: `error`.
 
 ```jsx
 // bad
@@ -5695,7 +6117,7 @@ Prefer semantic HTML elements over ARIA roles.
 
 ### jsx-a11y/role-has-required-aria-props
 
-Require ARIA props for roles that need them.
+Require ARIA props for roles that need them. Severity: `error`.
 
 ```jsx
 // bad
@@ -5707,7 +6129,7 @@ Require ARIA props for roles that need them.
 
 ### jsx-a11y/role-supports-aria-props
 
-Enforce ARIA props are valid for the element role.
+Enforce ARIA props are valid for the element role. Severity: `error`.
 
 ```jsx
 // bad
@@ -5719,7 +6141,7 @@ Enforce ARIA props are valid for the element role.
 
 ### jsx-a11y/scope
 
-Enforce `scope` prop is only used on `<th>`.
+Enforce `scope` prop is only used on `<th>`. Severity: `error`.
 
 ```jsx
 // bad
@@ -5731,7 +6153,7 @@ Enforce `scope` prop is only used on `<th>`.
 
 ### jsx-a11y/tabindex-no-positive
 
-Disallow positive `tabIndex` values.
+Disallow positive `tabIndex` values. Severity: `error`.
 
 ```jsx
 // bad
@@ -5745,7 +6167,7 @@ Disallow positive `tabIndex` values.
 
 ### import/default
 
-Ensure a default export is present when importing default.
+Ensure a default export is present when importing default. Severity: `error`.
 
 ```js
 // bad
@@ -5757,7 +6179,7 @@ import foo from "./has-default-export";
 
 ### import/export
 
-Disallow duplicate or ambiguous exports.
+Disallow duplicate or ambiguous exports. Severity: `error`.
 
 ```js
 // bad
@@ -5771,7 +6193,7 @@ export const y = 2;
 
 ### import/namespace
 
-Ensure namespace imports do not dereference non-existent properties.
+Ensure namespace imports do not dereference non-existent properties. Severity: `error`.
 
 ```js
 // bad
@@ -5783,9 +6205,13 @@ import * as mod from "./module";
 mod.exported;
 ```
 
+### import/newline-after-import
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/import/newline-after-import.html). Severity: `error`.
+
 ### import/no-absolute-path
 
-Disallow importing with absolute file paths.
+Disallow importing with absolute file paths. Severity: `error`.
 
 ```js
 // bad
@@ -5797,7 +6223,7 @@ import foo from "./foo";
 
 ### import/no-amd
 
-Disallow AMD `require` and `define` calls.
+Disallow AMD `require` and `define` calls. Severity: `error`.
 
 ```js
 // bad
@@ -5809,7 +6235,7 @@ import dep from "dep";
 
 ### import/no-cycle
 
-Disallow a module from importing a module with a dependency path back to itself.
+Disallow a module from importing a module with a dependency path back to itself. Severity: `error`.
 
 ```js
 // bad
@@ -5821,7 +6247,7 @@ Disallow a module from importing a module with a dependency path back to itself.
 
 ### import/no-duplicates
 
-Merge imports from the same module.
+Merge imports from the same module. Severity: `error`.
 
 ```js
 // bad
@@ -5834,7 +6260,7 @@ import { a, b } from "mod";
 
 ### import/no-empty-named-blocks
 
-Disallow empty named import blocks.
+Disallow empty named import blocks. Severity: `error`.
 
 ```js
 // bad
@@ -5846,7 +6272,7 @@ import { something } from "mod";
 
 ### import/no-mutable-exports
 
-Disallow `let` or `var` exports.
+Disallow `let` or `var` exports. Severity: `error`.
 
 ```js
 // bad
@@ -5858,7 +6284,7 @@ export const count = 0;
 
 ### import/no-named-as-default
 
-Disallow using the default import name as a named import.
+Disallow using the default import name as a named import. Severity: `error`.
 
 ```js
 // bad
@@ -5870,7 +6296,7 @@ import { Foo } from "./foo";
 
 ### import/no-named-as-default-member
 
-Disallow accessing default export properties from a named import.
+Disallow accessing default export properties from a named import. Severity: `error`.
 
 ```js
 // bad
@@ -5883,7 +6309,7 @@ import { bar } from "./foo";
 
 ### import/no-named-default
 
-Disallow named default exports.
+Disallow named default exports. Severity: `error`.
 
 ```js
 // bad
@@ -5895,7 +6321,7 @@ import foo from "./foo";
 
 ### import/no-self-import
 
-Disallow a module from importing itself.
+Disallow a module from importing itself. Severity: `error`.
 
 ```js
 // bad
@@ -5907,7 +6333,7 @@ Disallow a module from importing itself.
 
 ### import/no-webpack-loader-syntax
 
-Disallow webpack loader syntax in imports.
+Disallow webpack loader syntax in imports. Severity: `error`.
 
 ```js
 // bad
@@ -5921,7 +6347,7 @@ import styles from "./styles.css";
 
 ### nextjs/google-font-display
 
-Enforce `display` parameter on Google Fonts.
+Enforce `display` parameter on Google Fonts. Severity: `error`.
 
 ```jsx
 // bad
@@ -5933,7 +6359,7 @@ Enforce `display` parameter on Google Fonts.
 
 ### nextjs/google-font-preconnect
 
-Require `preconnect` for Google Fonts.
+Require `preconnect` for Google Fonts. Severity: `error`.
 
 ```jsx
 // bad
@@ -5945,7 +6371,7 @@ Require `preconnect` for Google Fonts.
 
 ### nextjs/inline-script-id
 
-Require `id` attribute on `next/script` with inline content.
+Require `id` attribute on `next/script` with inline content. Severity: `error`.
 
 ```jsx
 // bad
@@ -5957,7 +6383,7 @@ Require `id` attribute on `next/script` with inline content.
 
 ### nextjs/next-script-for-ga
 
-Use `next/script` for Google Analytics.
+Use `next/script` for Google Analytics. Severity: `error`.
 
 ```jsx
 // bad
@@ -5969,7 +6395,7 @@ Use `next/script` for Google Analytics.
 
 ### nextjs/no-assign-module-variable
 
-Disallow assigning to the `module` variable.
+Disallow assigning to the `module` variable. Severity: `error`.
 
 ```jsx
 // bad
@@ -5981,7 +6407,7 @@ let myModule = {};
 
 ### nextjs/no-async-client-component
 
-Disallow async client components.
+Disallow async client components. Severity: `error`.
 
 ```jsx
 // bad
@@ -5995,7 +6421,7 @@ export default function Page() {}
 
 ### nextjs/no-before-interactive-script-outside-document
 
-Disallow `beforeInteractive` scripts outside `_document`.
+Disallow `beforeInteractive` scripts outside `_document`. Severity: `error`.
 
 ```jsx
 // bad
@@ -6009,7 +6435,7 @@ Disallow `beforeInteractive` scripts outside `_document`.
 
 ### nextjs/no-css-tags
 
-Disallow manual `<link>` stylesheet tags.
+Disallow manual `<link>` stylesheet tags. Severity: `error`.
 
 ```jsx
 // bad
@@ -6021,7 +6447,7 @@ import "/styles.css";
 
 ### nextjs/no-document-import-in-page
 
-Disallow importing `next/document` outside `_document`.
+Disallow importing `next/document` outside `_document`. Severity: `error`.
 
 ```jsx
 // bad
@@ -6035,7 +6461,7 @@ import Document from "next/document";
 
 ### nextjs/no-duplicate-head
 
-Disallow duplicate `<Head>` components in `_document`.
+Disallow duplicate `<Head>` components in `_document`. Severity: `error`.
 
 ```jsx
 // bad
@@ -6048,7 +6474,7 @@ Disallow duplicate `<Head>` components in `_document`.
 
 ### nextjs/no-head-element
 
-Disallow `<head>` element; use `next/head` instead.
+Disallow `<head>` element; use `next/head` instead. Severity: `error`.
 
 ```jsx
 // bad
@@ -6060,7 +6486,7 @@ Disallow `<head>` element; use `next/head` instead.
 
 ### nextjs/no-head-import-in-document
 
-Disallow `next/head` in `_document`; use `<Head>` from `next/document`.
+Disallow `next/head` in `_document`; use `<Head>` from `next/document`. Severity: `error`.
 
 ```jsx
 // bad
@@ -6072,9 +6498,13 @@ import Head from "next/head";
 import { Head } from "next/document";
 ```
 
+### nextjs/no-html-link-for-pages
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/nextjs/no-html-link-for-pages.html). Severity: `error`.
+
 ### nextjs/no-img-element
 
-Disallow `<img>`; use `next/image` instead.
+Disallow `<img>`; use `next/image` instead. Severity: `error`.
 
 ```jsx
 // bad
@@ -6086,7 +6516,7 @@ Disallow `<img>`; use `next/image` instead.
 
 ### nextjs/no-page-custom-font
 
-Disallow custom fonts in individual pages.
+Disallow custom fonts in individual pages. Severity: `error`.
 
 ```jsx
 // bad
@@ -6100,7 +6530,7 @@ Disallow custom fonts in individual pages.
 
 ### nextjs/no-script-component-in-head
 
-Disallow `next/script` inside `next/head`.
+Disallow `next/script` inside `next/head`. Severity: `error`.
 
 ```jsx
 // bad
@@ -6112,7 +6542,7 @@ Disallow `next/script` inside `next/head`.
 
 ### nextjs/no-styled-jsx-in-document
 
-Disallow styled-jsx in `_document`.
+Disallow styled-jsx in `_document`. Severity: `error`.
 
 ```jsx
 // bad
@@ -6129,7 +6559,7 @@ Disallow styled-jsx in `_document`.
 
 ### nextjs/no-sync-scripts
 
-Disallow synchronous scripts.
+Disallow synchronous scripts. Severity: `error`.
 
 ```jsx
 // bad
@@ -6141,7 +6571,7 @@ Disallow synchronous scripts.
 
 ### nextjs/no-title-in-document-head
 
-Disallow `<title>` inside `next/document` `<Head>`.
+Disallow `<title>` inside `next/document` `<Head>`. Severity: `error`.
 
 ```jsx
 // bad
@@ -6155,7 +6585,7 @@ Disallow `<title>` inside `next/document` `<Head>`.
 
 ### nextjs/no-typos
 
-Detect common typos in Next.js data fetching functions.
+Detect common typos in Next.js data fetching functions. Severity: `error`.
 
 ```jsx
 // bad
@@ -6167,7 +6597,7 @@ export async function getServerSideProps() {}
 
 ### nextjs/no-unwanted-polyfillio
 
-Disallow polyfills already shipped with Next.js.
+Disallow polyfills already shipped with Next.js. Severity: `error`.
 
 ```jsx
 // bad
@@ -6179,9 +6609,13 @@ Disallow polyfills already shipped with Next.js.
 
 ## Promise Rules
 
+### promise/always-return
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/promise/always-return.html). Severity: `error`.
+
 ### promise/catch-or-return
 
-Ensure promises are caught or returned.
+Ensure promises are caught or returned. Severity: `error`.
 
 ```js
 // bad
@@ -6193,7 +6627,7 @@ fetchData().then(handleData).catch(handleError);
 
 ### promise/no-callback-in-promise
 
-Disallow calling a callback inside a Promise.
+Disallow calling a callback inside a Promise. Severity: `error`.
 
 ```js
 // bad
@@ -6205,7 +6639,7 @@ fetchData().then((data) => data);
 
 ### promise/no-multiple-resolved
 
-Disallow creating promises that can be resolved multiple times.
+Disallow creating promises that can be resolved multiple times. Severity: `error`.
 
 ```js
 // bad
@@ -6222,7 +6656,7 @@ new Promise((resolve) => {
 
 ### promise/no-nesting
 
-Disallow nesting promises.
+Disallow nesting promises. Severity: `error`.
 
 ```js
 // bad
@@ -6235,7 +6669,7 @@ const resultB = await fetch(b);
 
 ### promise/no-new-statics
 
-Disallow `new` on Promise static methods.
+Disallow `new` on Promise static methods. Severity: `error`.
 
 ```js
 // bad
@@ -6247,7 +6681,7 @@ Promise.resolve(1);
 
 ### promise/no-promise-in-callback
 
-Disallow using promises inside callbacks.
+Disallow using promises inside callbacks. Severity: `error`.
 
 ```js
 // bad
@@ -6264,7 +6698,7 @@ app.get("/", async (req, res) => {
 
 ### promise/no-return-in-finally
 
-Disallow return statements in `finally`.
+Disallow return statements in `finally`. Severity: `error`.
 
 ```js
 // bad
@@ -6280,7 +6714,7 @@ promise.finally(() => {
 
 ### promise/no-return-wrap
 
-Disallow wrapping values in `Promise.resolve`/`Promise.reject` in `then`/`catch`.
+Disallow wrapping values in `Promise.resolve`/`Promise.reject` in `then`/`catch`. Severity: `error`.
 
 ```js
 // bad
@@ -6292,7 +6726,7 @@ promise.then(() => 1);
 
 ### promise/prefer-await-to-then
 
-Prefer `await` over `.then()`.
+Prefer `await` over `.then()`. Severity: `error`.
 
 ```js
 // bad
@@ -6303,9 +6737,13 @@ const data = await fetchData();
 process(data);
 ```
 
+### promise/prefer-catch
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/promise/prefer-catch.html). Severity: `error`.
+
 ### promise/spec-only
 
-Disallow use of non-standard Promise methods.
+Disallow use of non-standard Promise methods. Severity: `error`.
 
 ```js
 // bad
@@ -6317,7 +6755,7 @@ await new Promise((resolve) => setTimeout(resolve, 100));
 
 ### promise/valid-params
 
-Ensure correct number of arguments to Promise methods.
+Ensure correct number of arguments to Promise methods. Severity: `error`.
 
 ```js
 // bad
@@ -6331,7 +6769,7 @@ Promise.all([p1, p2]);
 
 ### oxc/approx-constant
 
-Disallow approximate representations of mathematical constants.
+Disallow approximate representations of mathematical constants. Severity: `error`.
 
 ```js
 // bad
@@ -6343,7 +6781,7 @@ const pi = Math.PI;
 
 ### oxc/bad-array-method-on-arguments
 
-Disallow calling array methods on `arguments`.
+Disallow calling array methods on `arguments`. Severity: `error`.
 
 ```js
 // bad
@@ -6357,21 +6795,9 @@ function fn(...args) {
 }
 ```
 
-### oxc/bad-match-all-arg
-
-Require the global flag on regular expressions passed to `matchAll`; without it the call throws at runtime.
-
-```js
-// bad
-str.matchAll(/x/);
-
-// good
-str.matchAll(/x/gv);
-```
-
 ### oxc/bad-bitwise-operator
 
-Disallow bitwise operators where a logical operator was meant: `|` and `&` coerce to int32 and skip short-circuit evaluation.
+Disallow bitwise operators where a logical operator was meant: `|` and `&` coerce to int32 and skip short-circuit evaluation. Severity: `error`.
 
 ```js
 // bad
@@ -6387,7 +6813,7 @@ if (obj && obj.prop) {
 
 ### oxc/bad-char-at-comparison
 
-Disallow incorrect `charAt` comparisons.
+Disallow incorrect `charAt` comparisons. Severity: `error`.
 
 ```js
 // bad
@@ -6401,7 +6827,7 @@ if (str.charAt(0) === "a") {
 
 ### oxc/bad-comparison-sequence
 
-Disallow comparison chains that do not work as intended.
+Disallow comparison chains that do not work as intended. Severity: `error`.
 
 ```js
 // bad
@@ -6413,9 +6839,21 @@ if (a < b && b < c) {
 }
 ```
 
+### oxc/bad-match-all-arg
+
+Require the global flag on regular expressions passed to `matchAll`; without it the call throws at runtime. Severity: `error`.
+
+```js
+// bad
+str.matchAll(/x/);
+
+// good
+str.matchAll(/x/gv);
+```
+
 ### oxc/bad-min-max-func
 
-Disallow incorrect `Math.min`/`Math.max` combinations.
+Disallow incorrect `Math.min`/`Math.max` combinations. Severity: `error`.
 
 ```js
 // bad
@@ -6427,7 +6865,7 @@ Math.min(Math.max(x, 0), 100);
 
 ### oxc/bad-object-literal-comparison
 
-Disallow comparing against object literals that always create new references.
+Disallow comparing against object literals that always create new references. Severity: `error`.
 
 ```js
 // bad
@@ -6441,7 +6879,7 @@ if (Object.keys(x).length === 0) {
 
 ### oxc/bad-replace-all-arg
 
-Disallow incorrect arguments to `replaceAll`.
+Disallow incorrect arguments to `replaceAll`. Severity: `error`.
 
 ```js
 // bad
@@ -6451,9 +6889,13 @@ str.replaceAll(/foo/, "bar");
 str.replaceAll(/foo/g, "bar");
 ```
 
+### oxc/branches-sharing-code
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/oxc/branches-sharing-code.html). Severity: `error`.
+
 ### oxc/const-comparisons
 
-Disallow redundant comparisons involving constants.
+Disallow redundant comparisons involving constants. Severity: `error`.
 
 ```js
 // bad
@@ -6467,7 +6909,7 @@ if (x >= 1) {
 
 ### oxc/double-comparisons
 
-Simplify double comparisons.
+Simplify double comparisons. Severity: `error`.
 
 ```js
 // bad
@@ -6481,7 +6923,7 @@ if (x <= y) {
 
 ### oxc/erasing-op
 
-Disallow operations that always produce a constant result.
+Disallow operations that always produce a constant result. Severity: `error`.
 
 ```js
 // bad
@@ -6491,9 +6933,21 @@ const x = y * 0;
 const x = 0;
 ```
 
+### oxc/misrefactored-assign-op
+
+Detect mistaken compound assignment refactoring. Severity: `error`.
+
+```js
+// bad
+x = x + x + 1; // Probably meant x += 1
+
+// good
+x += 1;
+```
+
 ### oxc/missing-throw
 
-Detect missing `throw` before `new Error()`.
+Detect missing `throw` before `new Error()`. Severity: `error`.
 
 ```js
 // bad
@@ -6507,21 +6961,9 @@ function fail() {
 }
 ```
 
-### oxc/misrefactored-assign-op
-
-Detect mistaken compound assignment refactoring.
-
-```js
-// bad
-x = x + x + 1; // Probably meant x += 1
-
-// good
-x += 1;
-```
-
 ### oxc/no-accumulating-spread
 
-Disallow spreading in a loop that accumulates.
+Disallow spreading in a loop that accumulates. Severity: `error`.
 
 ```js
 // bad
@@ -6537,9 +6979,21 @@ for (const item of items) {
 }
 ```
 
+### oxc/no-async-endpoint-handlers
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/oxc/no-async-endpoint-handlers.html). Severity: `error`.
+
+### oxc/no-map-spread
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/oxc/no-map-spread.html). Severity: `error`.
+
+### oxc/no-this-in-exported-function
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/oxc/no-this-in-exported-function.html). Severity: `error`.
+
 ### oxc/number-arg-out-of-range
 
-Disallow numeric arguments outside the allowed range.
+Disallow numeric arguments outside the allowed range. Severity: `error`.
 
 ```js
 // bad
@@ -6551,7 +7005,7 @@ const x = Number.parseInt("ff", 16);
 
 ### oxc/only-used-in-recursion
 
-Flag parameters only used in recursive calls.
+Flag parameters only used in recursive calls. Severity: `error`.
 
 ```js
 // bad
@@ -6567,7 +7021,7 @@ function fn(b) {
 
 ### oxc/uninvoked-array-callback
 
-Detect array callbacks that are referenced but not invoked.
+Detect array callbacks that are referenced but not invoked. Severity: `error`.
 
 ```js
 // bad
@@ -6579,9 +7033,13 @@ arr.forEach((x) => console.log(x));
 
 ## Node Rules
 
+### node/callback-return
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/node/callback-return.html). Severity: `error`.
+
 ### node/exports-style
 
-Require `module.exports` over the `exports` alias in CommonJS files.
+Require `module.exports` over the `exports` alias in CommonJS files. Severity: `error`.
 
 ```js
 // bad
@@ -6591,9 +7049,13 @@ exports.foo = 1;
 module.exports = { foo: 1 };
 ```
 
+### node/global-require
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/node/global-require.html). Severity: `error`.
+
 ### node/handle-callback-err
 
-Require error handling in callbacks.
+Require error handling in callbacks. Severity: `error`.
 
 ```js
 // bad
@@ -6610,7 +7072,7 @@ fs.readFile("f", (err, data) => {
 
 ### node/no-exports-assign
 
-Disallow assigning to `exports`.
+Disallow assigning to `exports`. Severity: `error`.
 
 ```js
 // bad
@@ -6620,9 +7082,13 @@ exports = { foo: 1 };
 module.exports = { foo: 1 };
 ```
 
+### node/no-mixed-requires
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/node/no-mixed-requires.html). Severity: `error`.
+
 ### node/no-new-require
 
-Disallow `new require()`.
+Disallow `new require()`. Severity: `error`.
 
 ```js
 // bad
@@ -6635,7 +7101,7 @@ const app = express();
 
 ### node/no-path-concat
 
-Disallow string concatenation with `__dirname` and `__filename`; use `path.join` so paths work on every platform.
+Disallow string concatenation with `__dirname` and `__filename`; use `path.join` so paths work on every platform. Severity: `error`.
 
 ```js
 // bad
@@ -6645,6 +7111,10 @@ const file = __dirname + "/config.json";
 const file = path.join(__dirname, "config.json");
 ```
 
+### node/no-sync
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/node/no-sync.html). Severity: `error`.
+
 ## Vitest Rules
 
 Enabled for test files matching `*.test.*`, `*.spec.*`, or `__tests__/**`. The assertion rules recognize Vitest imports and supported test globals. Imports from `@playwright/test` are outside that coverage even when the filename matches; Playwright projects need their own framework-specific assertion rules.
@@ -6653,7 +7123,7 @@ Enabled for test files matching `*.test.*`, `*.spec.*`, or `__tests__/**`. The a
 
 ### vitest/consistent-each-for
 
-Inert unless configured; enforce one parameterized-test method (`.each` or `.for`) per block type (`test`, `it`, `describe`, `suite`), shown here with `{ test: "for" }`.
+Inert unless configured; enforce one parameterized-test method (`.each` or `.for`) per block type (`test`, `it`, `describe`, `suite`), shown here with `{ test: "for" }`. Severity: `error`.
 
 ```ts
 // bad
@@ -6669,7 +7139,7 @@ test.for([[1, 1, 2]])("adds %i + %i", ([a, b, sum]) => {
 
 ### vitest/consistent-vitest-vi
 
-Enforce `vi` over its `vitest` alias as the accessor for Vitest utilities.
+Enforce `vi` over its `vitest` alias as the accessor for Vitest utilities. Severity: `error`.
 
 ```ts
 // bad
@@ -6681,7 +7151,7 @@ vi.mock("./api");
 
 ### vitest/expect-expect
 
-Require at least one assertion in every test; a test that asserts nothing passes whatever the code does. Calls to `expect*`, `assert*`, `expectTypeOf`, `assertType`, `waitFor`, and Testing Library's throwing `getBy*`/`findBy*` queries count, so shared assertion helpers work.
+Require at least one assertion in every test; a test that asserts nothing passes whatever the code does. Calls to `expect*`, `assert*`, `expectTypeOf`, `assertType`, `waitFor`, and Testing Library's throwing `getBy*`/`findBy*` queries count, so shared assertion helpers work. Severity: `error`.
 
 ```ts
 // bad
@@ -6697,7 +7167,7 @@ it("renders the button", () => {
 
 ### vitest/hoisted-apis-on-top
 
-Require `vi.mock`, `vi.unmock`, and `vi.hoisted` at the top level of the file, since Vitest hoists them above the imports wherever they are written.
+Require `vi.mock`, `vi.unmock`, and `vi.hoisted` at the top level of the file, since Vitest hoists them above the imports wherever they are written. Severity: `error`.
 
 ```ts
 // bad
@@ -6718,7 +7188,7 @@ it("loads the client", async () => {
 
 ### vitest/max-nested-describe
 
-Enforce a maximum nesting depth of 5 for `describe` blocks.
+Enforce a maximum nesting depth of 5 for `describe` blocks. Severity: `error`.
 
 ```ts
 // bad
@@ -6750,7 +7220,7 @@ describe("a", () => {
 
 ### vitest/no-alias-methods
 
-Disallow matcher aliases in favor of their canonical names.
+Disallow matcher aliases in favor of their canonical names. Severity: `error`.
 
 ```ts
 // bad
@@ -6764,7 +7234,7 @@ expect(save).toThrow();
 
 ### vitest/no-commented-out-tests
 
-Disallow commented-out tests; restore or delete them instead.
+Disallow commented-out tests; restore or delete them instead. Severity: `error`.
 
 ```ts
 // bad
@@ -6780,7 +7250,7 @@ it("parses input", () => {
 
 ### vitest/no-conditional-tests
 
-Disallow declaring tests inside conditional statements, so the set of tests that runs is always the same.
+Disallow declaring tests inside conditional statements, so the set of tests that runs is always the same. Severity: `error`.
 
 ```ts
 // bad
@@ -6802,7 +7272,7 @@ describe("parser", () => {
 
 ### vitest/no-disabled-tests
 
-Disallow skipped tests (`.skip`, `xit`, `xdescribe`) and tests declared without a body.
+Disallow skipped tests (`.skip`, `xit`, `xdescribe`) and tests declared without a body. Severity: `error`.
 
 ```ts
 // bad
@@ -6818,7 +7288,7 @@ it("parses input", () => {
 
 ### vitest/no-duplicate-hooks
 
-Disallow more than one hook of the same type in a `describe` block.
+Disallow more than one hook of the same type in a `describe` block. Severity: `error`.
 
 ```ts
 // bad
@@ -6850,7 +7320,7 @@ describe("store", () => {
 
 ### vitest/no-identical-title
 
-Disallow two tests or two suites with the same title at the same level.
+Disallow two tests or two suites with the same title at the same level. Severity: `error`.
 
 ```ts
 // bad
@@ -6876,7 +7346,7 @@ describe("parser", () => {
 
 ### vitest/no-interpolation-in-snapshots
 
-Disallow string interpolation in inline snapshots; use property matchers for values that change.
+Disallow string interpolation in inline snapshots; use property matchers for values that change. Severity: `error`.
 
 ```ts
 // bad
@@ -6888,7 +7358,7 @@ expect(user).toMatchInlineSnapshot({ id: expect.any(Number) }, `{ "id": Any<Numb
 
 ### vitest/no-large-snapshots
 
-Disallow inline snapshots longer than 50 lines (oxlint does not lint `.snap` files, so external snapshots are not checked).
+Disallow inline snapshots longer than 50 lines (oxlint does not lint `.snap` files, so external snapshots are not checked). Severity: `error`.
 
 ```ts
 // bad
@@ -6902,7 +7372,7 @@ expect(renderPage().title).toMatchInlineSnapshot(`"Settings"`);
 
 ### vitest/no-mocks-import
 
-Disallow importing from `__mocks__` directories; mock the real module with `vi.mock` instead.
+Disallow importing from `__mocks__` directories; mock the real module with `vi.mock` instead. Severity: `error`.
 
 ```ts
 // bad
@@ -6914,9 +7384,17 @@ import { client } from "./api";
 vi.mock("./api");
 ```
 
+### vitest/no-restricted-matchers
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/no-restricted-matchers.html). Severity: `error`.
+
+### vitest/no-restricted-vi-methods
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/no-restricted-vi-methods.html). Severity: `error`.
+
 ### vitest/no-test-prefixes
 
-Require `.skip` and `.only` over the `x`- and `f`-prefixed aliases (`xit`, `xdescribe`, `fit`, ...).
+Require `.skip` and `.only` over the `x`- and `f`-prefixed aliases (`xit`, `xdescribe`, `fit`, ...). Severity: `error`.
 
 ```ts
 // bad
@@ -6932,7 +7410,7 @@ it("parses input", () => {
 
 ### vitest/no-test-return-statement
 
-Disallow returning a synchronous `expect` assertion from a test callback.
+Disallow returning a synchronous `expect` assertion from a test callback. Severity: `error`.
 
 ```ts
 // bad
@@ -6948,7 +7426,7 @@ test("adds numbers", () => {
 
 ### vitest/no-unneeded-async-expect-function
 
-Disallow wrapping a single awaited call in an async function passed to `expect`; pass the promise directly.
+Disallow wrapping a single awaited call in an async function passed to `expect`; pass the promise directly. Severity: `error`.
 
 ```ts
 // bad
@@ -6962,7 +7440,7 @@ await expect(save()).rejects.toThrow();
 
 ### vitest/prefer-comparison-matcher
 
-Require the built-in comparison matchers (`toBeGreaterThan`, `toBeLessThanOrEqual`, ...) over asserting on the result of a comparison.
+Require the built-in comparison matchers (`toBeGreaterThan`, `toBeLessThanOrEqual`, ...) over asserting on the result of a comparison. Severity: `error`.
 
 ```ts
 // bad
@@ -6974,7 +7452,7 @@ expect(items.length).toBeGreaterThan(5);
 
 ### vitest/prefer-snapshot-hint
 
-Require a hint string on external snapshot matchers (`toMatchSnapshot`, `toThrowErrorMatchingSnapshot`) when a test has more than one, so reordering assertions does not renumber the snapshots.
+Require a hint string on external snapshot matchers (`toMatchSnapshot`, `toThrowErrorMatchingSnapshot`) when a test has more than one, so reordering assertions does not renumber the snapshots. Severity: `error`.
 
 ```ts
 // bad
@@ -6992,7 +7470,7 @@ it("renders the header", () => {
 
 ### vitest/prefer-to-be-object
 
-Require `expectTypeOf(...).toBeObject()` over `toBeInstanceOf(Object)` or an `instanceof Object` check.
+Require `expectTypeOf(...).toBeObject()` over `toBeInstanceOf(Object)` or an `instanceof Object` check. Severity: `error`.
 
 ```ts
 // bad
@@ -7004,7 +7482,7 @@ expectTypeOf(config).toBeObject();
 
 ### vitest/prefer-todo
 
-Require `test.todo` for placeholder tests instead of an empty or missing callback.
+Require `test.todo` for placeholder tests instead of an empty or missing callback. Severity: `error`.
 
 ```ts
 // bad
@@ -7016,7 +7494,7 @@ test.todo("parses nested input");
 
 ### vitest/require-awaited-expect-poll
 
-Require `expect.poll` and `expect.element` assertions to be awaited or returned; otherwise the test finishes before they settle.
+Require `expect.poll` and `expect.element` assertions to be awaited or returned; otherwise the test finishes before they settle. Severity: `error`.
 
 ```ts
 // bad
@@ -7032,7 +7510,7 @@ test("shows the toast", async () => {
 
 ### vitest/require-local-test-context-for-concurrent-snapshots
 
-Require concurrent tests that assert snapshots to use `expect` from the local test context.
+Require concurrent tests that assert snapshots to use `expect` from the local test context. Severity: `error`.
 
 ```ts
 // bad
@@ -7048,7 +7526,7 @@ test.concurrent("renders the card", ({ expect }) => {
 
 ### vitest/require-to-throw-message
 
-Require an expected message or error on `toThrow` and `rejects.toThrow`; a bare `toThrow()` passes on any error, including a `TypeError` from a typo. Reported as a warning.
+Require an expected message or error on `toThrow` and `rejects.toThrow`. Severity: `warn`. A bare `toThrow()` passes on any error, including the `TypeError` a typo throws. Warn, not error: 136 existing assertions across the fleet.
 
 ```ts
 // bad
@@ -7060,7 +7538,7 @@ expect(() => parse("")).toThrow("input is empty");
 
 ### vitest/valid-describe-callback
 
-Require the `describe` callback to be a function that takes no parameters and returns nothing.
+Require the `describe` callback to be a function that takes no parameters and returns nothing. Severity: `error`.
 
 ```ts
 // bad
@@ -7080,7 +7558,7 @@ describe("parser", () => {
 
 ### vitest/valid-expect
 
-Require `expect` to take exactly one argument and end in a matcher call, and `.resolves`/`.rejects` assertions to be awaited or returned.
+Require `expect` to take exactly one argument and end in a matcher call, and `.resolves`/`.rejects` assertions to be awaited or returned. Severity: `error`.
 
 ```ts
 // bad
@@ -7098,7 +7576,7 @@ it("loads the user", async () => {
 
 ### vitest/valid-expect-in-promise
 
-Require promise chains that contain `expect` calls to be awaited or returned from the test.
+Require promise chains that contain `expect` calls to be awaited or returned from the test. Severity: `error`.
 
 ```ts
 // bad
@@ -7117,7 +7595,7 @@ test("loads the user", async () => {
 
 ### vitest/valid-title
 
-Require test and suite titles to be non-empty strings, without leading or trailing spaces or a repeat of the block name (`it("it works")`).
+Require test and suite titles to be non-empty strings, without leading or trailing spaces or a repeat of the block name (`it("it works")`). Severity: `error`.
 
 ```ts
 // bad
@@ -7139,33 +7617,33 @@ describe("parser", () => {
 
 ### perfectionist/sort-enums
 
-Sort enum members alphabetically by value, with partition-by-comment support.
+Sort enum members alphabetically by value, with partition-by-comment support. Severity: `error`.
 
 ### perfectionist/sort-heritage-clauses
 
-Sort `extends` and `implements` clauses alphabetically.
+Sort `extends` and `implements` clauses alphabetically. Severity: `error`.
 
 ### perfectionist/sort-interfaces
 
-Sort interface and type members alphabetically.
+Sort interface and type members alphabetically. Severity: `error`.
 
 ### perfectionist/sort-jsx-props
 
-Sort JSX props alphabetically.
+Sort JSX props alphabetically. Severity: `error`.
 
 ### perfectionist/sort-object-types
 
-Sort members of object type annotations alphabetically.
+Sort members of object type annotations alphabetically. Severity: `error`.
 
 ### perfectionist/sort-objects
 
-Sort object keys alphabetically, with partition-by-comment support. Options passed to `createFileRoute`, `createRoute`, `createRootRoute`, or `createRootRouteWithContext` are left in TanStack Router's inference order (`validateSearch` before `beforeLoad` before `loader`), which `react-doctor/tanstack-start-route-property-order` enforces. Objects inside loaders and calls to unrelated factories still get sorted.
+Sort object keys alphabetically, with partition-by-comment support. Options passed to `createFileRoute`, `createRoute`, `createRootRoute`, or `createRootRouteWithContext` are left in TanStack Router's inference order (`validateSearch` before `beforeLoad` before `loader`), which `react-doctor/tanstack-start-route-property-order` enforces. Objects inside loaders and calls to unrelated factories still get sorted. Severity: `error`.
 
 ## Other JS Plugin Rules
 
 ### @nkzw/require-use-effect-arguments
 
-Require an explicit dependency array on `useEffect`. Omitting it runs the effect after every render — always a deliberate choice, never an omission; `react-hooks/exhaustive-deps` validates the array's contents but cannot require its presence.
+Require an explicit dependency array on `useEffect`. Omitting it runs the effect after every render — always a deliberate choice, never an omission; `react-hooks/exhaustive-deps` validates the array's contents but cannot require its presence. Severity: `error`.
 
 ```tsx
 // bad
@@ -7179,17 +7657,9 @@ useEffect(() => {
 }, [id]);
 ```
 
-### react-hooks/exhaustive-deps
-
-Verify the dependency array for React Hooks like `useEffect`, `useMemo`, and `useCallback` includes all referenced reactive values.
-
-### react-hooks/rules-of-hooks
-
-Enforce that Hooks are only called at the top level of a function component or custom Hook, never inside loops, conditions, or nested functions.
-
 ### no-only-tests/no-only-tests
 
-Disallow `.only` in test files to prevent accidentally committing focused tests that skip the rest of the suite.
+Disallow `.only` in test files to prevent accidentally committing focused tests that skip the rest of the suite. Severity: `error`.
 
 ## Anti-Slop Rules
 
@@ -7221,7 +7691,7 @@ const user = userSchema.parse(JSON.parse(raw));
 
 ### anti-slop/no-conditional-empty-object-spread
 
-Disallow spreading a conditional that falls back to an empty object to omit fields. Severity: `warn`.
+Disallow spreading a conditional that falls back to an empty object to omit fields. Severity: `warn`. Warn, not error: `...(cond ? { key } : {})` is how an optional key is omitted in Next config objects and Better Auth options, where the alternative (build the object in separate statements) reads worse.
 
 ```ts
 // bad
@@ -7233,7 +7703,7 @@ const payload = { id };
 
 ### anti-slop/no-known-value-widening
 
-Disallow annotating a known value with a broad type that discards what TypeScript already inferred. Severity: `warn`.
+Disallow annotating a known value with a broad type that discards what TypeScript already inferred. Severity: `warn`. Warn, not error: fires on `const X: Record<Union, string> = {...}` lookup tables and on named-shape return annotations, which are deliberate contracts here rather than laundered types. 76 sites across four repos.
 
 ```ts
 // bad
@@ -7320,7 +7790,7 @@ const value = owner[key];
 
 ### anti-slop/no-shape-in-symbol-names
 
-Disallow the case-insensitive substring "shape" in symbol names. Severity: `warn`, not error, because it also matches zod's `schema.shape` introspection API.
+Disallow the case-insensitive substring "shape" in symbol names. Severity: `warn`. Warn, not error: matches any identifier containing "shape".
 
 ```ts
 // bad
@@ -7332,7 +7802,7 @@ const response = { id: 0 };
 
 ### anti-slop/no-unknown-parameters
 
-Disallow `unknown` function parameters except the `cause` convention; decode input at its I/O boundary instead. Severity: `warn`, not error, because `use-unknown-in-catch-callback-variable` autofixes catch callbacks to the exact `(err: unknown)` annotation this rule flags.
+Disallow `unknown` function parameters except the `cause` convention; decode input at its I/O boundary instead. Severity: `warn`. Warn, not error: `use-unknown-in-catch-callback-variable` autofixes catch callbacks to `(err: unknown)`, which this rule then flags; upstream only exempts parameters named `cause`.
 
 ```ts
 // bad
@@ -7372,7 +7842,7 @@ type Payload = { id: string; body: string };
 
 ### anti-slop/no-unsafe-dictionary-type
 
-Disallow dictionary value types that are `unknown`, `any`, `object`, or `{}`. Severity: `warn`.
+Disallow dictionary value types that are `unknown`, `any`, `object`, or `{}`. Severity: `warn`. Warn, not error: `Record<string, unknown>` is the correct type at a real boundary (structured log context, a recursive deep-merge input), and the rule cannot tell those from a lazy escape hatch.
 
 ```ts
 // bad
@@ -7436,7 +7906,7 @@ First-party rules that ship with this config.
 
 ### awesomeness/no-novel-comments
 
-Disallow block comments or contiguous runs of line comments longer than 5 lines. Directive comments (`eslint-`, `oxlint-`, `@ts-`, and similar) and license headers are exempt. Severity: `warn`.
+Disallow block comments or contiguous runs of line comments longer than 5 lines. Directive comments (`eslint-`, `oxlint-`, `@ts-`, and similar) and license headers are exempt. Severity: `warn`. Comments longer than 5 lines narrate instead of inform. Warn, not error: length is a proxy for narration, and after a comment sweep the long survivors are the load-bearing ones (external-system behavior, e2e helper contracts). Blocking a build on prose is the wrong trade; the warning still surfaces every one of them.
 
 ```ts
 // bad
@@ -7455,7 +7925,7 @@ const activeEmails = (users: Array<User>) => dedupe(sortedEmails(users));
 
 ### awesomeness/require-disable-reason
 
-Require a `-- reason` on every `oxlint-disable` and `eslint-disable` directive, the lint counterpart of `@typescript-eslint/ban-ts-comment` requiring a description on `@ts-expect-error`. Without a reason, a reviewer cannot tell a considered exception from a silenced bug. A warning for now, while existing directives gain reasons or are deleted. Severity: `warn`.
+Require a `-- reason` on every `oxlint-disable` and `eslint-disable` directive, the lint counterpart of `@typescript-eslint/ban-ts-comment` requiring a description on `@ts-expect-error`. Without a reason, a reviewer cannot tell a considered exception from a silenced bug. Severity: `warn`. shortcut: warn while the managed repos still carry unexplained directives, promote to error once they are clean.
 
 ```ts
 // bad
@@ -8604,7 +9074,7 @@ Disallow text smaller than a legible minimum size. Severity: `warn`.
 
 ### react-doctor/prefer-dvh-over-vh
 
-Require dynamic viewport units (`dvh`) instead of `vh` for full-height layouts, since `100vh` is taller than the visible viewport on mobile browsers. Severity: `warn`.
+Require dynamic viewport units (`dvh`) instead of `vh` for full-height layouts. Severity: `warn`. Upstream files it with the visual-taste rules, but it is a layout bug: `100vh` is taller than the visible viewport on mobile browsers whose toolbars collapse, so full-height screens clip their bottom edge.
 
 ```tsx
 // bad
@@ -9627,7 +10097,7 @@ const width = typeof window !== "undefined" ? window.innerWidth : 0;
 
 ### react-doctor/no-unguarded-browser-global-in-render-or-hook-init
 
-Disallow accessing browser globals during render or hook initialization without a guard. Severity: `warn`.
+Disallow accessing browser globals during render or hook initialization without a guard. Severity: `warn`. Downgraded from its upstream "error". The rule reports any browser-global read on a render path, but a component behind `dynamic(…, { ssr: false })` and an app with no server render at all are both correct as written, and neither is visible from the file the rule inspects.
 
 ```tsx
 // bad
@@ -14071,15 +14541,19 @@ function BearCounter() {
 }
 ```
 
+<!-- rules:end -->
+
 ## Development
 
 ```sh
 pnpm install
 pnpm test
 pnpm lint
-pnpm check:readme
+pnpm readme
 ```
 
 TypeScript builds each `src/*.ts` module and its declarations into `dist/`, which is gitignored and published; `package.json` `exports` is the public list. The CLI copies the tracked `bin/template.ts`, and the vendored `anti-slop/index.js` stays committed.
 
-Every script that reads `dist/` builds it first, so nothing reads a stale build. `pnpm check:readme` checks the README against `src/index.ts` and oxlint's own rule list.
+Every script that reads `dist/` builds it first, so nothing reads a stale build.
+
+`pnpm readme` rewrites the parts of this README between `<!-- name:start -->` and `<!-- name:end -->` from `src/index.ts` and the installed oxlint, and `pnpm check:readme` fails when they are stale. The comment directly above a rule or an override in `src/index.ts` is the reason printed here. A rule's description and example are written by hand, in its section.
