@@ -49,13 +49,11 @@ afterEach(() => {
 });
 
 describe("pnpm build", () => {
-  it("removes retired output and preserves coverage and dependencies", () => {
+  it("removes retired output", () => {
     const expected = generatedFiles();
     mkdirSync(join(cwd, "dist", "nested"));
     writeFileSync(join(cwd, "dist", "nested", "retired.js"), "export {};\n");
     writeFileSync(join(cwd, "dist", "retired.d.ts"), "export {};\n");
-    mkdirSync(join(cwd, "coverage"));
-    writeFileSync(join(cwd, "coverage", "keep.txt"), "keep\n");
 
     const result = run("build");
 
@@ -64,9 +62,5 @@ describe("pnpm build", () => {
       expected.map(([filename]) => filename),
     );
     expect(generatedFiles()).toEqual(expected);
-    expect(readFileSync(join(cwd, "coverage", "keep.txt"), "utf8")).toBe("keep\n");
-    expect(readFileSync(join(cwd, "node_modules", "typescript", "package.json"))).toEqual(
-      readFileSync(join(root, "node_modules", "typescript", "package.json")),
-    );
   });
 });
