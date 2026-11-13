@@ -42,6 +42,10 @@ Releases use Changesets:
 
 Managed repositories import this config through their pnpm update cycle. Major and minor changes require a Changeset entry.
 
+## Open Decisions
+
+`docs/open-decisions.md` lists the choices about this package that are still open, each with its options and a recommendation. Read it before changing a rule's severity, an override or the manifest, and remove an entry when it is decided.
+
 ## Conventions
 
 - Each `src/*.ts` builds to `dist/*.js` and `dist/*.d.ts`; `package.json` `exports` is the public list, and the package resolves its own files through it
