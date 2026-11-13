@@ -121,6 +121,47 @@ export default defineConfig({
 
 `@shadcn/lint` is an optional peer dependency, so projects that skip the preset never load it. To give specific components more room, redefine `shadcn/no-restyle` with `contracts`; your setting replaces the preset's.
 
+### Astro templates
+
+oxlint lints the frontmatter of an `.astro` file and never reads its template, so the shadcn preset does not see the classes written there. `lint-astro` runs the preset over every tracked `.astro` file through ESLint. It adds one rule of its own, `astro/verifiable-attributes`, which rejects a string `style` attribute and `class:list`, because the preset can check neither.
+
+```
+npm install -D @shadcn/lint @typescript-eslint/parser astro-eslint-parser @typescript/typescript6
+```
+
+```json
+{
+  "scripts": {
+    "lint": "oxlint . && lint-astro"
+  }
+}
+```
+
+Run it from the repo root, inside a git checkout. It reads the `shadcn/*` rules and the `settings` of the root `oxlint.config.ts`, so a rule you redefine there applies to templates too. It takes no arguments and exits 1 on any error or warning.
+
+All four packages are optional peer dependencies, so projects without Astro never load them.
+
+typescript-eslint cannot load TypeScript 7, so `lint-astro` resolves `typescript` to `@typescript/typescript6` inside its own process. That hook is exported as `oxlint-config-awesomeness/typescript6` for other tools with the same limit:
+
+```json
+{
+  "scripts": {
+    "typecheck": "NODE_OPTIONS=--import=oxlint-config-awesomeness/typescript6 astro check"
+  }
+}
+```
+
+The ESLint config is exported as a function of your oxlint config, for an editor or your own runner. Import the hook before it:
+
+```js
+import "oxlint-config-awesomeness/typescript6";
+import astro from "oxlint-config-awesomeness/astro";
+
+import config from "./oxlint.config.ts";
+
+export default astro(config);
+```
+
 ## FAQ
 
 ### I installed the package but no `.oxlintrc.json` was created. What did I miss?

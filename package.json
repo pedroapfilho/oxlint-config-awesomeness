@@ -15,6 +15,7 @@
     "url": "git+https://github.com/pedroapfilho/oxlint-config-awesomeness.git"
   },
   "bin": {
+    "lint-astro": "./dist/lint-astro.js",
     "oxlint-config-awesomeness": "./dist/init.js"
   },
   "files": [
@@ -23,7 +24,9 @@
     "anti-slop"
   ],
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/typescript6.js"
+  ],
   "main": "./dist/index.js",
   "exports": {
     ".": {
@@ -34,12 +37,20 @@
       "types": "./anti-slop/index.d.ts",
       "default": "./anti-slop/index.js"
     },
+    "./astro": {
+      "types": "./dist/astro.d.ts",
+      "default": "./dist/astro.js"
+    },
     "./awesomeness": "./dist/awesomeness.js",
     "./shadcn": {
       "types": "./dist/shadcn.d.ts",
       "default": "./dist/shadcn.js"
     },
     "./template": "./bin/template.ts",
+    "./typescript6": {
+      "types": "./dist/typescript6.d.ts",
+      "default": "./dist/typescript6.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -74,7 +85,10 @@
     "@nkzw/eslint-plugin": "^2.0.0",
     "@shadcn/lint": "0.2.0",
     "@types/node": "^26.6.2",
+    "@typescript-eslint/parser": "^8.70.1",
+    "@typescript/typescript6": "^6.0.2",
     "@vitest/coverage-v8": "^5.0.1",
+    "astro-eslint-parser": "^3.2.0",
     "eslint": "^10.13.0",
     "eslint-plugin-no-only-tests": "^3.4.0",
     "eslint-plugin-perfectionist": "^5.12.1",
@@ -92,6 +106,9 @@
   "peerDependencies": {
     "@nkzw/eslint-plugin": "^2.0.0",
     "@shadcn/lint": ">=0.1.0 <0.3.0",
+    "@typescript-eslint/parser": "^8.70.1",
+    "@typescript/typescript6": "^6.0.2",
+    "astro-eslint-parser": "^3.2.0",
     "eslint": "^10.0.0",
     "eslint-plugin-no-only-tests": "^3.4.0",
     "eslint-plugin-perfectionist": "^5.10.1",
@@ -102,6 +119,15 @@
   },
   "peerDependenciesMeta": {
     "@shadcn/lint": {
+      "optional": true
+    },
+    "@typescript-eslint/parser": {
+      "optional": true
+    },
+    "@typescript/typescript6": {
+      "optional": true
+    },
+    "astro-eslint-parser": {
       "optional": true
     }
   },
