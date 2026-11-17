@@ -2862,6 +2862,10 @@ for (const item of arr) {
 }
 ```
 
+### @typescript-eslint/no-generated-empty-object-type
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-generated-empty-object-type.html). Severity: `error`.
+
 ### @typescript-eslint/no-implied-eval
 
 [oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-implied-eval.html). Severity: `error`.
@@ -3188,6 +3192,10 @@ class Foo {}
 // good
 class Foo {}
 ```
+
+### @typescript-eslint/no-unsafe-enum-assignment
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-unsafe-enum-assignment.html). Severity: `error`.
 
 ### @typescript-eslint/no-unsafe-enum-comparison
 
@@ -7145,6 +7153,14 @@ test.for([[1, 1, 2]])("adds %i + %i", ([a, b, sum]) => {
 });
 ```
 
+### vitest/consistent-test-filename
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/consistent-test-filename.html). Severity: `error`.
+
+### vitest/consistent-test-it
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/consistent-test-it.html). Severity: `error`.
+
 ### vitest/consistent-vitest-vi
 
 Enforce `vi` over its `vitest` alias as the accessor for Vitest utilities. Severity: `error`.
@@ -7193,6 +7209,10 @@ it("loads the client", async () => {
   expect(client).toBeDefined();
 });
 ```
+
+### vitest/max-expects
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/max-expects.html). Severity: `error`.
 
 ### vitest/max-nested-describe
 
@@ -7255,6 +7275,14 @@ it("parses input", () => {
   expect(parse("a")).toBe("a");
 });
 ```
+
+### vitest/no-conditional-expect
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/no-conditional-expect.html). Severity: `error`.
+
+### vitest/no-conditional-in-test
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/no-conditional-in-test.html). Severity: `error`.
 
 ### vitest/no-conditional-tests
 
@@ -7326,6 +7354,14 @@ describe("store", () => {
 });
 ```
 
+### vitest/no-focused-tests
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/no-focused-tests.html). Severity: `error`.
+
+### vitest/no-hooks
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/no-hooks.html). Severity: `error`.
+
 ### vitest/no-identical-title
 
 Disallow two tests or two suites with the same title at the same level. Severity: `error`.
@@ -7351,6 +7387,14 @@ describe("parser", () => {
   });
 });
 ```
+
+### vitest/no-import-node-test
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/no-import-node-test.html). Severity: `error`.
+
+### vitest/no-importing-vitest-globals
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/no-importing-vitest-globals.html). Severity: `error`.
 
 ### vitest/no-interpolation-in-snapshots
 
@@ -7400,6 +7444,10 @@ vi.mock("./api");
 
 [oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/no-restricted-vi-methods.html). Severity: `error`.
 
+### vitest/no-standalone-expect
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/no-standalone-expect.html). Severity: `error`.
+
 ### vitest/no-test-prefixes
 
 Require `.skip` and `.only` over the `x`- and `f`-prefixed aliases (`xit`, `xdescribe`, `fit`, ...). Severity: `error`.
@@ -7446,6 +7494,30 @@ await expect(async () => {
 await expect(save()).rejects.toThrow();
 ```
 
+### vitest/padding-around-after-all-blocks
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/padding-around-after-all-blocks.html). Severity: `error`.
+
+### vitest/padding-around-test-blocks
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/padding-around-test-blocks.html). Severity: `error`.
+
+### vitest/prefer-called-exactly-once-with
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-called-exactly-once-with.html). Severity: `error`.
+
+### vitest/prefer-called-once
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-called-once.html). Severity: `error`.
+
+### vitest/prefer-called-times
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-called-times.html). Severity: `error`.
+
+### vitest/prefer-called-with
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-called-with.html). Severity: `error`.
+
 ### vitest/prefer-comparison-matcher
 
 Require the built-in comparison matchers (`toBeGreaterThan`, `toBeLessThanOrEqual`, ...) over asserting on the result of a comparison. Severity: `error`.
@@ -7457,6 +7529,58 @@ expect(items.length > 5).toBe(true);
 // good
 expect(items.length).toBeGreaterThan(5);
 ```
+
+### vitest/prefer-describe-function-title
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-describe-function-title.html). Severity: `error`.
+
+### vitest/prefer-each
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-each.html). Severity: `error`.
+
+### vitest/prefer-equality-matcher
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-equality-matcher.html). Severity: `error`.
+
+### vitest/prefer-expect-assertions
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-expect-assertions.html). Severity: `error`.
+
+### vitest/prefer-expect-resolves
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-expect-resolves.html). Severity: `error`.
+
+### vitest/prefer-expect-type-of
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-expect-type-of.html). Severity: `error`.
+
+### vitest/prefer-hooks-in-order
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-hooks-in-order.html). Severity: `error`.
+
+### vitest/prefer-hooks-on-top
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-hooks-on-top.html). Severity: `error`.
+
+### vitest/prefer-import-in-mock
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-import-in-mock.html). Severity: `error`.
+
+### vitest/prefer-importing-vitest-globals
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-importing-vitest-globals.html). Severity: `error`.
+
+### vitest/prefer-lowercase-title
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-lowercase-title.html). Severity: `error`.
+
+### vitest/prefer-mock-promise-shorthand
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-mock-promise-shorthand.html). Severity: `error`.
+
+### vitest/prefer-mock-return-shorthand
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-mock-return-shorthand.html). Severity: `error`.
 
 ### vitest/prefer-snapshot-hint
 
@@ -7476,6 +7600,26 @@ it("renders the header", () => {
 });
 ```
 
+### vitest/prefer-spy-on
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-spy-on.html). Severity: `error`.
+
+### vitest/prefer-strict-boolean-matchers
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-strict-boolean-matchers.html). Severity: `error`.
+
+### vitest/prefer-strict-equal
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-strict-equal.html). Severity: `error`.
+
+### vitest/prefer-to-be
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-to-be.html). Severity: `error`.
+
+### vitest/prefer-to-be-falsy
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-to-be-falsy.html). Severity: `error`.
+
 ### vitest/prefer-to-be-object
 
 Require `expectTypeOf(...).toBeObject()` over `toBeInstanceOf(Object)` or an `instanceof Object` check. Severity: `error`.
@@ -7487,6 +7631,22 @@ expectTypeOf(config).toBeInstanceOf(Object);
 // good
 expectTypeOf(config).toBeObject();
 ```
+
+### vitest/prefer-to-be-truthy
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-to-be-truthy.html). Severity: `error`.
+
+### vitest/prefer-to-contain
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-to-contain.html). Severity: `error`.
+
+### vitest/prefer-to-have-been-called-times
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-to-have-been-called-times.html). Severity: `error`.
+
+### vitest/prefer-to-have-length
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-to-have-length.html). Severity: `error`.
 
 ### vitest/prefer-todo
 
@@ -7516,6 +7676,10 @@ test("shows the toast", async () => {
 });
 ```
 
+### vitest/require-hook
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/require-hook.html). Severity: `error`.
+
 ### vitest/require-local-test-context-for-concurrent-snapshots
 
 Require concurrent tests that assert snapshots to use `expect` from the local test context. Severity: `error`.
@@ -7532,9 +7696,13 @@ test.concurrent("renders the card", ({ expect }) => {
 });
 ```
 
+### vitest/require-mock-type-parameters
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/require-mock-type-parameters.html). Severity: `error`.
+
 ### vitest/require-to-throw-message
 
-Require an expected message or error on `toThrow` and `rejects.toThrow`. Severity: `warn`. A bare `toThrow()` passes on any error, including the `TypeError` a typo throws. Warn, not error: 136 existing assertions across the fleet.
+Require an expected message or error on `toThrow` and `rejects.toThrow`. Severity: `error`.
 
 ```ts
 // bad
@@ -7543,6 +7711,10 @@ expect(() => parse("")).toThrow();
 // good
 expect(() => parse("")).toThrow("input is empty");
 ```
+
+### vitest/require-top-level-describe
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/require-top-level-describe.html). Severity: `error`.
 
 ### vitest/valid-describe-callback
 
@@ -7620,6 +7792,10 @@ describe("parser", () => {
   });
 });
 ```
+
+### vitest/warn-todo
+
+[oxlint documentation](https://oxc.rs/docs/guide/usage/linter/rules/vitest/warn-todo.html). Severity: `error`.
 
 ## Perfectionist Rules
 

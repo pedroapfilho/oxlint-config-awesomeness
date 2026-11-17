@@ -142,7 +142,10 @@ const modelOf = ({ config, readme, source }) => {
     printConfig({
       categories: config.categories,
       options: config.options,
-      overrides: config.overrides.map(({ files, rules }) => ({ files, rules })),
+      overrides: config.overrides.map(({ files, rules }) => ({
+        files,
+        rules: Object.fromEntries(Object.entries(rules).filter(([name]) => isNative(name))),
+      })),
       plugins: [...config.plugins, ...added],
       rules: rootRules(true),
     });
