@@ -17,6 +17,8 @@ peerDependencyRules:
 
 minimumReleaseAge: 180
 trustPolicy: no-downgrade
+trustPolicyExclude:
+  - tsrs@0.25.0-ts7.1.0-beta
 
 # pnpm's release-age gate would otherwise block installing a fleet package the
 # moment it is published.
