@@ -179,15 +179,15 @@ const config: OxlintConfig = defineConfig({
       specifier: import.meta.resolve("oxlint-config-awesomeness/awesomeness"),
     },
   ],
-  // Type-aware linting via tsgolint (stable since oxlint-tsgolint v7). Turns on
-  // the 59 typescript-eslint rules that need a type checker; the `@typescript-eslint`
-  // entries below stop being no-ops. Requires `oxlint-tsgolint` installed.
+  // Type-aware linting via tsrs. Turns on the typescript-eslint rules that need a
+  // type checker; the `@typescript-eslint` entries below stop being no-ops.
+  // Requires `tsrs` installed.
   //
   // `typeCheck` routes TypeScript compiler diagnostics through the linter too, so
   // one oxlint run reports type errors and lint errors in one format. That single
   // stream is the point: it is what automated fixers consume. It also reuses the
-  // program tsgolint already built, which is cheaper than a second `tsc` process.
-  // Requires TypeScript 7, since tsgolint carries its own TypeScript 7 checker.
+  // program tsrs already built, which is cheaper than a second `tsc` process.
+  // Requires TypeScript 7, since tsrs carries its own TypeScript 7 checker.
   //
   // Unused disable directives are reported so suppressions die with the rule or
   // the code that needed them. Warn, not error: a directive that no longer
@@ -596,7 +596,7 @@ const config: OxlintConfig = defineConfig({
     // `.catch((err) => ...)` — `err` should be `unknown`, not `any` (strict TS behavior).
     "@typescript-eslint/use-unknown-in-catch-callback-variable": "error",
 
-    // Type-aware (tsgolint) tuning
+    // Type-aware (tsrs) tuning
 
     // Requires `Readonly<>` on virtually every object/array parameter and fights
     // React, Playwright, and Hono signatures. Upstream keeps it out of every preset.

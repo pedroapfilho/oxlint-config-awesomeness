@@ -97,9 +97,9 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.5.1",
     "oxfmt": "^0.70.0",
-    "oxlint": "^1.85.0",
+    "oxlint": "^1.94.0",
     "oxlint-plugin-react-doctor": "^0.9.14",
-    "oxlint-tsgolint": "^7.0.2003",
+    "tsrs": "0.25.0-ts7.1.0-beta",
     "typescript": "^7.0.2",
     "vite": "^8.3.8",
     "vitest": "^5.0.1"
@@ -113,9 +113,9 @@
     "eslint": "^10.0.0",
     "eslint-plugin-no-only-tests": "^3.4.0",
     "eslint-plugin-perfectionist": "^5.10.1",
-    "oxlint": "^1.82.0",
+    "oxlint": "^1.94.0",
     "oxlint-plugin-react-doctor": "^0.9.13",
-    "oxlint-tsgolint": ">=7.0.2001 <8.0.0",
+    "tsrs": ">=0.25.0-ts7.1.0-beta <8.0.0",
     "typescript": ">=7.0.0 <8.0.0"
   },
   "peerDependenciesMeta": {
