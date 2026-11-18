@@ -190,10 +190,10 @@ const config: OxlintConfig = defineConfig({
   // Requires TypeScript 7, since tsrs carries its own TypeScript 7 checker.
   //
   // Unused disable directives are reported so suppressions die with the rule or
-  // the code that needed them. Warn, not error: a directive that no longer
-  // suppresses anything is dead weight, not a defect.
+  // the code that needed them. Error, not warn: as a warning the managed repos
+  // kept 749 directives for rules that were already off. `oxlint --fix` deletes them.
   options: {
-    reportUnusedDisableDirectives: "warn",
+    reportUnusedDisableDirectives: "error",
     typeAware: true,
     typeCheck: true,
   },
@@ -945,10 +945,11 @@ const config: OxlintConfig = defineConfig({
     "anti-slop/no-runtime-typeof": "off",
     // Warn, not error: matches any identifier containing "shape".
     "anti-slop/no-shape-in-symbol-names": "warn",
-    // Warn, not error: `use-unknown-in-catch-callback-variable` autofixes catch
-    // callbacks to `(err: unknown)`, which this rule then flags; upstream only
-    // exempts parameters named `cause`.
-    "anti-slop/no-unknown-parameters": "warn",
+    // `unknown` is the correct parameter type for a parser, a type guard and a
+    // catch callback (`use-unknown-in-catch-callback-variable` autofixes to it),
+    // and upstream only exempts parameters named `cause`. As a warning it fired
+    // 328 times across the managed repos and was suppressed inline 49 times.
+    "anti-slop/no-unknown-parameters": "off",
     "anti-slop/no-unknown-returns": "error",
     // Dense blocks read as one wall of code. The fix only inserts blank lines,
     // which oxfmt keeps, so `oxlint --fix` settles it.

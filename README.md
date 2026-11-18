@@ -4,7 +4,7 @@ Opinionated Oxlint config for software houses that want all their apps to feel t
 
 <!-- summary:start -->
 
-All five oxlint rule categories at `error`, plus **559 rules** enabled by name, across **17 plugins**.
+All five oxlint rule categories at `error`, plus **558 rules** enabled by name, across **17 plugins**.
 
 <!-- summary:end -->
 
@@ -82,9 +82,9 @@ Type-aware rules only see types for files inside your tsconfig program. Plain `.
 
 ### Unused suppressions
 
-This config sets `options.reportUnusedDisableDirectives` to `warn`. An `oxlint-disable` or `eslint-disable` comment that no longer suppresses anything is reported, whether the rule was turned off, renamed, or the code it covered was fixed. That includes directives naming rules oxlint does not know, such as `react-hooks-js/*` or `@next/next/*` left over from an ESLint setup.
+This config sets `options.reportUnusedDisableDirectives` to `error`. An `oxlint-disable` or `eslint-disable` comment that no longer suppresses anything is reported, whether the rule was turned off, renamed, or the code it covered was fixed. That includes directives naming rules oxlint does not know, such as `react-hooks-js/*` or `@next/next/*` left over from an ESLint setup.
 
-Pass `--report-unused-disable-directives-severity` on the command line to override it for one run.
+`oxlint --fix` deletes the directives it reports. Pass `--report-unused-disable-directives-severity` on the command line to override the severity for one run.
 
 ## Usage
 
@@ -384,6 +384,7 @@ The five categories are enabled at `error`, and the config turns these rules off
 - `react/memo-dependencies`: React ships it off in its own presets, and it misfires on non-React code.
 - `react/no-deriving-state-in-effects`: React ships it off in its own presets, and it misfires on non-React code.
 - `anti-slop/no-runtime-typeof`: Flags every `typeof` unary, including the `typeof window` SSR guards the react-doctor browser-global rules steer toward and ordinary `typeof x === "string"` narrowing. shortcut: off while upstream flags every `typeof`, turn on once it scopes the rule.
+- `anti-slop/no-unknown-parameters`: `unknown` is the correct parameter type for a parser, a type guard and a catch callback (`use-unknown-in-catch-callback-variable` autofixes to it), and upstream only exempts parameters named `cause`. As a warning it fired 328 times across the managed repos and was suppressed inline 49 times.
 - `react-doctor/async-await-in-loop`: Off, like core `no-await-in-loop`: the awaits it flags are sequential on purpose (one transaction connection, a request limiter, a hardware transport that takes one exchange at a time). Measured across the fleet it carried 58 reasoned suppressions in 9 repos.
 
 <!-- disabled:end -->
@@ -7982,18 +7983,6 @@ const responseShape = { id: 0 };
 
 // good
 const response = { id: 0 };
-```
-
-### anti-slop/no-unknown-parameters
-
-Disallow `unknown` function parameters except the `cause` convention; decode input at its I/O boundary instead. Severity: `warn`. Warn, not error: `use-unknown-in-catch-callback-variable` autofixes catch callbacks to `(err: unknown)`, which this rule then flags; upstream only exempts parameters named `cause`.
-
-```ts
-// bad
-const handle = (value: unknown) => process(value);
-
-// good
-const handle = (value: Payload) => process(value);
 ```
 
 ### anti-slop/no-unknown-returns

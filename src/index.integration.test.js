@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -158,5 +158,50 @@ test("does nothing", () => {});
     });
 
     expect(diagnostics.filter(({ code }) => code.startsWith("vitest("))).toEqual([]);
+  });
+});
+
+describe("Type-aware linting through Oxlint", () => {
+  it("runs typed rules, compiler diagnostics and unused-directive reporting as errors", () => {
+    symlinkSync(new URL("../node_modules", import.meta.url), join(cwd, "node_modules"), "junction");
+    writeFileSync(
+      join(cwd, "oxlint.config.mjs"),
+      `import config from ${JSON.stringify(import.meta.resolve("oxlint-config-awesomeness"))};
+export default { extends: [config] };
+`,
+    );
+    writeFileSync(join(cwd, "tsconfig.json"), JSON.stringify({ files: ["input.ts"] }));
+    writeFileSync(
+      join(cwd, "input.ts"),
+      `export const start = () => {
+  Promise.resolve(1);
+
+  // oxlint-disable-next-line no-console -- nothing here logs
+  return 3;
+};
+
+export const wrong: number = "text";
+`,
+    );
+
+    const result = spawnSync(
+      process.execPath,
+      [OXLINT, "--config", "oxlint.config.mjs", "--format=json", "input.ts"],
+      { cwd, encoding: "utf8", timeout: 60_000 },
+    );
+
+    expect(result.status, `oxlint stderr: ${result.stderr}`).toBe(1);
+
+    const errors = JSON.parse(result.stdout)
+      .diagnostics.filter(({ severity }) => severity === "error")
+      .map(({ code, labels, message }) => `${labels[0].span.line} ${code ?? message}`);
+
+    expect(errors).toEqual(
+      expect.arrayContaining([
+        "2 typescript(no-floating-promises)",
+        expect.stringMatching(/^4 Unused oxlint-disable directive/),
+        "8 typescript(TS2322)",
+      ]),
+    );
   });
 });
