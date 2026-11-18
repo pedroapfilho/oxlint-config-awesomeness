@@ -308,6 +308,7 @@ const config: OxlintConfig = defineConfig({
             ],
           },
         ],
+        "vitest/require-awaited-expect-poll": "error",
         // A bare `toThrow()` passes on any error, including the `TypeError` a
         // typo throws. Warn, not error: 136 existing assertions across the fleet.
         "vitest/require-to-throw-message": "warn",
