@@ -1,5 +1,14 @@
 # oxlint-config-awesomeness
 
+## 5.1.0
+
+### Minor Changes
+
+- 82d0d8c: Enable `vitest/require-awaited-expect-poll` in test files. An `expect.poll` that is not awaited or returned never runs its assertion, so the test passes whatever the code does.
+- a75bea3: Report unused disable directives as errors, and turn `anti-slop/no-unknown-parameters` off.
+
+  A directive that no longer suppresses anything now fails the lint. After upgrading, run `oxlint --fix` once: it deletes them, including the `anti-slop/no-unknown-parameters` suppressions this release makes unused.
+
 ## 5.0.0
 
 ### Major Changes
