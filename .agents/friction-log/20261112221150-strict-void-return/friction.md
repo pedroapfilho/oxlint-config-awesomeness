@@ -1,6 +1,7 @@
 ---
 title: '`strict-void-return` rejects `promisify(execFile)`'
 severity: 'minor'
+issue: 'pedroapfilho/oxlint-config-awesomeness#104'
 ---
 
 ## Expected Behavior
